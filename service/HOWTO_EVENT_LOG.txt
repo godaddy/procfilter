@@ -1,0 +1,12 @@
+
+1. Create procfilter.man
+ecmangen.exe
+
+2. Build procfilter.man
+mc -um procfilter.man -h . -z ProcFilterEvents
+
+Add 'users' group permission to read + execute yaraservice.exe
+wevtutil im procfilter.man     ; Use /rf /mf flags to install if xml path needs to be overridden (it almost always does)
+wevtutil gp procfilter         ; this tests it
+wevtutil ep                  ; look for procfilter
+wevtutil um procfilter.man

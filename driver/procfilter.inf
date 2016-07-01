@@ -1,0 +1,32 @@
+;
+; procfilter.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=
+ClassGuid={550B78BB-6600-4A89-A26E-8BA498050E77}
+Provider=GoDaddy
+DriverVer=1.0
+CatalogFile=procfilter.cat
+
+[DestinationDirs]
+DefaultDestDir = 12
+
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+
+
+[Strings]
+ManufacturerName=""
+ClassName=""
+DiskName="procfilter Source Disk"
