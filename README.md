@@ -134,7 +134,7 @@ The same TA packs the command shell with UPX so it's no longer detected by file 
 
 ### Use Case #5
 
-A malware analyst needs to get a memory snapshot of a packed sample but running it in a controlled debug environment fails because the sample detects the environment and crashes out or exists before it is unpacked in memory. The malware analyst enables the 'unpack' ProcFilter plugin, which successfully takes a memory snapshot at process termination since ProcFilter does act as a debugger. Note that this is a cat and mouse game since ProcFilter is detectable from userland and could be detected by an unpacking stub.
+A malware analyst needs to get a memory snapshot of a packed sample but running it in a controlled debug environment fails because the sample detects the environment and crashes out or exists before it is unpacked in memory. The malware analyst enables the 'unpack' ProcFilter plugin, which successfully takes a memory snapshot at process termination since ProcFilter doesn't act as a debugger. Note that this is a cat and mouse game since ProcFilter is detectable from userland and could be detected by an unpacking stub.
 
 ### Use Case #6
 
