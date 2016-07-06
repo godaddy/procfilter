@@ -11,7 +11,7 @@ ProcFilter is compatible with Windows 7+ and Windows Server 2008+ systems.
 
 # Features
 + Deny processes based on YARA rules
-+ Highly configurable via INI-configurable
++ Highly configurable via INI file
 + Installation/removal without rebooting
 + Built-in performance measuring and stress testing
 + Plugins extend or augment ProcFilter's behavior
@@ -89,7 +89,7 @@ Cons of Sharing:
 Sharing in a semi-open fashion between trusted partners via private forums can be an effective way to mitigate the cons of open sharing.
 
 # API
-ProcFilter exposes a C API that can extend or alter behavior. For example, a plugin could perform custom actions based on tags in YARA signature's meta sections [cmdline plugin](https://github.com/godaddy/procfilter/blob/master/launchcmd/launchcmd.cpp). The C API header file [is located here](https://github.com/godaddy/procfilter/blob/master/service/include/procfilter/procfilter.h).
+ProcFilter exposes a C API that can extend or alter behavior. For example, a plugin could perform custom actions based on tags in YARA signature's meta sections [cmdline plugin](https://github.com/godaddy/procfilter/blob/master/cmdline/cmdline.cpp). The C API header file [is located here](https://github.com/godaddy/procfilter/blob/master/service/include/procfilter/procfilter.h).
 
 Event list (See [procfilter.h](https://github.com/godaddy/procfilter/blob/master/service/include/procfilter/procfilter.h) for the full list):
 + Process Creation/Termination
