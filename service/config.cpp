@@ -47,7 +47,7 @@ update_base_directory(MCONFIG_DATA *cd)
 	size_t bdlen = wcslen(cd->szBaseDirectory);
 
 	// add the terminating slash
-	if (bdlen > 0 && cd->szBaseDirectory[bdlen-1] != '\\' && cd->szBaseDirectory[bdlen-1] != '//') {
+	if (bdlen > 0 && cd->szBaseDirectory[bdlen-1] != '\\' && cd->szBaseDirectory[bdlen-1] != '/') {
 		wstrlcatf(cd->szBaseDirectory, sizeof(cd->szBaseDirectory), L"%s", L"\\");
 	}
 }
