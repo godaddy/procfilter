@@ -16,7 +16,7 @@ IsAdmin()
 		if (CheckTokenMembership(NULL, AdminGroup, &bIsAdmin) && bIsAdmin) {
 			rv = true;
 		}
-		FreeSid(&ntAuthority);
+		FreeSid(AdminGroup);
 	}
 
 	return rv;
