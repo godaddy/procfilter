@@ -26,9 +26,11 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 					WCHAR *lpszDestinationBaseName = e->GetProcessBaseNamePointer(szDestination);
 
 					if (lpszCreatorBaseName && lpszDestinationBaseName) {
-						DWORD dwDialogResult = e->ShellNoticeFmt(0, true, MB_YESNO | MB_ICONQUESTION,
+						// Some system threads internal to the system need to run within a certain timeframe otherwise a bluescreen is raised, so limit
+						// this to 10 seconds and default to allowing the thread
+						DWORD dwDialogResult = e->ShellNoticeFmt(10, true, MB_YESNO | MB_ICONQUESTION,
 							L"Allow remote thread?", L"Remote thread creation detected.\n\nCreator:%ls\nDestination:%ls\n\nAllow?", lpszCreatorBaseName, lpszDestinationBaseName);
-						if (dwDialogResult != IDYES) {
+						if (dwDialogResult == IDNO) {
 							dwResultFlags |= PROCFILTER_RESULT_BLOCK_PROCESS;
 						}
 					}
