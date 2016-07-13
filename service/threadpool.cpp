@@ -18,6 +18,7 @@ struct thread_context {
 	void (*lpDestroyFunction)(void *lpPoolData, void *lpThreadData);
 	bool bRunning;
 	bool bHasTask;
+	DWORD dwChannel;
 	void *lpPoolData;
 	void *lpTaskData;
 	void *lpThreadData;
@@ -28,6 +29,7 @@ struct thread_context {
 struct threadpool {
 	THREAD_CONTEXT *tcThreadContextArray;
 	DWORD dwNumThreads;
+	DWORD dwNumChannels;
 	HANDLE hSemaphore;
 	void *lpThreadDataArray;
 	THREAD_CONTEXT **lpMostRecentlyUsedArray;
@@ -91,6 +93,7 @@ ep_WorkerThread(void *data)
 
 THREADPOOL*
 ThreadPoolAlloc(int dNumThreads,
+				int dNumChannels,
 				void (*initfn)(void *lpPoolData, void *lpThreadData),
 				void (*workfn)(void *lpPoolData, void *lpThreadData, void *lpTaskData),
 				void (*destroyfn)(void *lpPoolData, void *lpThreadData),
@@ -98,6 +101,8 @@ ThreadPoolAlloc(int dNumThreads,
 				DWORD dwThreadDataSize,
 				int nPriority)
 {
+	if (dNumChannels < 0) dNumChannels = 0;
+
 	THREADPOOL *tp = (THREADPOOL*)calloc(1, sizeof(THREADPOOL));
 	if (!tp) return NULL;
 
@@ -110,10 +115,12 @@ ThreadPoolAlloc(int dNumThreads,
 	}
 	if (dNumThreads > dNumProcessors) dNumThreads = dNumProcessors;
 	if (dNumThreads == 0) return NULL;
-	DWORD dwNumThreads = dNumThreads;
+	DWORD dwNumThreads = dNumThreads + dNumChannels;
+	if (dwNumThreads <= 0) return NULL;
 
 	tp->dwThreadDataSize = dwThreadDataSize;
-	tp->dwNumThreads = dNumThreads;
+	tp->dwNumThreads = dwNumThreads;
+	tp->dwNumChannels = (DWORD)dNumChannels;
 	tp->tcThreadContextArray = (THREAD_CONTEXT*)calloc(dwNumThreads, sizeof(THREAD_CONTEXT));
 	if (!tp->tcThreadContextArray) {
 		free(tp);
@@ -147,7 +154,7 @@ ThreadPoolAlloc(int dNumThreads,
 	InitializeCriticalSection(&tp->mtx);
 
 	bool failed = false;
-	size_t i = 0;
+	DWORD i = 0;
 	for (i = 0; i < dwNumThreads; ++i) {
 		THREAD_CONTEXT *tc = &tp->tcThreadContextArray[i];
 		tp->lpMostRecentlyUsedArray[(dwNumThreads-1)-i] = tc;
@@ -157,6 +164,13 @@ ThreadPoolAlloc(int dNumThreads,
 		tc->lpDestroyFunction = destroyfn;
 		tc->bRunning = true;
 		DWORD dwThreadId = 0;
+		// Assign the last N threads to be channel-specific
+		DWORD dwChannelThreadStartIndex = tp->dwNumThreads - tp->dwNumChannels;
+		if (i < dwChannelThreadStartIndex) {
+			tc->dwChannel = CHANNEL_NONE;
+		} else {
+			tc->dwChannel = (i - dwChannelThreadStartIndex) + 1;
+		}
 		tc->hSemaphore = tp->hSemaphore;
 		tc->lpPoolData = lpPoolData;
 		tc->lpThreadData = (BYTE*)tp->lpThreadDataArray + (dwThreadDataSize * i);
@@ -245,8 +259,16 @@ ThreadPoolFree(THREADPOOL *tp)
 }
 
 
+//
+// XXX: Why bother to rework this function and dequeue from kernel immediately if the pool is already
+// consumed processing other tasks?
+//
+// With the current design it doesnt make sense, but if it's eventually channeled then 1 job of each
+// type can be in progress and lightweight jobs (thread, image load) wont be completely blocked
+// on heavier weight tasks - one job of each type will be in progress simultaneously.
+//
 bool
-ThreadPoolPost(THREADPOOL *tp, HANDLE hStopEvent, void *lpTaskData)
+ThreadPoolPost(THREADPOOL *tp, int dChannel, HANDLE hStopEvent, void *lpTaskData)
 {
 	bool rv = false;
 

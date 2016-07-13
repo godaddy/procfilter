@@ -213,7 +213,7 @@ ep_DriverService(void *arg)
 	POOL_DATA pd;
 	ZeroMemory(&pd, sizeof(POOL_DATA));
 	pd.hSharedDriverHandle = g_hDriver;
-	THREADPOOL *tp = ThreadPoolAlloc(cd->dThreadPoolSize, PfWorkerInit, PfWorkerWork, PfWorkerDestroy, &pd, sizeof(WORKER_DATA), THREAD_PRIORITY_NORMAL);
+	THREADPOOL *tp = ThreadPoolAlloc(cd->dThreadPoolSize, 0, PfWorkerInit, PfWorkerWork, PfWorkerDestroy, &pd, sizeof(WORKER_DATA), THREAD_PRIORITY_NORMAL);
 	if (!tp) Die("Unable to allocate threadpool");
 
 	// Create the read file event for use with overlapped I/O
@@ -272,7 +272,7 @@ ep_DriverService(void *arg)
 		if (!wtd) Die("Memory allocation failure for ProcFilter request");
 		memcpy(&wtd->peProcFilterRequest, req, dwBytesRead);
 		wtd->ulStartPerformanceCount = ulStartPerformanceCount;
-		if (ThreadPoolPost(tp, g_hStopTheadEvent, wtd)) {
+		if (ThreadPoolPost(tp, CHANNEL_NONE, g_hStopTheadEvent, wtd)) {
 			LogDebug("Posted work task to worker");
 		} else {
 			LogDebugFmt("Failed to post task to worker");

@@ -113,13 +113,13 @@ BenchmarkLimited(int argc, WCHAR *argv[])
 	int dwPoolSize = _wtoi(argv[2]);
 	DWORD64 dwDuration = _wtoi64(argv[3]) * 1000 * 60; // convert from minutes to milliseconds
 	g_lpszProgramName = argv[4];
-	THREADPOOL *tp = ThreadPoolAlloc(dwPoolSize, NULL, WorkFunction, NULL, NULL, 0, 0);
+	THREADPOOL *tp = ThreadPoolAlloc(dwPoolSize, 0, NULL, WorkFunction, NULL, NULL, 0, 0);
 	if (!tp) Die("Unable to create threadpool");
 	
 	DWORD64 dwNumRuns = 0;
 	DWORD64 dwStartTick = GetTickCount64();
 	do {
-		ThreadPoolPost(tp, NULL, NULL);
+		ThreadPoolPost(tp, 0, NULL, NULL);
 		++dwNumRuns;
 	} while (GetTickCount64() - dwStartTick < dwDuration);
 	ThreadPoolFree(tp);
