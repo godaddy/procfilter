@@ -276,6 +276,7 @@ ThreadPoolPost(THREADPOOL *tp, HANDLE hStopEvent, void *lpTaskData)
 			break;
 		} else {
 			LeaveCriticalSection(&tc->mtx);
+			tc = NULL;
 		}
 	}
 	LeaveCriticalSection(&tp->mtx);
