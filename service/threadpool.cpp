@@ -90,6 +90,7 @@ ep_WorkerThread(void *data)
 
 			bool bContinue = false;
 			do {
+				LogDebugFmt("Worker activated       (Channel %u/%u): Task %p", GetCurrentThreadId(), tc->dwChannel, tc->lpTaskData);
 				tc->lpfnWorkFunction(tc->lpPoolData, tc->lpThreadData, tc->lpTaskData, !bRunning);
 
 				EnterCriticalSection(&tp->mtx);
@@ -97,6 +98,7 @@ ep_WorkerThread(void *data)
 				bRunning = tc->bRunning;
 				if (bRunning) {
 					bContinue = pop_next_task(tp, tc->dwChannel, &tc->lpTaskData);
+					LogDebugFmt("Worker activated (Cont) (Channel %u/%u): Task %p", GetCurrentThreadId(), tc->dwChannel, tc->lpTaskData);
 				} else {
 					bContinue = false;
 				}
