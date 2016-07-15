@@ -884,7 +884,7 @@ IrpMjWrite(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp)
 				KdPrint(("Completing IRP\n"));
 				rc = STATUS_SUCCESS;
 			} else {
-				// There write was not found
+				// The write was not found
 				KdPrint(("Received out of sequence request for PID (%d, %d, %d, %d)\n",
 					response->dwEventType, response->dwProcessId, response->dwThreadId, response->lpImageBase));
 				KdBreakPoint();
