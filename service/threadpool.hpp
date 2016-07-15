@@ -31,5 +31,8 @@ void ThreadPoolFree(THREADPOOL *tp);
 //
 // Post a task to the thread pool. If no threads are available in the pool this call will block if bWait is set.
 //
+// Channel numbering is 1-based, so for example a 1-channel pool's first channel is 1. 0 (CHANNEL_NONE) is reserved
+// for tasks that can be completed by any thread in the pool that aren't associated with a specific channel.
+//
 #define CHANNEL_NONE 0
 bool ThreadPoolPost(THREADPOOL *tp, DWORD dwChannel, bool bWait, HANDLE hStopEvent, void *lpTaskData);
