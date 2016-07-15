@@ -78,8 +78,10 @@ PfWorkerDestroy(void *lpPoolData, void *lpThreadData)
 // Callback invoked when a worker thread enters a working state
 //
 void
-PfWorkerWork(void *lpPoolData, void *lpThreadData, void *lpTaskData)
+PfWorkerWork(void *lpPoolData, void *lpThreadData, void *lpTaskData, bool bCancel)
 {
+	if (bCancel) return;
+
 	POOL_DATA *pd = (POOL_DATA*)lpPoolData;
 	WORKER_DATA *wd = (WORKER_DATA*)lpThreadData;
 	WORKER_TASK_DATA *wtd = (WORKER_TASK_DATA*)lpTaskData;
