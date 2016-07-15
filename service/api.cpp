@@ -213,8 +213,10 @@ Export_RegisterPlugin(const WCHAR *szApiVersion, const WCHAR *lpszShortName, DWO
 	if (p->bRegistered) Die("Plugin attempted to register twice: \"%ls\"", p->szPlugin);
 
 	// Verify that the core and plugin are the same version
-	if (_wcsicmp(PROCFILTER_VERSION, szApiVersion) != 0) {
-		Die("ProcFilter plugin API mismatch (Core:%ls Plugin:%ls)", PROCFILTER_VERSION, szApiVersion);
+	static const WCHAR* const szCoreVersion = PROCFILTER_VERSION;
+	size_t uCompareLength = wcsrchr(szCoreVersion, '.') ? (wcsrchr(szCoreVersion, '.') - szCoreVersion) : wcslen(szCoreVersion);
+	if (_wcsnicmp(szCoreVersion, szApiVersion, uCompareLength) != 0) {
+		Die("ProcFilter plugin API version mismatch (Core:%ls Plugin:%ls)", szCoreVersion, szApiVersion);
 	}
 
 	// Continue initialization originally started during the load of the plugin
