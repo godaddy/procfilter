@@ -50,7 +50,7 @@ SaveConfigData(CONFIG_DATA *cd, WCHAR *lpszTarget, DWORD64 dwNumRuns, DWORD64 dw
 
 
 void
-WorkFunction(void *lpPoolData, void *lpThreadData, void *lpTaskData)
+WorkFunction(void *lpPoolData, void *lpThreadData, void *lpTaskData, bool bCancel)
 {
 	STARTUPINFOW si;
 	PROCESS_INFORMATION pi;
@@ -119,7 +119,7 @@ BenchmarkLimited(int argc, WCHAR *argv[])
 	DWORD64 dwNumRuns = 0;
 	DWORD64 dwStartTick = GetTickCount64();
 	do {
-		ThreadPoolPost(tp, 0, NULL, NULL);
+		ThreadPoolPost(tp, 0, false, NULL, NULL);
 		++dwNumRuns;
 	} while (GetTickCount64() - dwStartTick < dwDuration);
 	ThreadPoolFree(tp);

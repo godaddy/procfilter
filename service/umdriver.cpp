@@ -213,7 +213,8 @@ ep_DriverService(void *arg)
 	POOL_DATA pd;
 	ZeroMemory(&pd, sizeof(POOL_DATA));
 	pd.hSharedDriverHandle = g_hDriver;
-	THREADPOOL *tp = ThreadPoolAlloc(cd->dThreadPoolSize, 0, PfWorkerInit, PfWorkerWork, PfWorkerDestroy, &pd, sizeof(WORKER_DATA), THREAD_PRIORITY_NORMAL);
+	const DWORD dwNumChannels = NUM_EVENTTYPES-1; // -1 to ignore EVENT_NONE
+	THREADPOOL *tp = ThreadPoolAlloc(cd->dThreadPoolSize, dwNumChannels, PfWorkerInit, PfWorkerWork, PfWorkerDestroy, &pd, sizeof(WORKER_DATA), THREAD_PRIORITY_NORMAL);
 	if (!tp) Die("Unable to allocate threadpool");
 
 	// Create the read file event for use with overlapped I/O
@@ -253,6 +254,7 @@ ep_DriverService(void *arg)
 		} else {
 			Die("Unable to read data from driver: %d / %ls", dwErrorCode, ErrorText(dwErrorCode));
 		}
+		LogDebugFmt("Read event from driver: PID:%u Event:%u", req->dwProcessId, req->dwEventType);
 		ULONG64 ulStartPerformanceCount = GetPerformanceCount();
 		
 		// Validate the size of data read
@@ -272,7 +274,8 @@ ep_DriverService(void *arg)
 		if (!wtd) Die("Memory allocation failure for ProcFilter request");
 		memcpy(&wtd->peProcFilterRequest, req, dwBytesRead);
 		wtd->ulStartPerformanceCount = ulStartPerformanceCount;
-		if (ThreadPoolPost(tp, CHANNEL_NONE, g_hStopTheadEvent, wtd)) {
+		LogDebugFmt("Posting to threadpool: PID:%u Event:%u", req->dwProcessId, req->dwEventType);
+		if (ThreadPoolPost(tp, req->dwEventType, false, g_hStopTheadEvent, wtd)) {
 			LogDebug("Posted work task to worker");
 		} else {
 			LogDebugFmt("Failed to post task to worker");
@@ -308,7 +311,7 @@ DriverSendResponse(HANDLE hDriver, HANDLE hWriteCompletionEvent, const PROCFILTE
 	ZeroMemory(&overlapped, sizeof(OVERLAPPED));
 	ResetEvent(hWriteCompletionEvent);
 	overlapped.hEvent = hWriteCompletionEvent;
-	LogDebug("Writing data to driver");
+	LogDebug("Writing data to driver: PID:%u Event:%u", response->dwProcessId, response->dwEventType);
 	BOOL rc = WriteFile(hDriver, response, sizeof(PROCFILTER_RESPONSE), &dwBytesWritten, &overlapped);
 	LogDebug("Data sent to driver");
 	if (rc) {

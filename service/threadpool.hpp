@@ -6,7 +6,7 @@
 typedef struct threadpool THREADPOOL;
 
 //
-// Allocate a threadpool.
+// Allocate a threadpool. The threadpool itself is not thread safe.
 //
 // dNumThreads - Number of threads in the pool, 0 to auto-size, or negative to specify a core-relative number.
 // dNumChannels - Number of channels in the threadpool
@@ -19,9 +19,9 @@ typedef struct threadpool THREADPOOL;
 // Worker threads each call initfn() and destroyfn() on creation/shutdown.
 //
 THREADPOOL* ThreadPoolAlloc(int dNumThreads,
-							int dNumChannels,
+							DWORD dwNumChannels,
 							void (*initfn)(void *lpPoolData, void *lpThreadData),
-							void (*workfn)(void *lpPoolData, void *lpThreadData, void *lpTaskData),
+							void (*workfn)(void *lpPoolData, void *lpThreadData, void *lpTaskData, bool bCancel),
 							void (*destroyfn)(void *lpPoolData, void *lpThreadData),
 							void *lpPoolData,
 							DWORD dwThreadDataSize,
@@ -29,7 +29,7 @@ THREADPOOL* ThreadPoolAlloc(int dNumThreads,
 void ThreadPoolFree(THREADPOOL *tp);
 
 //
-// Post a task to the thread pool. If no threads are available in the pool this call will block.
+// Post a task to the thread pool. If no threads are available in the pool this call will block if bWait is set.
 //
 #define CHANNEL_NONE 0
-bool ThreadPoolPost(THREADPOOL *tp, int dChannel, HANDLE hStopEvent, void *lpTaskData);
+bool ThreadPoolPost(THREADPOOL *tp, DWORD dwChannel, bool bWait, HANDLE hStopEvent, void *lpTaskData);

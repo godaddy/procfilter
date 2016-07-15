@@ -6,6 +6,9 @@
 
 #include "log.hpp"
 
+#include <list>
+#include <vector>
+#include <algorithm>
 
 
 typedef struct thread_context THREAD_CONTEXT;
@@ -14,7 +17,7 @@ struct thread_context {
 	HANDLE hWakeEvent;
 	HANDLE hSemaphore;
 	void (*lpInitFunction)(void *lpPoolData, void *lpThreadData);
-	void (*lpfnWorkFunction)(void *lpPoolData, void *lpTheadData, void *lpTaskData);
+	void (*lpfnWorkFunction)(void *lpPoolData, void *lpTheadData, void *lpTaskData, bool bCancel);
 	void (*lpDestroyFunction)(void *lpPoolData, void *lpThreadData);
 	bool bRunning;
 	bool bHasTask;
@@ -26,17 +29,42 @@ struct thread_context {
 	CRITICAL_SECTION mtx;
 };
 
+typedef std::list<std::pair<DWORD,void*>> TaskList;
+
+
 struct threadpool {
 	THREAD_CONTEXT *tcThreadContextArray;
 	DWORD dwNumThreads;
 	DWORD dwNumChannels;
+	DWORD dwChannelStartIndex;
 	HANDLE hSemaphore;
 	void *lpThreadDataArray;
 	THREAD_CONTEXT **lpMostRecentlyUsedArray;
 	DWORD dwThreadDataSize;
+	TaskList *queue;
 	CRITICAL_SECTION mtx;
 };
 
+
+static
+bool
+pop_next_task(THREADPOOL *tp, DWORD dwChannel, void **lplpvResult)
+{
+	bool rv = false;
+
+	auto iter = tp->queue->begin();
+	while (iter != tp->queue->end()) {
+		if (dwChannel == CHANNEL_NONE || iter->first == dwChannel) {
+			*lplpvResult = iter->second;
+			tp->queue->erase(iter);
+			rv = true;
+			break;
+		}
+		++iter;
+	}
+
+	return rv;
+}
 
 
 static
@@ -60,7 +88,21 @@ ep_WorkerThread(void *data)
 		if (tc->bHasTask) {
 			LeaveCriticalSection(&tc->mtx);
 
-			tc->lpfnWorkFunction(tc->lpPoolData, tc->lpThreadData, tc->lpTaskData);
+			bool bContinue = false;
+			do {
+				tc->lpfnWorkFunction(tc->lpPoolData, tc->lpThreadData, tc->lpTaskData, !bRunning);
+
+				EnterCriticalSection(&tp->mtx);
+				EnterCriticalSection(&tc->mtx);
+				bRunning = tc->bRunning;
+				if (bRunning) {
+					bContinue = pop_next_task(tp, tc->dwChannel, &tc->lpTaskData);
+				} else {
+					bContinue = false;
+				}
+				LeaveCriticalSection(&tc->mtx);
+				LeaveCriticalSection(&tp->mtx);
+			} while (bContinue);
 				
 			EnterCriticalSection(&tp->mtx);
 			EnterCriticalSection(&tc->mtx);
@@ -93,18 +135,18 @@ ep_WorkerThread(void *data)
 
 THREADPOOL*
 ThreadPoolAlloc(int dNumThreads,
-				int dNumChannels,
+				DWORD dwNumChannels,
 				void (*initfn)(void *lpPoolData, void *lpThreadData),
-				void (*workfn)(void *lpPoolData, void *lpThreadData, void *lpTaskData),
+				void (*workfn)(void *lpPoolData, void *lpThreadData, void *lpTaskData, bool bCancel),
 				void (*destroyfn)(void *lpPoolData, void *lpThreadData),
 				void *lpPoolData,
 				DWORD dwThreadDataSize,
 				int nPriority)
 {
-	if (dNumChannels < 0) dNumChannels = 0;
-
 	THREADPOOL *tp = (THREADPOOL*)calloc(1, sizeof(THREADPOOL));
 	if (!tp) return NULL;
+
+	tp->queue = new TaskList;
 
 	SYSTEM_INFO si;
 	ZeroMemory(&si, sizeof(SYSTEM_INFO));
@@ -115,12 +157,13 @@ ThreadPoolAlloc(int dNumThreads,
 	}
 	if (dNumThreads > dNumProcessors) dNumThreads = dNumProcessors;
 	if (dNumThreads == 0) return NULL;
-	DWORD dwNumThreads = dNumThreads + dNumChannels;
+	DWORD dwNumThreads = ((DWORD)dNumThreads) + dwNumChannels;
+	tp->dwChannelStartIndex = dNumThreads;
 	if (dwNumThreads <= 0) return NULL;
 
 	tp->dwThreadDataSize = dwThreadDataSize;
 	tp->dwNumThreads = dwNumThreads;
-	tp->dwNumChannels = (DWORD)dNumChannels;
+	tp->dwNumChannels = dwNumChannels;
 	tp->tcThreadContextArray = (THREAD_CONTEXT*)calloc(dwNumThreads, sizeof(THREAD_CONTEXT));
 	if (!tp->tcThreadContextArray) {
 		free(tp);
@@ -165,11 +208,10 @@ ThreadPoolAlloc(int dNumThreads,
 		tc->bRunning = true;
 		DWORD dwThreadId = 0;
 		// Assign the last N threads to be channel-specific
-		DWORD dwChannelThreadStartIndex = tp->dwNumThreads - tp->dwNumChannels;
-		if (i < dwChannelThreadStartIndex) {
+		if (i < tp->dwChannelStartIndex) {
 			tc->dwChannel = CHANNEL_NONE;
 		} else {
-			tc->dwChannel = (i - dwChannelThreadStartIndex) + 1;
+			tc->dwChannel = (i - tp->dwChannelStartIndex) + 1;
 		}
 		tc->hSemaphore = tp->hSemaphore;
 		tc->lpPoolData = lpPoolData;
@@ -228,6 +270,7 @@ ThreadPoolFree(THREADPOOL *tp)
 {
 	if (!tp) return;
 
+	// Signal all threads to stop
 	for (size_t i = 0; i < tp->dwNumThreads; ++i) {
 		THREAD_CONTEXT *tc = &tp->tcThreadContextArray[i];
 
@@ -238,6 +281,7 @@ ThreadPoolFree(THREADPOOL *tp)
 		SetEvent(tc->hWakeEvent);
 	}
 	
+	// Stop all threads in pool
 	for (size_t i = 0; i < tp->dwNumThreads; ++i) {
 		THREAD_CONTEXT *tc = &tp->tcThreadContextArray[i];
 
@@ -247,6 +291,8 @@ ThreadPoolFree(THREADPOOL *tp)
 		CloseHandle(tc->hWakeEvent);
 		DeleteCriticalSection(&tc->mtx);
 	}
+
+	delete tp->queue;
 	
 	free(tp->lpMostRecentlyUsedArray);
 	free(tp->lpThreadDataArray);
@@ -259,52 +305,61 @@ ThreadPoolFree(THREADPOOL *tp)
 }
 
 
-//
-// XXX: Why bother to rework this function and dequeue from kernel immediately if the pool is already
-// consumed processing other tasks?
-//
-// With the current design it doesnt make sense, but if it's eventually channeled then 1 job of each
-// type can be in progress and lightweight jobs (thread, image load) wont be completely blocked
-// on heavier weight tasks - one job of each type will be in progress simultaneously.
-//
 bool
-ThreadPoolPost(THREADPOOL *tp, int dChannel, HANDLE hStopEvent, void *lpTaskData)
+ThreadPoolPost(THREADPOOL *tp, DWORD dwChannel, bool bWait, HANDLE hStopEvent, void *lpTaskData)
 {
 	bool rv = false;
-
-	if (hStopEvent != NULL) {
-		HANDLE handles[2] = { tp->hSemaphore, hStopEvent };
-		DWORD rc = WaitForMultipleObjects(2, handles, FALSE, INFINITE);
-		if (rc != WAIT_OBJECT_0) {
-			return rv;
-		}
-	} else {
-		if (WaitForSingleObject(tp->hSemaphore, INFINITE) != WAIT_OBJECT_0) {
-			return rv;
-		}
-	}
-
+	
 	THREAD_CONTEXT *tc = NULL;
 	EnterCriticalSection(&tp->mtx);
-	for (DWORD i = 0; i < tp->dwNumThreads; ++i) {
-		tc = tp->lpMostRecentlyUsedArray[i];
-
-		EnterCriticalSection(&tc->mtx);
-		if (!tc->bHasTask) {
-			tc->bHasTask = true;
-			tc->lpTaskData = lpTaskData;
-			LeaveCriticalSection(&tc->mtx);
-			rv = true;
-			break;
+	do {
+		LeaveCriticalSection(&tp->mtx);
+		if (bWait) {
+			if (hStopEvent != NULL) {
+				HANDLE handles[2] = { tp->hSemaphore, hStopEvent };
+				DWORD rc = WaitForMultipleObjects(2, handles, FALSE, INFINITE);
+				if (rc != WAIT_OBJECT_0) {
+					return rv;
+				}
+			} else {
+				if (WaitForSingleObject(tp->hSemaphore, INFINITE) != WAIT_OBJECT_0) {
+					return rv;
+				}
+			}
 		} else {
-			LeaveCriticalSection(&tc->mtx);
+			WaitForSingleObject(tp->hSemaphore, 0);
 		}
-	}
-	LeaveCriticalSection(&tp->mtx);
-	if (!tc) Die("Failed to find available thread in threadpool for post");
-	SetEvent(tc->hWakeEvent);
 
-	if (!rv) Die("Failed to post thread data when semaphore was signaled");
+		EnterCriticalSection(&tp->mtx);
+		for (DWORD i = 0; i < tp->dwNumThreads; ++i) {
+			tc = tp->lpMostRecentlyUsedArray[i];
+
+			EnterCriticalSection(&tc->mtx);
+			if (!tc->bHasTask && (tc->dwChannel == CHANNEL_NONE || tc->dwChannel == dwChannel)) {
+				tc->bHasTask = true;
+				tc->lpTaskData = lpTaskData;
+				LeaveCriticalSection(&tc->mtx);
+				rv = true;
+				break;
+			}
+
+			LeaveCriticalSection(&tc->mtx);
+			tc = NULL;
+		}
+	} while (bWait && !tc);
+
+	// Free thread not found; queue task
+	if (!tc) {
+		tp->queue->push_back(std::pair<DWORD,void*>(dwChannel, lpTaskData));
+		rv = true;
+	}
+
+	LeaveCriticalSection(&tp->mtx);
+	
+	if (tc) {
+		// Free thread found and job posted, wake worker thread
+		SetEvent(tc->hWakeEvent);
+	}
 
 	return rv;
 }
