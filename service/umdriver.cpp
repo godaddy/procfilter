@@ -311,7 +311,7 @@ DriverSendResponse(HANDLE hDriver, HANDLE hWriteCompletionEvent, const PROCFILTE
 	ZeroMemory(&overlapped, sizeof(OVERLAPPED));
 	ResetEvent(hWriteCompletionEvent);
 	overlapped.hEvent = hWriteCompletionEvent;
-	LogDebug("Writing data to driver: PID:%u Event:%u", response->dwProcessId, response->dwEventType);
+	LogDebugFmt("Writing data to driver: PID:%u Event:%u", response->dwProcessId, response->dwEventType);
 	BOOL rc = WriteFile(hDriver, response, sizeof(PROCFILTER_RESPONSE), &dwBytesWritten, &overlapped);
 	LogDebug("Data sent to driver");
 	if (rc) {
