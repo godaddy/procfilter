@@ -119,7 +119,7 @@ BenchmarkLimited(int argc, WCHAR *argv[])
 	DWORD64 dwNumRuns = 0;
 	DWORD64 dwStartTick = GetTickCount64();
 	do {
-		ThreadPoolPost(tp, 0, false, NULL, NULL);
+		ThreadPoolPost(tp, 0, true, NULL, NULL);
 		++dwNumRuns;
 	} while (GetTickCount64() - dwStartTick < dwDuration);
 	ThreadPoolFree(tp);
