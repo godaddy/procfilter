@@ -83,6 +83,28 @@ By default ProcFilter will respond to 3 boolean meta tags within YARA rules:
 | Log        | Allow the process but log its presence |
 | Quarantine | Make a copy of the associated file in a quarantine location |
 
+An example YARA rule for use with ProcFilter that matches UPX-packed binaries:
+
+```
+rule upx {
+    meta:
+        description = "UPX packed file"
+
+        Block = false
+        Log = true
+        Quarantine = false
+
+    strings:
+        $mz = "MZ"
+        $upx1 = {55505830000000}
+        $upx2 = {55505831000000}
+        $upx_sig = "UPX!"
+
+    condition:
+        $mz at 0 and $upx1 in (0..1024) and $upx2 in (0..1024) and $upx_sig in (0..1024)
+}
+```
+
 ProcFilter comes with a small set of default rules to get analysts started.  It *does not* contain a large rule set meant to catch everything.  In fact, it only includes rules for very select few families.  [View the default rule set here](https://github.com/godaddy/yara-rules). While it is possible to include a massive rule set, consider the potential for false-positives, difficulty in rule creation, and fundamental limitations of signature-based prevention -- all-encompassing rule sets quickly become a much more difficult challenge than it may appear at the outset. See the "Advocacy for Signature Sharing" section below for more details.
 
 Plugins can add handlers for custom meta tags.  The 'cmdline' plugin, for example, looks for ```CaptureCommandLine``` tags that trigger it to record command line options associated with rule matches.
