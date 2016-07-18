@@ -163,7 +163,7 @@ BenchmarkUnlimited(int argc, WCHAR *argv[])
 			double rDuration = (double)dwDuration;
 			double rOldDuration = (double)dwOldDuration;
 			double rDelta = rDuration - rOldDuration;
-			wprintf(L"Baseline:    %u", dwOldNumRuns);
+			wprintf(L"Baseline:    %u\n", dwOldNumRuns);
 			wprintf(L"Delta:      %+.03f seconds\n", rDelta / 1000.0);
 			double rPercentDelta = PercentDelta(rOldDuration, rDuration);
 			wprintf(L"%% Delta:    %+.03f%% %hs in running time\n", rPercentDelta, rPercentDelta >= 0.0 ? "increase" : "decrease");
