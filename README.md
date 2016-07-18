@@ -21,33 +21,33 @@ ProcFilter is compatible with Windows 7+ and Windows Server 2008+ systems.
 
 ProcFilter can be controlled through the Services control panel:
 
-![Service Control][screenshots/service_control.png]
+![Service Control](screenshots/service_control.png)
 
 New processes that match rules with `Block`, `Log`, or `Quarantine` values set are handled accordingly and results are sent to `Event Log`'s `Application` channel with the source of `ProcFilter`:
 
-![Service Control][screenshots/block_event.png]
+![Service Control](screenshots/block_event.png)
 
 If the process was started via the Windows GUI the user will receive a dialog box indicating creating the process failed:
 
-![Blocked Message][screenshots/blocked_ui.png]
+![Blocked Message](screenshots/blocked_ui.png)
 
 Windows `Event Log` can be customized to provide a convenient view of ProcFilter's events with the following steps:
 
-![Create Custom View][screenshots/custom_view_1.png]
-![Set the Source to ProcFilter][screenshots/custom_view_2.png]
-![All ProcFilter Events][screenshots/custom_view_3.png]
+![Create Custom View](screenshots/custom_view_1.png)
+![Set the Source to ProcFilter](screenshots/custom_view_2.png)
+![All ProcFilter Events](screenshots/custom_view_3.png)
 
 Processes that match rules with the `Quarantine` directive set to `true` will be quarantined and can be viewed or exported via the command-line:
 
-![View Quarantine][screenshots/quarantine_list.png]
+![View Quarantine](screenshots/quarantine_list.png)
 
 Performance can be measured with built-in performance testing:
 
-![Throughput Testing][screenshots/throughput_test.png]
+![Throughput Testing](screenshots/throughput_test.png)
 
 ProcFilter has a variety of command-line options for convenience:
 
-![Command-Line Options][screenshots/command_options.png]
+![Command-Line Options](screenshots/command_options.png)
 
 # Configuration
 [procfilter.ini](https://github.com/godaddy/procfilter/blob/master/files/procfilter.ini) contains a variety of variety of configurables, including:
