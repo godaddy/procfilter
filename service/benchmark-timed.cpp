@@ -1,5 +1,5 @@
 
-#include "benchmark-limited.hpp"
+#include "benchmark-timed.hpp"
 
 #include <stdio.h>
 
@@ -81,7 +81,7 @@ PercentDelta(double rOld, double rNew)
 
 
 int
-BenchmarkLimited(int argc, WCHAR *argv[])
+BenchmarkTimed(int argc, WCHAR *argv[])
 {
 	CONFIG_DATA *cd = GetConfigData();
 

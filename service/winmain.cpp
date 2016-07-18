@@ -11,8 +11,8 @@
 #include "umdriver.hpp"
 #include "pfservice.hpp"
 #include "config.hpp"
-#include "benchmark-limited.hpp"
-#include "benchmark-unlimited.hpp"
+#include "benchmark-timed.hpp"
+#include "benchmark-counted.hpp"
 #include "die.hpp"
 #include "winerr.hpp"
 #include "status.hpp"
@@ -274,8 +274,8 @@ usage(const WCHAR *progname)
 	fwprintf(stderr, L"Usage: %ls -quarantine <source>\n", progname);
 	fwprintf(stderr, L"Usage: %ls -unquarantine <sha1> <destination>\n", progname);
 	fwprintf(stderr, L"Usage: %ls -unquarantine-file <source> <destination>\n", progname);
-	fwprintf(stderr, L"Usage: %ls -benchmark-limited <pool size> <duration> <target program>\n", progname);
-	fwprintf(stderr, L"Usage: %ls -benchmark-unlimited <num executions> <target program>\n", progname);
+	fwprintf(stderr, L"Usage: %ls -benchmark-timed <pool size> <duration> <target program> [args]\n", progname);
+	fwprintf(stderr, L"Usage: %ls -benchmark-counted <num executions> <target program> [args]\n", progname);
 	fwprintf(stderr, L"Usage: %ls -status\n", progname);
 }
 
@@ -440,10 +440,10 @@ wmain(int argc, WCHAR *argv[])
 			if (!UnquarantineFile(argv[2], argv[3], szError, sizeof(szError))) {
 				fprintf(stderr, "Error: %ls\n", szError);
 			}
-		} else if (TestArg(arg, L"-benchmark-unlimited", L"-bu") && BenchmarkUnlimited(argc, argv) == 0) {
-			// do nothing; if BenchmarkUnlimited() fails usage is displayed
-		}  else if (TestArg(arg, L"-benchmark-limited", L"-bl") && BenchmarkLimited(argc, argv) == 0) {
-			// do nothing; if BenchmarkLimited() fails usage is displayed
+		} else if (TestArg(arg, L"-benchmark-counted", L"-bu") && BenchmarkCounted(argc, argv) == 0) {
+			// do nothing; if BenchmarkCounted() fails usage is displayed
+		}  else if (TestArg(arg, L"-benchmark-timed", L"-bl") && BenchmarkTimed(argc, argv) == 0) {
+			// do nothing; if BenchmarkTimed() fails usage is displayed
 		} else if (TestArg(arg, L"-status", L"-st")) {
 			StatusQuery();
 		} else if (TestArg(arg, L"-licenses", L"-l")) {

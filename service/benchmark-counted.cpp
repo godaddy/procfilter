@@ -2,7 +2,7 @@
 #define _CRT_NON_CONFORMING_SWPRINTFS
 #define _CRT_SECURE_NO_WARNINGS
 
-#include "benchmark-unlimited.hpp"
+#include "benchmark-counted.hpp"
 
 #include <stdio.h>
 #include <malloc.h>
@@ -101,7 +101,7 @@ PercentDelta(double rOld, double rNew)
 
 
 int
-BenchmarkUnlimited(int argc, WCHAR *argv[])
+BenchmarkCounted(int argc, WCHAR *argv[])
 {
 	CONFIG_DATA *cd = GetConfigData();
 

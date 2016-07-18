@@ -184,7 +184,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="api.cpp" />
-    <ClCompile Include="benchmark-unlimited.cpp" />
+    <ClCompile Include="benchmark-counted.cpp" />
     <ClCompile Include="config.cpp" />
     <ClCompile Include="die.cpp" />
     <ClCompile Include="file.cpp" />
@@ -218,8 +218,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="api.hpp" />
-    <ClInclude Include="benchmark-limited.hpp" />
-    <ClInclude Include="benchmark-unlimited.hpp" />
+    <ClInclude Include="benchmark-timed.hpp" />
+    <ClInclude Include="benchmark-counted.hpp" />
     <ClInclude Include="config.hpp" />
     <ClInclude Include="die.hpp" />
     <ClInclude Include="file.hpp" />
@@ -260,7 +260,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\files\procfilter.ini" />
-    <ClCompile Include="benchmark-limited.cpp">
+    <ClCompile Include="benchmark-timed.cpp">
       <FileType>Document</FileType>
     </ClCompile>
     <None Include="procfilter.man" />
