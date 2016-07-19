@@ -229,7 +229,7 @@ Event(DWORD EventType, PCUNICODE_STRING ImageFileName, HANDLE Pid, HANDLE Parent
 	// The read/writes were successfully added to the queues, wait on the write's completion event
 	// since the write completion event being signalled implies the read was also completed
 
-	KdPrint(("Waiting on user-land write: %u in progress...\n", nInProgress));
+	KdPrint(("Waiting on user-land write: %u in progress in userspace...\n", nInProgress));
 	KeWaitForSingleObject(&keWriteCompletionEvent, Executive, KernelMode, FALSE, NULL);
 	KdPrint(("Received user-land write\n"));
 
