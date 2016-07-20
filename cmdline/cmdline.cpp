@@ -10,7 +10,13 @@
 #include <utility>
 
 
-typedef std::map<DWORD, std::wstring> PidSet;
+class ParentData {
+public:
+	std::wstring wsBasename;
+	bool bAskSubprocess;
+	bool bLogSubprocess;
+};
+typedef std::map<DWORD, ParentData> PidSet;
 PidSet g_pidSet;
 CRITICAL_SECTION g_pidSetMutex;
 
@@ -18,6 +24,7 @@ typedef struct match_data SCAN_DATA;
 struct match_data {
 	bool   bCaptureCommandLine; // Should the command line associated with this process be captured?
 	bool   bLogSubprocesses;    // Log subprocesses of this process?
+	bool   bAskSubprocesses;    // Ask about creating subprocesses of this process?
 	WCHAR *lpszCommandLine;     // A copy of the command line if captured
 };
 
@@ -70,20 +77,25 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 	} else if (e->dwEventId == PROCFILTER_EVENT_SHUTDOWN) {
 		DeleteCriticalSection(&g_pidSetMutex);
 	} else if (e->dwEventId == PROCFILTER_EVENT_PROCESS_CREATE && e->dwParentProcessId) {
-		std::wstring wsBasename;
-		bool bLogProcess = false;
+		ParentData parentData;
 		EnterCriticalSection(&g_pidSetMutex);
 		auto iter = g_pidSet.find(e->dwParentProcessId);
 		if (iter != g_pidSet.end()) {
-			bLogProcess = true;
-			wsBasename = iter->second;
+			parentData = iter->second;
 		}
 		LeaveCriticalSection(&g_pidSetMutex);
-		if (bLogProcess) {
+		if (parentData.bLogSubprocess) {
 			WCHAR *lpszCommandLine = CaptureCommandLine(e);
 			e->LogFmt("Subprocess of %d %ls: %d %ls: %ls",
-				e->dwParentProcessId, wsBasename.c_str(), e->dwProcessId, e->lpszFileName, lpszCommandLine ? lpszCommandLine : L"NULL");
+				e->dwParentProcessId, parentData.wsBasename.c_str(), e->dwProcessId, e->lpszFileName, lpszCommandLine ? lpszCommandLine : L"NULL");
 			e->FreeMemory(lpszCommandLine);
+		}
+		if (parentData.bAskSubprocess) {
+			if (e->ShellNoticeFmt(0, true, MB_ICONWARNING | MB_YESNO, L"Allow process?",
+				L"%ls is trying to run this file: %ls\n\nAllow? Select 'No' if unsure.",
+				parentData.wsBasename.c_str(), e->lpszFileName) != IDYES) {
+				dwResultFlags |= PROCFILTER_RESULT_BLOCK_PROCESS;
+			}
 		}
 	} else if (e->dwEventId == PROCFILTER_EVENT_PROCESS_TERMINATE) {
 		EnterCriticalSection(&g_pidSetMutex);
@@ -106,15 +118,18 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 		if (_stricmp(e->lpszMetaTagName, "LogSubprocesses") == 0 && e->dNumericValue) {
 			sd->bLogSubprocesses = true;
 		}
+		if (_stricmp(e->lpszMetaTagName, "AskSubprocesses") == 0 && e->dNumericValue) {
+			sd->bAskSubprocesses = true;
+		}
 	} else if (e->dwEventId == PROCFILTER_EVENT_YARA_SCAN_COMPLETE) {
 		// here we can look at the match data as filled in during prior events and capture the command line accordingly
 		// while the process is still suspended
 		if (sd->bCaptureCommandLine) {
 			sd->lpszCommandLine = CaptureCommandLine(e);
 		}
-		if (sd->bLogSubprocesses) {
+		if (sd->bLogSubprocesses || sd->bAskSubprocesses) {
 			EnterCriticalSection(&g_pidSetMutex);
-			g_pidSet.insert(PidSet::value_type(e->dwProcessId, e->GetProcessBaseNamePointer(e->lpszFileName)));
+			g_pidSet.insert(PidSet::value_type(e->dwProcessId, {e->GetProcessBaseNamePointer(e->lpszFileName), sd->bLogSubprocesses, sd->bAskSubprocesses}));
 			LeaveCriticalSection(&g_pidSetMutex);
 		}
 	} else if (e->dwEventId == PROCFILTER_EVENT_YARA_SCAN_CLEANUP) {
