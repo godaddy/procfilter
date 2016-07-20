@@ -661,12 +661,14 @@ Export_FreeMemory(void *lpPointer)
 {
 	PROCFILTER_PLUGIN *p = GetCurrentPlugin();
 
-	free(lpPointer);
-	
-	size_t nAllocations = InterlockedDecrementSizeT(&p->mutable_data->nAllocations);
-	if (nAllocations == -1) {
-		PROCFILTER_EVENT *e = GetCurrentEvent();
-		Die("Duplicate/errant free detected in \"%ls\" event %d", p->szPlugin, e->dwEventId);
+	if (lpPointer) {
+		free(lpPointer);
+
+		size_t nAllocations = InterlockedDecrementSizeT(&p->mutable_data->nAllocations);
+		if (nAllocations == -1) {
+			PROCFILTER_EVENT *e = GetCurrentEvent();
+			Die("Duplicate/errant free detected in \"%ls\" event %d", p->szPlugin, e->dwEventId);
+		}
 	}
 }
 
