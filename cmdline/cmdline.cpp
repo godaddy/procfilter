@@ -5,11 +5,20 @@
 
 #include <winternl.h>
 
+#include <set>
+typedef std::set<DWORD> PidSet;
+
+PidSet g_pidSet;
+CRITICAL_SECTION g_pidSetMutex;
+
+
 typedef struct match_data SCAN_DATA;
 struct match_data {
 	bool   bCaptureCommandLine; // Should the command line associated with this process be captured?
+	bool   bLogSubprocesses;    // Log subprocesses of this process?
 	WCHAR *lpszCommandLine;     // A copy of the command line if captured
 };
+
 
 
 //
@@ -54,8 +63,28 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 		// register the plugin with the core
 		e->RegisterPlugin(PROCFILTER_VERSION, L"CommandLine", 0, sizeof(SCAN_DATA), false,
 			PROCFILTER_EVENT_YARA_SCAN_INIT, PROCFILTER_EVENT_YARA_SCAN_COMPLETE, PROCFILTER_EVENT_YARA_SCAN_CLEANUP,
-			PROCFILTER_EVENT_YARA_RULE_MATCH, PROCFILTER_EVENT_YARA_RULE_MATCH_META_TAG, PROCFILTER_EVENT_NONE);
-
+			PROCFILTER_EVENT_YARA_RULE_MATCH, PROCFILTER_EVENT_YARA_RULE_MATCH_META_TAG, PROCFILTER_EVENT_PROCESS_CREATE,
+			PROCFILTER_EVENT_PROCESS_TERMINATE, PROCFILTER_EVENT_NONE);
+		InitializeCriticalSection(&g_pidSetMutex);
+	} else if (e->dwEventId == PROCFILTER_EVENT_SHUTDOWN) {
+		DeleteCriticalSection(&g_pidSetMutex);
+	} else if (e->dwEventId == PROCFILTER_EVENT_PROCESS_CREATE) {
+		EnterCriticalSection(&g_pidSetMutex);
+		bool bLogProcess = g_pidSet.find(e->dwParentProcessId) != g_pidSet.end();
+		LeaveCriticalSection(&g_pidSetMutex);
+		if (bLogProcess) {
+			WCHAR *lpszCommandLine = CaptureCommandLine(e);
+			e->LogFmt("Subprocess of %d: %d %ls: %ls",
+				e->dwParentProcessId, e->dwProcessId, e->lpszFileName, lpszCommandLine ? lpszCommandLine : L"NULL");
+			e->FreeMemory(lpszCommandLine);
+		}
+	} else if (e->dwEventId == PROCFILTER_EVENT_PROCESS_TERMINATE) {
+		EnterCriticalSection(&g_pidSetMutex);
+		auto iter = g_pidSet.find(e->dwProcessId);
+		if (iter != g_pidSet.end()) {
+			g_pidSet.erase(iter);
+		}
+		LeaveCriticalSection(&g_pidSetMutex);
 	} else if (e->dwEventId == PROCFILTER_EVENT_YARA_SCAN_INIT) {
 		// the match data buffer is zero-initialized by the core, but extra init can be done here if needed
 	} else if (e->dwEventId == PROCFILTER_EVENT_YARA_RULE_MATCH) {
@@ -67,11 +96,19 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 		if (_stricmp(e->lpszMetaTagName, "CaptureCommandLine") == 0 && e->dNumericValue) {
 			sd->bCaptureCommandLine = true;
 		}
+		if (_stricmp(e->lpszMetaTagName, "LogSubprocesses") == 0 && e->dNumericValue) {
+			sd->bLogSubprocesses = true;
+		}
 	} else if (e->dwEventId == PROCFILTER_EVENT_YARA_SCAN_COMPLETE) {
 		// here we can look at the match data as filled in during prior events and capture the command line accordingly
 		// while the process is still suspended
 		if (sd->bCaptureCommandLine) {
 			sd->lpszCommandLine = CaptureCommandLine(e);
+		}
+		if (sd->bLogSubprocesses) {
+			EnterCriticalSection(&g_pidSetMutex);
+			g_pidSet.insert(e->dwProcessId);
+			LeaveCriticalSection(&g_pidSetMutex);
 		}
 	} else if (e->dwEventId == PROCFILTER_EVENT_YARA_SCAN_CLEANUP) {
 		// here we examine the contents as filled in durring scanning, and handle our final results accordingly
