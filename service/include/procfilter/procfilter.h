@@ -104,7 +104,7 @@ extern "C" {
 #define PROCFILTER_EVENT_YARA_RULE_MATCH            12 // Valid: dwProcessId, lpvScanData, lpszFileName*, dScanContext, dMatchLocation, lpszRuleName
 #define PROCFILTER_EVENT_YARA_RULE_MATCH_META_TAG   13 // Valid: dwProcessId, lpvScanData, lpszFileName*, dScanContext, dMatchLocation, lpszRuleName, lpszMetaTagName, dNumericValue, lpszStringValue*
 
-#define PROCFILTER_EVENT_STATUS                      14 // Valid: None
+#define PROCFILTER_EVENT_STATUS                     14 // Valid: None
 
 #define PROCFILTER_EVENT_TICK                       15 // Valid: None
     
@@ -229,7 +229,7 @@ struct procfilter_event {
     // Get a process image's full path name and basename
     //
     bool   (CALLBACK *GetProcessFileName)(DWORD dwProcessId, WCHAR *lpszResult, DWORD dwResultSize);
-    WCHAR* (CALLBACK *GetProcessBaseNamePointer)(WCHAR *lpszProcessFileName);
+   const WCHAR* (CALLBACK *GetProcessBaseNamePointer)(WCHAR *lpszProcessFileName);
 
     //
     // Get a full path to a directory or file in ProcFilter's base directory.  Directories contain a trailing slash.

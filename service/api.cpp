@@ -287,13 +287,17 @@ Export_GetProcessFileName(DWORD dwProcessId, WCHAR *lpszResult, DWORD dwResultSi
 // Get the module basename in the optimal way described in the remarks at:
 // https://msdn.microsoft.com/en-us/library/windows/desktop/ms683196%28v=vs.85%29.aspx
 //
-WCHAR*
+const WCHAR*
 CALLBACK
 Export_GetProcessBaseNamePointer(WCHAR *lpszProcessFileName)
 {
+	if (!lpszProcessFileName) return L"";
+
 	WCHAR *p = wcsrchr(lpszProcessFileName, L'\\');
 	if (p) return &p[1];
-	return NULL;
+	p = wcsrchr(lpszProcessFileName, L'/');
+	if (p) return &p[1];
+	return lpszProcessFileName;
 }
 
 
