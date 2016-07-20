@@ -5,12 +5,14 @@
 
 #include <winternl.h>
 
-#include <set>
-typedef std::set<DWORD> PidSet;
+#include <map>
+#include <string>
+#include <utility>
 
+
+typedef std::map<DWORD, std::wstring> PidSet;
 PidSet g_pidSet;
 CRITICAL_SECTION g_pidSetMutex;
-
 
 typedef struct match_data SCAN_DATA;
 struct match_data {
@@ -18,7 +20,6 @@ struct match_data {
 	bool   bLogSubprocesses;    // Log subprocesses of this process?
 	WCHAR *lpszCommandLine;     // A copy of the command line if captured
 };
-
 
 
 //
@@ -68,14 +69,20 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 		InitializeCriticalSection(&g_pidSetMutex);
 	} else if (e->dwEventId == PROCFILTER_EVENT_SHUTDOWN) {
 		DeleteCriticalSection(&g_pidSetMutex);
-	} else if (e->dwEventId == PROCFILTER_EVENT_PROCESS_CREATE) {
+	} else if (e->dwEventId == PROCFILTER_EVENT_PROCESS_CREATE && e->dwParentProcessId) {
+		std::wstring wsBasename;
+		bool bLogProcess = false;
 		EnterCriticalSection(&g_pidSetMutex);
-		bool bLogProcess = g_pidSet.find(e->dwParentProcessId) != g_pidSet.end();
+		auto iter = g_pidSet.find(e->dwParentProcessId);
+		if (iter != g_pidSet.end()) {
+			bLogProcess = true;
+			wsBasename = iter->second;
+		}
 		LeaveCriticalSection(&g_pidSetMutex);
 		if (bLogProcess) {
 			WCHAR *lpszCommandLine = CaptureCommandLine(e);
-			e->LogFmt("Subprocess of %d: %d %ls: %ls",
-				e->dwParentProcessId, e->dwProcessId, e->lpszFileName, lpszCommandLine ? lpszCommandLine : L"NULL");
+			e->LogFmt("Subprocess of %d %ls: %d %ls: %ls",
+				e->dwParentProcessId, wsBasename.c_str(), e->dwProcessId, e->lpszFileName, lpszCommandLine ? lpszCommandLine : L"NULL");
 			e->FreeMemory(lpszCommandLine);
 		}
 	} else if (e->dwEventId == PROCFILTER_EVENT_PROCESS_TERMINATE) {
@@ -107,7 +114,7 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 		}
 		if (sd->bLogSubprocesses) {
 			EnterCriticalSection(&g_pidSetMutex);
-			g_pidSet.insert(e->dwProcessId);
+			g_pidSet.insert(PidSet::value_type(e->dwProcessId, e->GetProcessBaseNamePointer(e->lpszFileName)));
 			LeaveCriticalSection(&g_pidSetMutex);
 		}
 	} else if (e->dwEventId == PROCFILTER_EVENT_YARA_SCAN_CLEANUP) {
