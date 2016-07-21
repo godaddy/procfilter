@@ -12,6 +12,12 @@
 
 class ParentData {
 public:
+	ParentData(const WCHAR *lpszBasename, bool bLogSubprocess, bool bAskSubprocess) :
+		wsBasename{lpszBasename}, bLogSubprocess(bLogSubprocess), bAskSubprocess(bAskSubprocess)
+	{ }
+	ParentData() :
+		bAskSubprocess(false), bLogSubprocess(false)
+	{ }
 	std::wstring wsBasename;
 	bool bAskSubprocess;
 	bool bLogSubprocess;
@@ -129,7 +135,7 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 		}
 		if (sd->bLogSubprocesses || sd->bAskSubprocesses) {
 			EnterCriticalSection(&g_pidSetMutex);
-			g_pidSet.insert(PidSet::value_type(e->dwProcessId, {e->GetProcessBaseNamePointer(e->lpszFileName), sd->bLogSubprocesses, sd->bAskSubprocesses}));
+			g_pidSet.insert(PidSet::value_type(e->dwProcessId, ParentData(e->GetProcessBaseNamePointer(e->lpszFileName), sd->bLogSubprocesses, sd->bAskSubprocesses)));
 			LeaveCriticalSection(&g_pidSetMutex);
 		}
 	} else if (e->dwEventId == PROCFILTER_EVENT_YARA_SCAN_CLEANUP) {
