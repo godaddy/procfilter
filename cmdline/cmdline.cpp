@@ -90,19 +90,24 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 			parentData = iter->second;
 		}
 		LeaveCriticalSection(&g_pidSetMutex);
+		WCHAR *lpszCommandLine = NULL;
+		if (parentData.bLogSubprocess || parentData.bAskSubprocess) {
+			lpszCommandLine = CaptureCommandLine(e);
+		}
 		if (parentData.bLogSubprocess) {
-			WCHAR *lpszCommandLine = CaptureCommandLine(e);
 			e->LogFmt("Subprocess of %d %ls: %d %ls: %ls",
-				e->dwParentProcessId, parentData.wsBasename.c_str(), e->dwProcessId, e->lpszFileName, lpszCommandLine ? lpszCommandLine : L"NULL");
-			e->FreeMemory(lpszCommandLine);
+				e->dwParentProcessId, parentData.wsBasename.c_str(), e->dwProcessId, e->lpszFileName,
+				lpszCommandLine ? lpszCommandLine : L"NULL");
 		}
 		if (parentData.bAskSubprocess) {
 			if (e->ShellNoticeFmt(0, true, MB_ICONWARNING | MB_YESNO, L"Allow process?",
-				L"%ls is trying to run this file: %ls\n\nAllow? Select 'No' if unsure.",
-				parentData.wsBasename.c_str(), e->lpszFileName) != IDYES) {
+				L"The program \"%ls\" is trying to run the following file:\n%ls\n\nCommand line:\n%ls\n\nAllow? Select 'No' if unsure.",
+				parentData.wsBasename.c_str(), e->lpszFileName,
+				lpszCommandLine ? lpszCommandLine : L"NULL") != IDYES) {
 				dwResultFlags |= PROCFILTER_RESULT_BLOCK_PROCESS;
 			}
 		}
+		if (lpszCommandLine) e->FreeMemory(lpszCommandLine);
 	} else if (e->dwEventId == PROCFILTER_EVENT_PROCESS_TERMINATE) {
 		EnterCriticalSection(&g_pidSetMutex);
 		auto iter = g_pidSet.find(e->dwProcessId);
