@@ -224,7 +224,6 @@
     <ClInclude Include="die.hpp" />
     <ClInclude Include="file.hpp" />
     <ClInclude Include="include\procfilter\procfilter.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="service.hpp" />
     <ClInclude Include="isadmin.hpp" />
     <ClInclude Include="license.hpp" />
