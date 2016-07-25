@@ -16,6 +16,7 @@
 #include "shellnotice.hpp"
 #include "quarantine.hpp"
 #include "path.hpp"
+#include "isadmin.hpp"
 #include "yara.hpp"
 #include "sha1.hpp"
 #include "signing.hpp"
@@ -301,7 +302,6 @@ Export_GetProcessBaseNamePointer(WCHAR *lpszProcessFileName)
 }
 
 
-
 void
 CALLBACK
 Export_LockPid()
@@ -309,6 +309,14 @@ Export_LockPid()
 	PROCFILTER_EVENT *e = GetCurrentEvent();
 	if (!e->dwProcessId || e->private_data->hCurrentPid) return;
 	e->private_data->hCurrentPid = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, e->dwProcessId);
+}
+
+
+bool
+CALLBACK
+Export_IsElevated(HANDLE hProcess, bool *lpbIsElevated)
+{
+	return IsElevated(hProcess, lpbIsElevated);
 }
 
 
@@ -772,6 +780,7 @@ ApiEventInit(PROCFILTER_EVENT *e, DWORD dwEventId)
 	StoreExport(GetProcessFileName);
 	StoreExport(GetProcessBaseNamePointer);
 	StoreExport(LockPid);
+	StoreExport(IsElevated);
 #undef StoreExport
 
 #if defined(_DEBUG)
