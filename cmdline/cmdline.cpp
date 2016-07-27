@@ -5,9 +5,32 @@
 
 #include <winternl.h>
 
+#include <map>
+#include <string>
+#include <utility>
+
+
+class ParentData {
+public:
+	ParentData(const WCHAR *lpszBasename, bool bLogSubprocess, bool bAskSubprocess) :
+		wsBasename{lpszBasename}, bLogSubprocess(bLogSubprocess), bAskSubprocess(bAskSubprocess)
+	{ }
+	ParentData() :
+		bAskSubprocess(false), bLogSubprocess(false)
+	{ }
+	std::wstring wsBasename;
+	bool bAskSubprocess;
+	bool bLogSubprocess;
+};
+typedef std::map<DWORD, ParentData> PidSet;
+PidSet g_pidSet;
+CRITICAL_SECTION g_pidSetMutex;
+
 typedef struct match_data SCAN_DATA;
 struct match_data {
 	bool   bCaptureCommandLine; // Should the command line associated with this process be captured?
+	bool   bLogSubprocesses;    // Log subprocesses of this process?
+	bool   bAskSubprocesses;    // Ask about creating subprocesses of this process?
 	WCHAR *lpszCommandLine;     // A copy of the command line if captured
 };
 
@@ -54,8 +77,44 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 		// register the plugin with the core
 		e->RegisterPlugin(PROCFILTER_VERSION, L"CommandLine", 0, sizeof(SCAN_DATA), false,
 			PROCFILTER_EVENT_YARA_SCAN_INIT, PROCFILTER_EVENT_YARA_SCAN_COMPLETE, PROCFILTER_EVENT_YARA_SCAN_CLEANUP,
-			PROCFILTER_EVENT_YARA_RULE_MATCH, PROCFILTER_EVENT_YARA_RULE_MATCH_META_TAG, PROCFILTER_EVENT_NONE);
-
+			PROCFILTER_EVENT_YARA_RULE_MATCH, PROCFILTER_EVENT_YARA_RULE_MATCH_META_TAG, PROCFILTER_EVENT_PROCESS_CREATE,
+			PROCFILTER_EVENT_PROCESS_TERMINATE, PROCFILTER_EVENT_NONE);
+		InitializeCriticalSection(&g_pidSetMutex);
+	} else if (e->dwEventId == PROCFILTER_EVENT_SHUTDOWN) {
+		DeleteCriticalSection(&g_pidSetMutex);
+	} else if (e->dwEventId == PROCFILTER_EVENT_PROCESS_CREATE && e->dwParentProcessId) {
+		ParentData parentData;
+		EnterCriticalSection(&g_pidSetMutex);
+		auto iter = g_pidSet.find(e->dwParentProcessId);
+		if (iter != g_pidSet.end()) {
+			parentData = iter->second;
+		}
+		LeaveCriticalSection(&g_pidSetMutex);
+		WCHAR *lpszCommandLine = NULL;
+		if (parentData.bLogSubprocess || parentData.bAskSubprocess) {
+			lpszCommandLine = CaptureCommandLine(e);
+		}
+		if (parentData.bLogSubprocess) {
+			e->LogFmt("Subprocess of %d %ls: %d %ls: %ls",
+				e->dwParentProcessId, parentData.wsBasename.c_str(), e->dwProcessId, e->lpszFileName,
+				lpszCommandLine ? lpszCommandLine : L"NULL");
+		}
+		if (parentData.bAskSubprocess) {
+			if (e->ShellNoticeFmt(0, true, MB_ICONWARNING | MB_YESNO, L"Allow process?",
+				L"The program \"%ls\" is trying to run the following file:\n%ls\n\nCommand line:\n%ls\n\nAllow? Select 'No' if unsure.",
+				parentData.wsBasename.c_str(), e->lpszFileName,
+				lpszCommandLine ? lpszCommandLine : L"NULL") != IDYES) {
+				dwResultFlags |= PROCFILTER_RESULT_BLOCK_PROCESS;
+			}
+		}
+		if (lpszCommandLine) e->FreeMemory(lpszCommandLine);
+	} else if (e->dwEventId == PROCFILTER_EVENT_PROCESS_TERMINATE) {
+		EnterCriticalSection(&g_pidSetMutex);
+		auto iter = g_pidSet.find(e->dwProcessId);
+		if (iter != g_pidSet.end()) {
+			g_pidSet.erase(iter);
+		}
+		LeaveCriticalSection(&g_pidSetMutex);
 	} else if (e->dwEventId == PROCFILTER_EVENT_YARA_SCAN_INIT) {
 		// the match data buffer is zero-initialized by the core, but extra init can be done here if needed
 	} else if (e->dwEventId == PROCFILTER_EVENT_YARA_RULE_MATCH) {
@@ -67,11 +126,22 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 		if (_stricmp(e->lpszMetaTagName, "CaptureCommandLine") == 0 && e->dNumericValue) {
 			sd->bCaptureCommandLine = true;
 		}
+		if (_stricmp(e->lpszMetaTagName, "LogSubprocesses") == 0 && e->dNumericValue) {
+			sd->bLogSubprocesses = true;
+		}
+		if (_stricmp(e->lpszMetaTagName, "AskSubprocesses") == 0 && e->dNumericValue) {
+			sd->bAskSubprocesses = true;
+		}
 	} else if (e->dwEventId == PROCFILTER_EVENT_YARA_SCAN_COMPLETE) {
 		// here we can look at the match data as filled in during prior events and capture the command line accordingly
 		// while the process is still suspended
 		if (sd->bCaptureCommandLine) {
 			sd->lpszCommandLine = CaptureCommandLine(e);
+		}
+		if (sd->bLogSubprocesses || sd->bAskSubprocesses) {
+			EnterCriticalSection(&g_pidSetMutex);
+			g_pidSet.insert(PidSet::value_type(e->dwProcessId, ParentData(e->GetProcessBaseNamePointer(e->lpszFileName), sd->bLogSubprocesses, sd->bAskSubprocesses)));
+			LeaveCriticalSection(&g_pidSetMutex);
 		}
 	} else if (e->dwEventId == PROCFILTER_EVENT_YARA_SCAN_CLEANUP) {
 		// here we examine the contents as filled in durring scanning, and handle our final results accordingly

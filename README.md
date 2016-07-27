@@ -107,7 +107,7 @@ rule upx {
 
 ProcFilter comes with a small set of default rules to get analysts started.  It *does not* contain a large rule set meant to catch everything.  In fact, it only includes rules for very select few families.  [View the default rule set here](https://github.com/godaddy/yara-rules). While it is possible to include a massive rule set, consider the potential for false-positives, difficulty in rule creation, and fundamental limitations of signature-based prevention -- all-encompassing rule sets quickly become a much more difficult challenge than it may appear at the outset. See the "Advocacy for Signature Sharing" section below for more details.
 
-Plugins can add handlers for custom meta tags.  The 'cmdline' plugin, for example, looks for ```CaptureCommandLine``` tags that trigger it to record command line options associated with rule matches.
+Plugins can add handlers for custom meta tags.  The 'cmdline' plugin, for example, looks for ```CaptureCommandLine``` tags that trigger it to record command line options associated with rule matches. It also enables ```AskSubprocesses``` and ```LogSubprocesses``` options which will ask to allow and log new subprocesses created by the matching process. This could be used, for example, in a rule matching ```cmd.exe``` to log command shell activity.
 
 # Jusitification and Effective Usage
 
@@ -178,9 +178,9 @@ US-CERT releases a report containing a YARA signature for a malware family, [htt
 
 ### Use Case #3
 
-A specific threat actor is known to upload copies of command shells within a shared access environment. The differing filename or path prevents you from capturing this activity.  In order to detect and analyze this actor's behavior, ProcFilter is run with a signature for the [Windows command shell](https://github.com/godaddy/yara-rules/blob/master/features/command_shell.yara), the [Command Line Capturing](https://github.com/godaddy/procfilter/blob/master/cmdline/cmdline.cpp) plugin enabled, and the ```CaptureCommandLine``` value in the meta section set to true.
+A specific threat actor is known to upload copies of command shells within a shared access environment. The differing filename or path prevents you from capturing this activity.  In order to detect and analyze this actor's behavior, ProcFilter is run with a signature for the [Windows command shell](https://github.com/godaddy/yara-rules/blob/master/features/command_shell.yara), the [Command Line Capturing](https://github.com/godaddy/procfilter/blob/master/cmdline/cmdline.cpp) plugin enabled, and the ```CaptureCommandLine``` and ```LogSubprocesses``` values in the meta section set to true.
 
-When the attacker uploads and runs a command shell that matches the signature the command line arguments are recorded to Event Log.
+When the attacker uploads and runs a command shell that matches the signature the command line arguments are recorded to Event Log along with any commands run by the attacker from within that shell.
 
 ### Use Case #4
 
