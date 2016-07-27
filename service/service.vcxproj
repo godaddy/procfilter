@@ -205,7 +205,7 @@
     <ClCompile Include="shellnotice.cpp" />
     <ClCompile Include="signing.cpp" />
     <ClCompile Include="svcutil.cpp" />
-    <ClCompile Include="swig_wraper.cpp" />
+    <ClCompile Include="swig_wrapper.cpp" />
     <ClCompile Include="update.cpp" />
     <ClCompile Include="warning.cpp" />
     <ClCompile Include="status.cpp" />
