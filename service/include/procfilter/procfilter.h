@@ -317,6 +317,11 @@ struct procfilter_event {
     void   (CALLBACK *FreeMemory)(void *lpPointer);
     WCHAR* (CALLBACK *DuplicateString)(const WCHAR *lpszString);
 
+	//
+	// Determine if a process is running with elevate privileges
+	//
+	bool   (CALLBACK *IsElevated)(HANDLE hProcess, bool *lpbIsElevated);
+
     //
     // Verify the signature on a PE file
     //

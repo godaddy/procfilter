@@ -45,3 +45,25 @@ IsAdmin()
 
 	return rv;
 }
+
+
+bool
+IsElevated(HANDLE hProcess, bool *lpbIsElevated)
+{
+	bool rv = false;
+	HANDLE hTokenHandle = NULL;
+	if (OpenProcessToken(hProcess, TOKEN_QUERY, &hTokenHandle)) {
+		TOKEN_ELEVATION teTokenElevation;
+		DWORD dwBytesStored = 0;
+		if (GetTokenInformation(hTokenHandle, TokenElevation, &teTokenElevation, sizeof(TOKEN_ELEVATION), &dwBytesStored)) {
+			if (dwBytesStored >= sizeof(TOKEN_ELEVATION)) {
+				rv = true;
+				if (lpbIsElevated) *lpbIsElevated = teTokenElevation.TokenIsElevated ? true : false;
+			}
+		}
+
+		CloseHandle(hTokenHandle);
+	}
+
+	return rv;
+}
