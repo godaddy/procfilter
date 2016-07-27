@@ -1,8 +1,10 @@
 # ProcFilter
 
-ProcFilter is a process filtering system for Windows with built-in YARA integration. YARA rules can be instrumented with custom meta tags that tailor its response to rule matches. It runs as a Windows service and is integrated with [Microsoft's ETW API](https://msdn.microsoft.com/en-us/library/windows/desktop/bb968803%28v=vs.85%29.aspx), making results viewable in Windows Event Log. Installation, activation, and removal can be done dynamically and do not require a reboot.
+ProcFilter is a process filtering system for Windows with built-in YARA integration. YARA rules can be instrumented with custom meta tags that tailor its response to rule matches. It runs as a Windows service and is integrated with [Microsoft's ETW API](https://msdn.microsoft.com/en-us/library/windows/desktop/bb968803%28v=vs.85%29.aspx), making results viewable in the Windows Event Log. Installation, activation, and removal can be done dynamically and do not require a reboot.
 
-ProcFilter's intended use is for malware analysts to be able to create YARA signatures that protect their Windows environments against a specific threat. It does not include a large signature set. Think lightweight, precise, and targeted rather than broad or all-encompassing. ProcFilter is also intended for use in controlled analysis environments where custom plugins can perform artifact-specific actions. 
+ProcFilter's intended use is for malware analysts to be able to create YARA signatures that protect their Windows environments against a specific threat. It does not include a large signature set. Think lightweight, precise, and targeted rather than broad or all-encompassing. ProcFilter is also intended for use in controlled analysis environments where custom plugins can perform artifact-specific actions.
+
+Designed to be easy to adopt, ProcFilter's integration with Git and Event Log minimize the need for additional tools or infrastructure to deploy rules or gather results.
 
 ProcFilter is compatible with Windows 7+ and Windows Server 2008+ systems.
 
@@ -10,7 +12,8 @@ ProcFilter is compatible with Windows 7+ and Windows Server 2008+ systems.
 - [ProcFilter x86/x64 Release/Debug Installers](https://github.com/godaddy/procfilter/releases)
 
 # Features
-+ Deny processes based on YARA rules
++ Block/Quarantine/Log processes based on YARA rules found in a Git repository
++ Integrated with the Windows Event Log
 + Highly configurable via INI file
 + Installation/removal without rebooting
 + Built-in performance measuring and stress testing
@@ -23,7 +26,7 @@ ProcFilter can be controlled through the Services control panel:
 
 ![Service Control](screenshots/service_control.png)
 
-New processes that match rules with `Block`, `Log`, or `Quarantine` values set are handled accordingly and results are sent to `Event Log`'s `Application` channel with the source of `ProcFilter`:
+New processes that match rules with `Block`, `Log`, or `Quarantine` values set are handled accordingly and results are sent to the `Event Log`'s `Application` channel with the source of `ProcFilter`:
 
 ![Service Control](screenshots/block_event.png)
 
@@ -31,7 +34,7 @@ If the process was started via the Windows GUI the user will receive a dialog bo
 
 ![Blocked Message](screenshots/blocked_ui.png)
 
-Windows `Event Log` can be customized to provide a convenient view of ProcFilter's events with the following steps:
+The Windows `Event Log` can be customized to provide a convenient view of ProcFilter's events with the following steps:
 
 ![Create Custom View](screenshots/custom_view_1.png)
 ![Set the Source to ProcFilter](screenshots/custom_view_2.png)
@@ -85,15 +88,15 @@ By default ProcFilter will respond to 3 boolean meta tags within YARA rules:
 
 An example YARA rule for use with ProcFilter that matches UPX-packed binaries:
 
-```
+<pre>
 rule upx {
     meta:
         description = "UPX packed file"
-
-        Block = false
-        Log = true
-        Quarantine = false
-
+        
+        <b>Block = false</b>
+        <b>Log = true</b>
+        <b>Quarantine = false</b>
+        
     strings:
         $mz = "MZ"
         $upx1 = {55505830000000}
@@ -103,7 +106,7 @@ rule upx {
     condition:
         $mz at 0 and $upx1 in (0..1024) and $upx2 in (0..1024) and $upx_sig in (0..1024)
 }
-```
+</pre>
 
 ProcFilter comes with a small set of default rules to get analysts started.  It *does not* contain a large rule set meant to catch everything.  In fact, it only includes rules for very select few families.  [View the default rule set here](https://github.com/godaddy/yara-rules). While it is possible to include a massive rule set, consider the potential for false-positives, difficulty in rule creation, and fundamental limitations of signature-based prevention -- all-encompassing rule sets quickly become a much more difficult challenge than it may appear at the outset. See the "Advocacy for Signature Sharing" section below for more details.
 
@@ -178,9 +181,26 @@ US-CERT releases a report containing a YARA signature for a malware family, [htt
 
 ### Use Case #3
 
-A specific threat actor is known to upload copies of command shells within a shared access environment. The differing filename or path prevents you from capturing this activity.  In order to detect and analyze this actor's behavior, ProcFilter is run with a signature for the [Windows command shell](https://github.com/godaddy/yara-rules/blob/master/features/command_shell.yara), the [Command Line Capturing](https://github.com/godaddy/procfilter/blob/master/cmdline/cmdline.cpp) plugin enabled, and the ```CaptureCommandLine``` and ```LogSubprocesses``` values in the meta section set to true.
+A specific threat actor is known to upload copies of command shells within a shared access environment. The differing filename or path prevents you from capturing this activity.  In order to detect and analyze this actor's behavior, ProcFilter is run with a signature for the [Windows command shell](https://github.com/godaddy/yara-rules/blob/master/features/command_shell.yara), the [Command Line Capturing](https://github.com/godaddy/procfilter/blob/master/cmdline/cmdline.cpp) plugin enabled, and the ```CaptureCommandLine``` and ```LogSubprocesses``` values in the meta section set to true:
+<pre>
+rule CommandShell {
+    meta:
+        description = "Microsoft Windows Command Shell"
 
-When the attacker uploads and runs a command shell that matches the signature the command line arguments are recorded to Event Log along with any commands run by the attacker from within that shell.
+        Block = false
+        Quarantine = false
+        <b>CaptureCommandLine = true</b>
+        <b>LogSubprocesses = true</b>
+
+    strings:
+      // omitted for brevity
+
+    condition:
+        IsPeFile and all of them
+}
+</pre>
+
+When the attacker uploads and runs a command shell that matches the signature the command line arguments are recorded to th Event Log along with any commands run by the attacker from within that shell.
 
 ### Use Case #4
 
