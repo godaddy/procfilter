@@ -91,7 +91,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;YARASCAN_BUILD;HAVE_LIBGIT2;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\yara\libyara\include;..\driver;..\..\libgit2\include;..\service\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\yara\libyara\include;..\driver;..\..\libgit2\include;..\service\include;..\..\lua-5.3.2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <ControlFlowGuard>false</ControlFlowGuard>
       <CreateHotpatchableImage>false</CreateHotpatchableImage>
@@ -100,8 +100,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\deps\libyara\Debug;.\deps\libgit2\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libyara32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\deps\libyara\Debug;.\deps\libgit2\x86;..\deps\lua\Release\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libyara32.lib;lua.lib;%(AdditionalDependencies);shlwapi.lib</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
       <Command>mc -um procfilter.man -h $(ProjectDir) -z ProcFilterEvents</Command>
@@ -114,7 +114,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;YARASCAN_BUILD;HAVE_LIBGIT2;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\yara\libyara\include;..\driver;..\..\libgit2\include;..\service\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\yara\libyara\include;..\driver;..\..\libgit2\include;..\service\include;..\..\lua-5.3.2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <ControlFlowGuard>false</ControlFlowGuard>
       <CreateHotpatchableImage>false</CreateHotpatchableImage>
@@ -123,8 +123,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\deps\libyara\Debug;.\deps\libgit2\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libyara64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\deps\libyara\Debug;.\deps\libgit2\x64;..\deps\lua\Release\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libyara64.lib;lua.lib;%(AdditionalDependencies);shlwapi.lib</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
       <Command>mc -um procfilter.man -h $(ProjectDir) -z ProcFilterEvents</Command>
@@ -139,7 +139,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;YARASCAN_BUILD;HAVE_LIBGIT2;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\yara\libyara\include;..\driver;..\..\libgit2\include;..\service\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\yara\libyara\include;..\driver;..\..\libgit2\include;..\service\include;..\..\lua-5.3.2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ControlFlowGuard>false</ControlFlowGuard>
       <CreateHotpatchableImage>false</CreateHotpatchableImage>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -149,8 +149,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>..\deps\libyara\Release;.\deps\libgit2\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libyara32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\deps\libyara\Release;.\deps\libgit2\x86;..\deps\lua\Release\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libyara32.lib;lua.lib;%(AdditionalDependencies);shlwapi.lib</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
       <Command>mc -um procfilter.man -h $(ProjectDir) -z ProcFilterEvents</Command>
@@ -165,7 +165,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;YARASCAN_BUILD;HAVE_LIBGIT2;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\yara\libyara\include;..\driver;..\..\libgit2\include;..\service\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\yara\libyara\include;..\driver;..\..\libgit2\include;..\service\include;..\..\lua-5.3.2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ControlFlowGuard>false</ControlFlowGuard>
       <CreateHotpatchableImage>false</CreateHotpatchableImage>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -175,8 +175,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>..\deps\libyara\Release;.\deps\libgit2\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libyara64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\deps\libyara\Release;.\deps\libgit2\x64;..\deps\lua\Release\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libyara64.lib;lua.lib;%(AdditionalDependencies);shlwapi.lib</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
       <Command>mc -um procfilter.man -h $(ProjectDir) -z ProcFilterEvents</Command>
@@ -205,6 +205,7 @@
     <ClCompile Include="shellnotice.cpp" />
     <ClCompile Include="signing.cpp" />
     <ClCompile Include="svcutil.cpp" />
+    <ClCompile Include="swig_wraper.cpp" />
     <ClCompile Include="update.cpp" />
     <ClCompile Include="warning.cpp" />
     <ClCompile Include="status.cpp" />
@@ -218,6 +219,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="api.hpp" />
+    <ClInclude Include="api_exports.hpp" />
     <ClInclude Include="benchmark-timed.hpp" />
     <ClInclude Include="benchmark-counted.hpp" />
     <ClInclude Include="config.hpp" />
@@ -244,6 +246,7 @@
     <ClInclude Include="strlcat.hpp" />
     <ClInclude Include="getfile.hpp" />
     <ClInclude Include="svcutil.hpp" />
+    <ClInclude Include="swig_wrapper.hpp" />
     <ClInclude Include="terminate.hpp" />
     <ClInclude Include="threadpool.hpp" />
     <ClInclude Include="timing.hpp" />
@@ -263,6 +266,7 @@
       <FileType>Document</FileType>
     </ClCompile>
     <None Include="procfilter.man" />
+    <None Include="procfilter.i" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="licenses.rc" />

@@ -30,6 +30,7 @@
 #include <winternl.h>
 
 #include <stdarg.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -136,7 +137,7 @@ extern "C" {
 #define SHA1_HEXDIGEST_LENGTH                    (20*2)
 #define SHA1_DIGEST_SIZE                         (20)
 
-    
+
 typedef struct yarascan_context YARASCAN_CONTEXT;
 typedef void (CALLBACK *OnMatchCallback_cb)(char *lpszRuleName, void *user_data);
 typedef void (CALLBACK *OnMetaCallback_cb)(char *lpszRuleName, char *lpszMetaTagName, char *lpszStringValue, int dNumericValue, void *user_data);
@@ -158,7 +159,6 @@ struct scan_result {
 };
 #pragma pack(pop)
 
-   
 #pragma pack(push, 1)
 typedef struct procfilter_event PROCFILTER_EVENT;
 struct procfilter_event {
@@ -228,7 +228,7 @@ struct procfilter_event {
     //
     // Get a process image's full path name and basename
     //
-    bool   (CALLBACK *GetProcessFileName)(DWORD dwProcessId, WCHAR *lpszResult, DWORD dwResultSize);
+    bool         (CALLBACK *GetProcessFileName)(DWORD dwProcessId, WCHAR *lpszResult, DWORD dwResultSize);
     const WCHAR* (CALLBACK *GetProcessBaseNamePointer)(WCHAR *lpszProcessFileName);
 
     //
@@ -334,9 +334,9 @@ struct procfilter_event {
 // The export that plugins must have in order to accept ProcFilter events.
 //
 #if !defined(PROCFILTER_BUILD)
-_declspec(dllexport)
+__declspec(dllexport)
 #else
-_declspec(dllimport)
+__declspec(dllimport)
 #endif
 DWORD ProcFilterEvent(PROCFILTER_EVENT *e);
     

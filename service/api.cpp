@@ -25,6 +25,7 @@
 
 #include <Windows.h>
 #include <Psapi.h>
+#include <Shlwapi.h>
 
 #include "api.hpp"
 
@@ -33,7 +34,10 @@
 
 #include <map>
 
+#include "lua.hpp"
+
 #include "config.hpp"
+#include "swig_wrapper.hpp"
 #include "die.hpp"
 #include "strlcat.hpp"
 #include "getfile.hpp"
@@ -61,13 +65,18 @@ typedef struct procfilter_plugin PROCFILTER_PLUGIN;
 //
 // Represents a plugin
 //
+#define PT_NONE 0
+#define PT_C    1
+#define PT_LUA  2
 struct procfilter_plugin {
 	// The below are read-only post-registration
+	DWORD dwPluginType;                             // PT_C or PT_LUA
 	WCHAR szPlugin[MAX_PATH+1];                     // The full path of the plugin on disk
 	WCHAR szConfigSection[64];                      // The plugin's section name in the INI file
 	WCHAR szShortName[64];                          // The plugin's short name
 	HMODULE hModule;                                // The plugin's handle
 	ProcFilterEventCallback lpfnCallback;           // The callback invoked for each event in the plugin
+	lua_State *L;                                   // The Lua state
 	bool bRegistered;                               // Has the plugin registered via RegisterPlugin()?
 	DWORD dwScanDataSize;                           // The size of this plugin's scan data
 	DWORD dwProcessDataSize;                        // The size of this plugin's process data
@@ -242,6 +251,11 @@ Export_RegisterPlugin(const WCHAR *szApiVersion, const WCHAR *lpszShortName, DWO
 	size_t uCompareLength = wcsrchr(szCoreVersion, '.') ? (wcsrchr(szCoreVersion, '.') - szCoreVersion) : wcslen(szCoreVersion);
 	if (_wcsnicmp(szCoreVersion, szApiVersion, uCompareLength) != 0) {
 		Die("ProcFilter plugin API version mismatch (Core:%ls Plugin:%ls)", szCoreVersion, szApiVersion);
+	}
+
+	// Ensure that Lua plugins have event synchronization enabled since the lua_State* is not thread safe
+	if (p->dwPluginType == PT_LUA && !bSynchronizeEvents) {
+		Die("Lua plugins are required to register with event synchronization enabled");
 	}
 
 	// Continue initialization originally started during the load of the plugin
@@ -762,42 +776,9 @@ ApiEventInit(PROCFILTER_EVENT *e, DWORD dwEventId)
 {
 	ZeroMemory(e, sizeof(PROCFILTER_EVENT));
 
-#define StoreExport(name) e->##name = Export_##name
-	StoreExport(RegisterPlugin);
-	StoreExport(GetConfigInt);
-	StoreExport(GetConfigString);
-	StoreExport(GetConfigBool);
-	StoreExport(AllocateScanContext);
-	StoreExport(FreeScanContext);
-	StoreExport(GetNtPathName);
-	StoreExport(ShellNotice);
-	StoreExport(ShellNoticeFmt);
-	StoreExport(QuarantineFile);
-	StoreExport(Sha1File);
-	StoreExport(ScanFile);
-	StoreExport(ScanMemory);
-	StoreExport(Die);
-	StoreExport(Log);
-	StoreExport(LogFmt);
-	StoreExport(AllocateMemory);
-	StoreExport(GetFile);
-	StoreExport(FreeMemory);
-	StoreExport(DuplicateString);
-	StoreExport(VerifyPeSignature);
-	StoreExport(ConcatenateString);
-	StoreExport(FormatString);
-	StoreExport(VConcatenateString);
-	StoreExport(VFormatString);
-	StoreExport(ReadProcessMemory);
-	StoreExport(ReadProcessPeb);
-	StoreExport(GetProcFilterDirectory);
-	StoreExport(GetProcFilterFile);
-	StoreExport(StatusPrintFmt);
-	StoreExport(GetProcessFileName);
-	StoreExport(GetProcessBaseNamePointer);
-	StoreExport(LockPid);
-	StoreExport(IsElevated);
-#undef StoreExport
+#define API_STORE_POINTERS 1
+#include "api_exports.hpp"
+#undef API_STORE_POINTERS
 
 #if defined(_DEBUG)
 	// check all function pointers in the event structure to make sure they've been initalized to valid pointers
@@ -819,25 +800,74 @@ LoadPlugin(PROCFILTER_EVENT *e, const WCHAR *szPluginDirectory, const WCHAR *szB
 {
 	CONFIG_DATA *cd = GetConfigData();
 
-	// Get the plugin's path and load it
+	// Verify path
 	WCHAR szPlugin[MAX_PATH+1];
 	wstrlprintf(szPlugin, sizeof(szPlugin), L"%ls%ls.dll", szPluginDirectory, szBasename);
-	
-	if (cd->bRequireSignedPlugins && !VerifyPeSignature(szPlugin, true)) Die("Plugin not signed: %ls.  To allow loading of unsigned plugins set AllowUnsignedPlugins to 1 in procfilter.ini.", szPlugin);
-	
-	HMODULE hModule = LoadLibrary(szPlugin);
-	if (!hModule) Die("Plugin not found: %ls", szPlugin);
+	bool bCPathExists = PathFileExistsW(szPlugin) != FALSE;
+	wstrlprintf(szPlugin, sizeof(szPlugin), L"%ls%ls.lua", szPluginDirectory, szBasename);
+	bool bLuaPathExists = PathFileExistsW(szPlugin) != FALSE;
 
-	// Locate the ProcFilterEvent() callback
-	ProcFilterEventCallback lpfnCallback = (ProcFilterEventCallback)GetProcAddress(hModule, "ProcFilterEvent");
-	if (!lpfnCallback) Die("ProcFilterEvent() export not found in plugin \"%ls\", is it a ProcFilter plugin?", szPlugin);
+	if (bCPathExists && bLuaPathExists) Die("Ambiguous plugin name: both %ls.lua and %ls.dll exist", szBasename);
+	if (!bCPathExists && !bLuaPathExists) Die("Plugin not found: %ls", szBasename);
+
+	// Get the plugin's path and load it
+	DWORD dwPluginType = PT_NONE;
+	char *szExtension = "";
+	if (bCPathExists) {
+		dwPluginType = PT_C;
+		szExtension = ".dll";
+	}
+	if (bLuaPathExists) {
+		dwPluginType = PT_LUA;
+		szExtension = ".lua";
+	}
+
+	wstrlprintf(szPlugin, sizeof(szPlugin), L"%ls%ls%hs", szPluginDirectory, szBasename, szExtension);
+	
+	HMODULE hModule = NULL;
+	ProcFilterEventCallback lpfnCallback = NULL;
+	lua_State *L = NULL;
+	if (dwPluginType == PT_C) {
+		if (cd->bRequireSignedPlugins && !VerifyPeSignature(szPlugin, true)) Die("Plugin not signed: %ls.  To allow loading of unsigned plugins set AllowUnsignedPlugins to 1 in procfilter.ini.", szPlugin);
+	
+		hModule = LoadLibrary(szPlugin);
+		if (!hModule) Die("Plugin not found: %ls", szPlugin);
+
+		// Locate the ProcFilterEvent() callback
+		lpfnCallback = (ProcFilterEventCallback)GetProcAddress(hModule, "ProcFilterEvent");
+		if (!lpfnCallback) Die("ProcFilterEvent() export not found in plugin \"%ls\", is it a ProcFilter plugin?", szPlugin);
+	} else if (dwPluginType == PT_LUA) {
+		// Create the new lua state
+		L = luaL_newstate();
+		if (!L) Die("Unable to create new Lua state");
+
+		// Load the base Lua libraries
+		luaopen_base(L);
+
+		// Load the ProcFilter Lua library
+		luaopen_procfilter(L);
+
+		// Convert the plugin name to ASCII and load it
+		char szAsciiPlugin[_countof(szPlugin)];
+		strlprintf(szAsciiPlugin, sizeof(szAsciiPlugin), "%ls", szPlugin);
+		if (luaL_loadfile(L, szAsciiPlugin) == 0) {
+			if (lua_pcall(L, 0, 0, 0)) {
+				const char *szError = lua_tostring(L, -1);
+				Die("Script registration failed in plugin %ls: %hs", szPlugin, szError);
+			}
+		} else {
+			Die("Unable to load Lua plugin: %ls", szPlugin);
+		}
+	}
 
 	// Get the new plugin pointer and initialize it
 	if (g_nPlugins >= MAX_PLUGINS) Die("Maximum number of plugins exceeded");
 	PROCFILTER_PLUGIN *p = &g_Plugins[g_nPlugins++];
 	ZeroMemory(p, sizeof(PROCFILTER_PLUGIN));
 	wstrlprintf(p->szPlugin, sizeof(p->szPlugin), L"%ls", szPlugin);
+	p->dwPluginType = dwPluginType;
 	p->hModule = hModule;
+	p->L = L;
 	p->lpfnCallback = lpfnCallback;
 	p->bDesiredEventsArray[PROCFILTER_EVENT_INIT] = true;
 	p->bDesiredEventsArray[PROCFILTER_EVENT_SHUTDOWN] = true;
@@ -947,7 +977,8 @@ ApiShutdown()
 
 		if (p->bSynchronizeEvents) DeleteCriticalSection(&p->csEventCallbackMutex);
 		DeleteCriticalSection(&p->mutable_data->mtx);
-		FreeLibrary(p->hModule);
+		if (p->hModule) FreeLibrary(p->hModule);
+		if (p->L) lua_close(p->L);
 	}
 
 	// Release the libraries used for NtQueryInformationProcess()
@@ -1015,7 +1046,17 @@ ExportApiEventPlugin(PROCFILTER_PLUGIN *p, PROCFILTER_EVENT *e, bool bCleanCache
 	g_CurrentEvent = e;
 	int dExceptionCode = 0;
 	__try {
-		dwResult |= p->lpfnCallback(e);
+		if (p->dwPluginType == PT_C) {
+			dwResult |= p->lpfnCallback(e);
+		} else if (p->dwPluginType == PT_LUA) {
+			lua_getglobal(p->L, "ProcFilterEvent");
+			SwigPushApiEvent(p->L, e);
+			if (lua_pcall(p->L, 1, 1, 0)) {
+				Die("Event %d failed for plugin %ls: %hs", e->dwEventId, p->szPlugin, lua_tostring(p->L, -1));
+			}
+			dwResult |= (DWORD)lua_tonumber(p->L, -1);
+			lua_pop(p->L, 1);
+		}
 		InterlockedIncrementSizeT(&p->mutable_data->nEvents);
 		e->dwCurrentResult = dwResult;
 	} __except (FilterException(GetExceptionCode(), GetExceptionInformation(), &dExceptionCode)) {
@@ -1123,3 +1164,10 @@ ApiEventExport(PROCFILTER_EVENT *e)
 
 	return dwResult;
 }
+
+#define LUA_BUILD_PROTOTYPE 1
+#include "api_exports.hpp"
+#undef LUA_BUILD_PROTOTYPE
+#define LUA_BUILD_DEFINITION 1
+#include "api_exports.hpp"
+#undef LUA_BUILD_DEFINITION
