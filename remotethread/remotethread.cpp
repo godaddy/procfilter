@@ -15,7 +15,7 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 		// some system threads can lead to blue screens
 		HANDLE hNewPid = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, e->dwProcessId);
 		bool bIsElevated = false;
-		if (hNewPid && !e->IsElevated(hNewPid, &bIsElevated) && bIsElevated) {
+		if (hNewPid && e->IsElevated(hNewPid, &bIsElevated) && !bIsElevated) {
 			WCHAR szCreator[MAX_PATH+1];
 			WCHAR szDestination[MAX_PATH+1];
 
