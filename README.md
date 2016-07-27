@@ -208,9 +208,33 @@ The same TA packs the command shell with UPX so it's no longer detected by file 
 
 ### Use Case #5
 
-A malware analyst needs to get a memory snapshot of a packed sample but running it in a controlled debug environment fails because the sample detects the environment and crashes out or exists before it is unpacked in memory. The malware analyst enables the 'unpack' ProcFilter plugin, which successfully takes a memory snapshot at process termination since ProcFilter doesn't act as a debugger. Note that this is a cat and mouse game since ProcFilter is detectable from userland and could be detected by an unpacking stub.
+An endpoint security engineer wants to harden endpoints against exploitation via Word, Excel, PowerPoint, and Adobe files. To help mitigate the chance of exploitation, ProcFilter is run with a signature matching the desktop applications needing protection, the [Command Line Capturing](https://github.com/godaddy/procfilter/blob/master/cmdline/cmdline.cpp) plugin enabled, and the ```AskSubprocesses``` and ```LogSubprocesses` values in the meta section set to true:
+<pre>
+rule ClientSideApplications {
+    meta:
+        description = "Microsoft Word, Excel, PowerPoint and Adobe Reader"
+
+        Block = false
+        Log = false
+        Quarantine = false
+        <b>AskSubprocesses = true</b>
+        <b>LogSubprocesses = true</b>
+
+    strings:
+      // omitted for brevity
+
+    condition:
+        IsPeFile and ...
+}
+</pre>
+
+When any of the matching applications try to create a subprocess it will be logged and the user will be prompted to allow or deny it, mitigating the chance that an exploit will successfully spawn a dropped or implanted file.
 
 ### Use Case #6
+
+A malware analyst needs to get a memory snapshot of a packed sample but running it in a controlled debug environment fails because the sample detects the environment and crashes out or exists before it is unpacked in memory. The malware analyst enables the 'unpack' ProcFilter plugin, which successfully takes a memory snapshot at process termination since ProcFilter doesn't act as a debugger. Note that this is a cat and mouse game since ProcFilter is detectable from userland and could be detected by an unpacking stub.
+
+### Use Case #7
 
 A malware analyst wants to know if a packed sample is related to a sample found before. Scans against the file turn up nothing due to the packing. The analyst runs the sample in a controlled environment containing ProcFilter with post-execution memory scanning enabled. At program termination the address space is scanned which matches rules in the set, indicating the type of payload.
 
