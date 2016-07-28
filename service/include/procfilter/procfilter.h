@@ -229,7 +229,7 @@ struct procfilter_event {
     // Get a process image's full path name and basename
     //
     bool   (CALLBACK *GetProcessFileName)(DWORD dwProcessId, WCHAR *lpszResult, DWORD dwResultSize);
-   const WCHAR* (CALLBACK *GetProcessBaseNamePointer)(WCHAR *lpszProcessFileName);
+    const WCHAR* (CALLBACK *GetProcessBaseNamePointer)(WCHAR *lpszProcessFileName);
 
     //
     // Get a full path to a directory or file in ProcFilter's base directory.  Directories contain a trailing slash.
@@ -317,10 +317,10 @@ struct procfilter_event {
     void   (CALLBACK *FreeMemory)(void *lpPointer);
     WCHAR* (CALLBACK *DuplicateString)(const WCHAR *lpszString);
 
-	//
-	// Determine if a process is running with elevate privileges
-	//
-	bool   (CALLBACK *IsElevated)(HANDLE hProcess, bool *lpbIsElevated);
+    //
+    // Determine if a process is running with elevate privileges
+    //
+    bool   (CALLBACK *IsElevated)(HANDLE hProcess, bool *lpbIsElevated);
 
     //
     // Verify the signature on a PE file
