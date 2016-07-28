@@ -208,7 +208,7 @@ The same TA packs the command shell with UPX so it's no longer detected by file 
 
 ### Use Case #5
 
-An endpoint security engineer wants to harden endpoints against exploitation via Word, Excel, PowerPoint, and Adobe files. To help mitigate the chance of exploitation, ProcFilter is run with a signature matching the desktop applications needing protection, the [Command Line Capturing](https://github.com/godaddy/procfilter/blob/master/cmdline/cmdline.cpp) plugin enabled, and the ```AskSubprocesses``` and ```LogSubprocesses` values in the meta section set to true:
+An endpoint security engineer wants to harden endpoints against exploitation via Word, Excel, PowerPoint, and Adobe files. To help mitigate the chance of exploitation, ProcFilter is run with a signature matching the desktop applications needing protection, the [Command Line Capturing](https://github.com/godaddy/procfilter/blob/master/cmdline/cmdline.cpp) plugin enabled, and the ```AskSubprocesses``` and ```LogSubprocesses``` values in the meta section set to true:
 <pre>
 rule ClientSideApplications {
     meta:
