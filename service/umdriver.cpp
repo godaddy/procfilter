@@ -161,7 +161,16 @@ LoadKernelDriver()
 	// Start the driver service
 	BOOL rc = StartService(g_hDriverService, 0, NULL);
 	DWORD dwErrorCode = GetLastError();
-	if (!rc) Die("Unable to start driver service: %u", dwErrorCode);
+	if (!rc) {
+		const WCHAR *lpszErrorInfo = ErrorText(dwErrorCode);
+		if (dwErrorCode == ERROR_INVALID_IMAGE_HASH) {
+			// Normally special cases are undesireable, however this one goes a long way towards usability for an all too
+			// frequently encountered error message
+			lpszErrorInfo = L"Error verifying driver signature. Unpatched Windows 7 require the hotfix at Microsoft Security Advisory 3033929 in order " \
+				"to load SHA-2 signed drivers. It can be downloaded from https://technet.microsoft.com/en-us/library/security/3033929.";
+		}
+		Die("Unable to start driver service %u: %ls", dwErrorCode, lpszErrorInfo);
+	}
 
 	// It's running, so open it
 	g_hDriver = CreateFileW(PROCFILTER_DEVICE_PATH, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL);

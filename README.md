@@ -11,6 +11,8 @@ ProcFilter is compatible with Windows 7+ and Windows Server 2008+ systems.
 # Installers
 - [ProcFilter x86/x64 Release/Debug Installers](https://github.com/godaddy/procfilter/releases)
 
+Note: Unpatched Windows 7 systems require [hotfix 3033929](https://technet.microsoft.com/en-us/library/security/3033929) to load the driver component. More information can be found [here](https://github.com/godaddy/procfilter/issues/1). 
+
 # Features
 + Block/Quarantine/Log processes based on YARA rules found in a Git repository
 + Integrated with the Windows Event Log
