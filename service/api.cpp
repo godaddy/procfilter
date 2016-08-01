@@ -737,14 +737,6 @@ Export_DuplicateString(const WCHAR *lpszString)
 }
 
 
-void
-CALLBACK
-Export_CreateWindowsProcess(WCHAR *lpszCommandLine, bool bWaitForExit)
-{
-	PROCFILTER_PLUGIN *p = GetCurrentPlugin();
-}
-
-
 bool
 CALLBACK
 Export_VerifyPeSignature(const WCHAR *lpszFileName, bool bCheckRevocations)
