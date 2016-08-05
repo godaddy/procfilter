@@ -135,7 +135,7 @@ struct event_data {
 static __declspec(thread) EVENT_DATA *g_EventData = NULL;
 
 void
-WINAPI
+CALLBACK
 Export_StatusPrintFmt(const WCHAR *lpszFmt, ...)
 {
 	PROCFILTER_EVENT *e = ApiGetCurrentEvent();

@@ -28,6 +28,7 @@
 #include <Shlwapi.h>
 
 #include "api.hpp"
+#include "api_exports.hpp"
 
 #include <stdarg.h>
 #include <malloc.h>
@@ -51,6 +52,7 @@
 #include "winerr.hpp"
 #include "status.hpp"
 #include "timing.hpp"
+#include "warning.hpp"
 #include "ProcFilterEvents.h"
 
 #include "procfilter/procfilter.h"
@@ -238,7 +240,6 @@ ApiStatusPrint()
 
 
 void
-CALLBACK
 Export_RegisterPlugin(const WCHAR *szApiVersion, const WCHAR *lpszShortName, DWORD dwProcessDataSize, DWORD dwScanDataSize, bool bSynchronizeEvents, ...)
 {
 	PROCFILTER_PLUGIN *p = GetCurrentPlugin();
@@ -303,7 +304,6 @@ Export_RegisterPlugin(const WCHAR *szApiVersion, const WCHAR *lpszShortName, DWO
 
 
 bool
-CALLBACK
 Export_GetProcessFileName(DWORD dwProcessId, WCHAR *lpszResult, DWORD dwResultSize)
 {
 	bool rv = false;
@@ -327,7 +327,6 @@ Export_GetProcessFileName(DWORD dwProcessId, WCHAR *lpszResult, DWORD dwResultSi
 // https://msdn.microsoft.com/en-us/library/windows/desktop/ms683196%28v=vs.85%29.aspx
 //
 const WCHAR*
-CALLBACK
 Export_GetProcessBaseNamePointer(WCHAR *lpszProcessFileName)
 {
 	if (!lpszProcessFileName) return L"";
@@ -341,7 +340,6 @@ Export_GetProcessBaseNamePointer(WCHAR *lpszProcessFileName)
 
 
 void
-CALLBACK
 Export_LockPid()
 {
 	PROCFILTER_EVENT *e = GetCurrentEvent();
@@ -351,7 +349,6 @@ Export_LockPid()
 
 
 bool
-CALLBACK
 Export_IsElevated(HANDLE hProcess, bool *lpbIsElevated)
 {
 	return IsElevated(hProcess, lpbIsElevated);
@@ -359,7 +356,6 @@ Export_IsElevated(HANDLE hProcess, bool *lpbIsElevated)
 
 
 void
-CALLBACK
 Export_Die(const char *fmt, ...)
 {
 	PROCFILTER_PLUGIN *p = GetCurrentPlugin();
@@ -381,7 +377,6 @@ Export_Die(const char *fmt, ...)
 
 
 bool
-CALLBACK
 Export_ReadProcessPeb(PEB *lpPeb)
 {
 	if (!g_NtQueryInformationProcess) return false;
@@ -414,7 +409,6 @@ Export_ReadProcessPeb(PEB *lpPeb)
 
 
 bool
-CALLBACK
 Export_ReadProcessMemory(const void *lpvRemotePointer, void *lpszDestination, DWORD dwDestinationSize)
 {
 	bool rv = false;
@@ -438,7 +432,6 @@ Export_ReadProcessMemory(const void *lpvRemotePointer, void *lpszDestination, DW
 
 
 void
-CALLBACK
 Export_LogFmt(const char *fmt, ...)
 {
 	PROCFILTER_PLUGIN *p = GetCurrentPlugin();
@@ -457,7 +450,6 @@ Export_LogFmt(const char *fmt, ...)
 
 
 bool
-CALLBACK
 Export_FormatString(WCHAR *lpszDestination, DWORD dwDestinationSize, const WCHAR *lpszFormatString, ...)
 {
 	va_list ap;
@@ -472,7 +464,6 @@ Export_FormatString(WCHAR *lpszDestination, DWORD dwDestinationSize, const WCHAR
 
 
 bool
-CALLBACK
 Export_ConcatenateString(WCHAR *lpszDestination, DWORD dwDestinationSize, const WCHAR *lpszFormatString, ...)
 {
 	va_list ap;
@@ -487,7 +478,6 @@ Export_ConcatenateString(WCHAR *lpszDestination, DWORD dwDestinationSize, const 
 
 
 bool
-CALLBACK
 Export_VFormatString(WCHAR *lpszDestination, DWORD dwDestinationSize, const WCHAR *lpszFormatString, va_list ap)
 {
 	return vwstrlprintf(lpszDestination, dwDestinationSize, lpszFormatString, ap);
@@ -495,7 +485,6 @@ Export_VFormatString(WCHAR *lpszDestination, DWORD dwDestinationSize, const WCHA
 
 
 bool
-CALLBACK
 Export_VConcatenateString(WCHAR *lpszDestination, DWORD dwDestinationSize, const WCHAR *lpszFormatString, va_list ap)
 {
 	return vwstrlcatf(lpszDestination, dwDestinationSize, lpszFormatString, ap);
@@ -503,7 +492,6 @@ Export_VConcatenateString(WCHAR *lpszDestination, DWORD dwDestinationSize, const
 
 
 YARASCAN_CONTEXT*
-CALLBACK
 Export_AllocateScanContext(const WCHAR *lpszYaraRuleFile, WCHAR *szError, DWORD dwErrorSize)
 {
 	CONFIG_DATA *cd = GetConfigData();
@@ -517,7 +505,6 @@ Export_AllocateScanContext(const WCHAR *lpszYaraRuleFile, WCHAR *szError, DWORD 
 
 
 void
-CALLBACK
 Export_FreeScanContext(YARASCAN_CONTEXT *ctx)
 {
 	if (ctx) YarascanFree(ctx);
@@ -525,7 +512,6 @@ Export_FreeScanContext(YARASCAN_CONTEXT *ctx)
 
 
 void
-CALLBACK
 Export_ScanFile(YARASCAN_CONTEXT *ctx, const WCHAR *lpszFileName, OnMatchCallback_cb lpfnOnMatchCallback, OnMetaCallback_cb lpfnOnMetaCallback, void *lpvUserData, SCAN_RESULT *o_result)
 {
 	YarascanScanFile(ctx, (WCHAR*)lpszFileName, 0, lpfnOnMatchCallback, lpfnOnMetaCallback, lpvUserData, o_result);
@@ -533,7 +519,6 @@ Export_ScanFile(YARASCAN_CONTEXT *ctx, const WCHAR *lpszFileName, OnMatchCallbac
 
 
 void
-CALLBACK
 Export_ScanMemory(YARASCAN_CONTEXT *ctx, DWORD dwProcessId, OnMatchCallback_cb lpfnOnMatchCallback, OnMetaCallback_cb lpfnOnMetaCallback, void *lpvUserData, SCAN_RESULT *o_result)
 {
 	YarascanScanMemory(ctx, dwProcessId, lpfnOnMatchCallback, lpfnOnMetaCallback, lpvUserData, o_result);
@@ -542,7 +527,6 @@ Export_ScanMemory(YARASCAN_CONTEXT *ctx, DWORD dwProcessId, OnMatchCallback_cb l
 
 
 bool
-CALLBACK
 Export_GetFile(const WCHAR *lpszUrl, void *lpvResult, DWORD dwResultSize, DWORD *lpdwBytesUsed)
 {
 	return GetFile(lpszUrl, lpvResult, dwResultSize, lpdwBytesUsed);
@@ -550,7 +534,6 @@ Export_GetFile(const WCHAR *lpszUrl, void *lpvResult, DWORD dwResultSize, DWORD 
 
 
 void
-CALLBACK
 Export_Log(const char *str)
 {
 	Export_LogFmt("%hs", str);
@@ -558,7 +541,6 @@ Export_Log(const char *str)
 
 
 int
-CALLBACK
 Export_GetConfigInt(const WCHAR *lpszKey, int dDefault)
 {
 	PROCFILTER_PLUGIN *p = GetCurrentPlugin();
@@ -569,7 +551,6 @@ Export_GetConfigInt(const WCHAR *lpszKey, int dDefault)
 
 
 bool
-CALLBACK
 Export_GetConfigBool(const WCHAR *lpszKey, bool bDefault)
 {
 	PROCFILTER_PLUGIN *p = GetCurrentPlugin();
@@ -579,9 +560,7 @@ Export_GetConfigBool(const WCHAR *lpszKey, bool bDefault)
 }
 
 
-
 void
-CALLBACK
 Export_GetConfigString(const WCHAR *lpszKey, const WCHAR *lpszDefault, WCHAR *lpszDestination, DWORD dwDestinationSize)
 {
 	PROCFILTER_PLUGIN *p = GetCurrentPlugin();
@@ -595,7 +574,6 @@ Export_GetConfigString(const WCHAR *lpszKey, const WCHAR *lpszDefault, WCHAR *lp
 
 
 bool
-CALLBACK
 Export_GetNtPathName(const WCHAR *lpszDosPath, WCHAR *lpszNtDevice, DWORD dwNtDeviceSize, WCHAR *lpszFilePath, DWORD dwFilePathSize, WCHAR *lpszFullPath, DWORD dwFullPathSize)
 {
 	return GetNtPathName(lpszDosPath, lpszNtDevice, dwNtDeviceSize, lpszFilePath, dwFilePathSize, lpszFullPath, dwFullPathSize);
@@ -603,7 +581,6 @@ Export_GetNtPathName(const WCHAR *lpszDosPath, WCHAR *lpszNtDevice, DWORD dwNtDe
 
 
 DWORD
-CALLBACK
 Export_ShellNoticeFmt(DWORD dwDurationSeconds, bool bWait, DWORD dwStyle, WCHAR *lpszTitle, WCHAR *lpszMessageFmt, ...)
 {
 	WCHAR szMessage[1024];
@@ -621,7 +598,6 @@ Export_ShellNoticeFmt(DWORD dwDurationSeconds, bool bWait, DWORD dwStyle, WCHAR 
 
 
 bool
-CALLBACK
 Export_QuarantineFile(const WCHAR *lpszFileName, char *o_lpszHexDigest, DWORD dwHexDigestSize)
 {
 	CONFIG_DATA *cd = GetConfigData();
@@ -637,7 +613,6 @@ Export_QuarantineFile(const WCHAR *lpszFileName, char *o_lpszHexDigest, DWORD dw
 
 
 DWORD
-CALLBACK
 Export_ShellNotice(DWORD dwDurationSeconds, bool bWait, DWORD dwStyle, WCHAR *lpszTitle, WCHAR *lpszMessage)
 {
 	return Export_ShellNoticeFmt(dwDurationSeconds, bWait, dwStyle, lpszTitle, L"%ls", lpszMessage);
@@ -645,7 +620,6 @@ Export_ShellNotice(DWORD dwDurationSeconds, bool bWait, DWORD dwStyle, WCHAR *lp
 
 
 bool
-CALLBACK
 Export_Sha1File(const WCHAR *lpszFileName, char *lpszHexDigest, DWORD dwHexDigestSize, void *lpbaRawDigest, DWORD dwRawDigestSize)
 {
 	PROCFILTER_EVENT *e = GetCurrentEvent();
@@ -683,7 +657,6 @@ Export_Sha1File(const WCHAR *lpszFileName, char *lpszHexDigest, DWORD dwHexDiges
 
 
 void*
-CALLBACK
 Export_AllocateMemory(size_t dwNumElements, size_t dwElementSize)
 {
 	if (dwNumElements == 0 || dwElementSize == 0) return NULL;
@@ -702,7 +675,6 @@ Export_AllocateMemory(size_t dwNumElements, size_t dwElementSize)
 
 
 void
-CALLBACK
 Export_FreeMemory(void *lpPointer)
 {
 	PROCFILTER_PLUGIN *p = GetCurrentPlugin();
@@ -720,7 +692,6 @@ Export_FreeMemory(void *lpPointer)
 
 
 bool
-CALLBACK
 Export_GetProcFilterDirectory(WCHAR *lpszResult, DWORD dwResultSize, const WCHAR *lpszSubDirectoryBaseName)
 {
 	CONFIG_DATA *cd = GetConfigData();
@@ -732,7 +703,6 @@ Export_GetProcFilterDirectory(WCHAR *lpszResult, DWORD dwResultSize, const WCHAR
 
 
 bool
-CALLBACK
 Export_GetProcFilterFile(WCHAR *lpszResult, DWORD dwResultSize, const WCHAR *lpszFileBaseName)
 {
 	CONFIG_DATA *cd = GetConfigData();
@@ -742,7 +712,6 @@ Export_GetProcFilterFile(WCHAR *lpszResult, DWORD dwResultSize, const WCHAR *lps
 
 
 WCHAR*
-CALLBACK
 Export_DuplicateString(const WCHAR *lpszString)
 {
 	WCHAR *lpszResult = _wcsdup(lpszString);
@@ -752,7 +721,6 @@ Export_DuplicateString(const WCHAR *lpszString)
 
 
 bool
-CALLBACK
 Export_VerifyPeSignature(const WCHAR *lpszFileName, bool bCheckRevocations)
 {
 	return VerifyPeSignature(lpszFileName, bCheckRevocations);
@@ -842,7 +810,18 @@ LoadPlugin(PROCFILTER_EVENT *e, const WCHAR *szPluginDirectory, const WCHAR *szB
 		if (!L) Die("Unable to create new Lua state");
 
 		// Load the base Lua libraries
-		luaopen_base(L);
+		luaL_openlibs(L);
+		//luaopen_base(L);
+		//luaopen_bit32(L);
+		//luaopen_coroutine(L);
+		//luaopen_debug(L);
+		//luaopen_io(L);
+		//luaopen_math(L);
+		//luaopen_os(L);
+		//luaopen_package(L);
+		//luaopen_string(L);
+		//luaopen_table(L);
+		//luaopen_utf8(L);
 
 		// Load the ProcFilter Lua library
 		luaopen_procfilter(L);
@@ -878,6 +857,8 @@ LoadPlugin(PROCFILTER_EVENT *e, const WCHAR *szPluginDirectory, const WCHAR *szB
 
 	// Make sure that the plugin called RegisterPlugin()
 	if (!p->bRegistered) Die("Plugin failed to register: \"%ls\"", szPlugin);
+
+	Notice(L"Plugin loaded: %ls", szPlugin);
 }
 
 

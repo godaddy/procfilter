@@ -29,6 +29,8 @@
 
 #include <stdint.h>
 
+#include "api_exports.hpp"
+
 //
 // Init/shutdown the status init engine
 //
@@ -49,4 +51,3 @@ void StatusQuery();
 // This prints out a string to the procfilter.exe requesting a stats query.
 //
 void StatusPrint(const WCHAR *lpszFmt, ...); // may only be called indirectly by the stats module
-void WINAPI Export_StatusPrintFmt(const WCHAR *lpszFmt, ...);

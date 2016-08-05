@@ -139,8 +139,8 @@ extern "C" {
 
 
 typedef struct yarascan_context YARASCAN_CONTEXT;
-typedef void (CALLBACK *OnMatchCallback_cb)(char *lpszRuleName, void *user_data);
-typedef void (CALLBACK *OnMetaCallback_cb)(char *lpszRuleName, char *lpszMetaTagName, char *lpszStringValue, int dNumericValue, void *user_data);
+typedef void (*OnMatchCallback_cb)(char *lpszRuleName, void *user_data);
+typedef void (*OnMetaCallback_cb)(char *lpszRuleName, char *lpszMetaTagName, char *lpszStringValue, int dNumericValue, void *user_data);
 
 #pragma pack(push, 1)
 typedef struct scan_result SCAN_RESULT;
@@ -171,7 +171,7 @@ struct procfilter_event {
     // in the structure may have changed, and the plugin's call to RegisterPlugin() could dereference a completely different
     // or invalid value and lead to a crash before the core had the chance to check for a plugin mismatch and exit gracefully.
     //
-    void  (CALLBACK *RegisterPlugin)(const WCHAR *lpszApiVersion, const WCHAR *lpszShortName, DWORD dwProcessDataSize, DWORD dwScanDataSize, bool bSynchronizeEvents, ...);
+    void  (*RegisterPlugin)(const WCHAR *lpszApiVersion, const WCHAR *lpszShortName, DWORD dwProcessDataSize, DWORD dwScanDataSize, bool bSynchronizeEvents, ...);
     
     DWORD  dwEventId;            // One of PROCFILTER_EVENT_Xxx
 
@@ -215,32 +215,32 @@ struct procfilter_event {
     // Get a value from configuration.  A plugin's configuration is retrieved from the section name passed in to RegisterPlugin()
     // within procfilter.ini.
     //
-    int   (CALLBACK *GetConfigInt)(const WCHAR *lpszKey, int dDefault);
-    bool  (CALLBACK *GetConfigBool)(const WCHAR *lpszKey, bool bDefault);
-    void  (CALLBACK *GetConfigString)(const WCHAR *lpszKey, const WCHAR *lpszDefault, WCHAR *lpszDestination, DWORD dwDestinationSize);
+    int   (*GetConfigInt)(const WCHAR *lpszKey, int dDefault);
+    bool  (*GetConfigBool)(const WCHAR *lpszKey, bool bDefault);
+    void  (*GetConfigString)(const WCHAR *lpszKey, const WCHAR *lpszDefault, WCHAR *lpszDestination, DWORD dwDestinationSize);
 
     //
     // Lock the pid associated with the current event to avoid race conditions caused by PID reuse.  The pid is automatically
     // unlocked after the plugin's event handler returns.
     //
-    void  (CALLBACK *LockPid)();
+    void  (*LockPid)();
 
     //
     // Get a process image's full path name and basename
     //
-    bool         (CALLBACK *GetProcessFileName)(DWORD dwProcessId, WCHAR *lpszResult, DWORD dwResultSize);
-    const WCHAR* (CALLBACK *GetProcessBaseNamePointer)(WCHAR *lpszProcessFileName);
+    bool         (*GetProcessFileName)(DWORD dwProcessId, WCHAR *lpszResult, DWORD dwResultSize);
+    const WCHAR* (*GetProcessBaseNamePointer)(WCHAR *lpszProcessFileName);
 
     //
     // Get a full path to a directory or file in ProcFilter's base directory.  Directories contain a trailing slash.
     //
-    bool  (CALLBACK *GetProcFilterDirectory)(WCHAR *lpszResult, DWORD dwResultSize, const WCHAR *lpszSubDirectoryBaseName);
-    bool  (CALLBACK *GetProcFilterFile)(WCHAR *lpszResult, DWORD dwResultSize, const WCHAR *lpszFileBaseName);
+    bool  (*GetProcFilterDirectory)(WCHAR *lpszResult, DWORD dwResultSize, const WCHAR *lpszSubDirectoryBaseName);
+    bool  (*GetProcFilterFile)(WCHAR *lpszResult, DWORD dwResultSize, const WCHAR *lpszFileBaseName);
 
     //
     // Convert a DOS path name such as 'C:\windows\system32\cmd.exe' to an NT path such as '\Device\HarddiskVolume2\Windows\system32\cmd.exe'
     //
-    bool  (CALLBACK *GetNtPathName)(const WCHAR *lpszDosPath, WCHAR *lpszNtDevice, DWORD dwNtDeviceSize, WCHAR *lpszFilePath, DWORD dwFilePathSize, WCHAR *lpszFullPath, DWORD dwFullPathSize);
+    bool  (*GetNtPathName)(const WCHAR *lpszDosPath, WCHAR *lpszNtDevice, DWORD dwNtDeviceSize, WCHAR *lpszFilePath, DWORD dwFilePathSize, WCHAR *lpszFullPath, DWORD dwFullPathSize);
    
     //
     // Prompt the currently logged in user with a dialog.  See MSDN's WTSSendMessage() documentation for the underlying implementation details.
@@ -250,27 +250,27 @@ struct procfilter_event {
     // See https://msdn.microsoft.com/en-us/library/ms683502%28v=vs.85%29.aspx for more details
     // See https://blogs.msdn.microsoft.com/larryosterman/2005/09/14/interacting-with-services/ for even more details
     //
-    DWORD (CALLBACK *ShellNotice)(DWORD dwDurationSeconds, bool bWait, DWORD dwStyle, WCHAR *lpszTitle, WCHAR *lpszMessage);
-    DWORD (CALLBACK *ShellNoticeFmt)(DWORD dwDurationSeconds, bool bWait, DWORD dwStyle, WCHAR *lpszTitle, WCHAR *lpszMessageFmt, ...);
+    DWORD (*ShellNotice)(DWORD dwDurationSeconds, bool bWait, DWORD dwStyle, WCHAR *lpszTitle, WCHAR *lpszMessage);
+    DWORD (*ShellNoticeFmt)(DWORD dwDurationSeconds, bool bWait, DWORD dwStyle, WCHAR *lpszTitle, WCHAR *lpszMessageFmt, ...);
 
     //
     // Quarantine a file immediately.
     //
-    bool  (CALLBACK *QuarantineFile)(const WCHAR *lpszFileName, char *lpszHexDigest, DWORD dwHexDigestSize);
+    bool  (*QuarantineFile)(const WCHAR *lpszFileName, char *lpszHexDigest, DWORD dwHexDigestSize);
 
     //
     // Compute the SHA1 hash of the specified file.
     //
-    bool  (CALLBACK *Sha1File)(const WCHAR *lpszFileName, char *lpszHexDigest, DWORD dwHexDigestSize, void *lpbaRawDigest, DWORD dwRawDigestSize);
+    bool  (*Sha1File)(const WCHAR *lpszFileName, char *lpszHexDigest, DWORD dwHexDigestSize, void *lpbaRawDigest, DWORD dwRawDigestSize);
 
     //
     // Format a string.
     //
-    bool  (CALLBACK *FormatString)(WCHAR *lpszDestination, DWORD dwDestinationSize, const WCHAR *lpszFormatString, ...);
-    bool  (CALLBACK *ConcatenateString)(WCHAR *lpszDestination, DWORD dwDestinationSize, const WCHAR *lpszFormatString, ...);
-    bool  (CALLBACK *VFormatString)(WCHAR *lpszDestination, DWORD dwDestinationSize, const WCHAR *lpszFormatString, va_list ap);
-    bool  (CALLBACK *VConcatenateString)(WCHAR *lpszDestination, DWORD dwDestinationSize, const WCHAR *lpszFormatString, va_list ap);
-    void  (CALLBACK *StatusPrintFmt)(const WCHAR *lpszFmt, ...);
+    bool  (*FormatString)(WCHAR *lpszDestination, DWORD dwDestinationSize, const WCHAR *lpszFormatString, ...);
+    bool  (*ConcatenateString)(WCHAR *lpszDestination, DWORD dwDestinationSize, const WCHAR *lpszFormatString, ...);
+    bool  (*VFormatString)(WCHAR *lpszDestination, DWORD dwDestinationSize, const WCHAR *lpszFormatString, va_list ap);
+    bool  (*VConcatenateString)(WCHAR *lpszDestination, DWORD dwDestinationSize, const WCHAR *lpszFormatString, va_list ap);
+    void  (*StatusPrintFmt)(const WCHAR *lpszFmt, ...);
 
     //
     // Allocate a scanning context.  If shared between threads this context needs to be protected by a mutex.
@@ -282,50 +282,50 @@ struct procfilter_event {
     //
     // Scanning contexts must be freed with FreeScanContext().
     //
-    YARASCAN_CONTEXT* (CALLBACK *AllocateScanContext)(const WCHAR *lpszYaraRuleFile, WCHAR *szError, DWORD dwErrorSize);
-    void  (CALLBACK *FreeScanContext)(YARASCAN_CONTEXT *ctx);
-    void  (CALLBACK *ScanFile)(YARASCAN_CONTEXT *ctx, const WCHAR *lpszFileName, OnMatchCallback_cb lpfnOnMatchCallback, OnMetaCallback_cb lpfnOnMetaCallback, void *lpvUserData, SCAN_RESULT *o_result);
-    void  (CALLBACK *ScanMemory)(YARASCAN_CONTEXT *ctx, DWORD dwProcessId, OnMatchCallback_cb lpfnOnMatchCallback, OnMetaCallback_cb lpfnOnMetaCallback, void *lpvUserData, SCAN_RESULT *o_result);
+    YARASCAN_CONTEXT* (*AllocateScanContext)(const WCHAR *lpszYaraRuleFile, WCHAR *szError, DWORD dwErrorSize);
+    void  (*FreeScanContext)(YARASCAN_CONTEXT *ctx);
+    void  (*ScanFile)(YARASCAN_CONTEXT *ctx, const WCHAR *lpszFileName, OnMatchCallback_cb lpfnOnMatchCallback, OnMetaCallback_cb lpfnOnMetaCallback, void *lpvUserData, SCAN_RESULT *o_result);
+    void  (*ScanMemory)(YARASCAN_CONTEXT *ctx, DWORD dwProcessId, OnMatchCallback_cb lpfnOnMatchCallback, OnMetaCallback_cb lpfnOnMetaCallback, void *lpvUserData, SCAN_RESULT *o_result);
 
     //
     // Read memory from the associated process
     //
-    bool  (CALLBACK *ReadProcessMemory)(const void *lpvRemotePointer, void *lpszDestination, DWORD dwDestinationSize);
-    bool  (CALLBACK *ReadProcessPeb)(PEB *lpPeb);
+    bool  (*ReadProcessMemory)(const void *lpvRemotePointer, void *lpszDestination, DWORD dwDestinationSize);
+    bool  (*ReadProcessPeb)(PEB *lpPeb);
 
     //
     // Retrieve a remote file
     //
-    bool (CALLBACK *GetFile)(const WCHAR *lpszUrl, void *lpvResult, DWORD dwResultSize, DWORD *lpdwBytesUsed);
+    bool (*GetFile)(const WCHAR *lpszUrl, void *lpvResult, DWORD dwResultSize, DWORD *lpdwBytesUsed);
 
     //
     // Exit the program with a fatal error.
     //
-    void  (CALLBACK *Die)(const char *fmt, ...);
+    void  (*Die)(const char *fmt, ...);
 
     //
     // Log a string to Event Log.
     //
-    void  (CALLBACK *Log)(const char *str);
-    void  (CALLBACK *LogFmt)(const char *fmt, ...);
+    void  (*Log)(const char *str);
+    void  (*LogFmt)(const char *fmt, ...);
 
     //
     // Allocate and free memory.  Allocated memory is zeroed.  AllocateMemory() always succeeds; if no memory
     // is available the core exits with a fatal error and does not return.
     //
-    void*  (CALLBACK *AllocateMemory)(size_t dwNumElements, size_t dwElementSize);
-    void   (CALLBACK *FreeMemory)(void *lpPointer);
-    WCHAR* (CALLBACK *DuplicateString)(const WCHAR *lpszString);
+    void*  (*AllocateMemory)(size_t dwNumElements, size_t dwElementSize);
+    void   (*FreeMemory)(void *lpPointer);
+    WCHAR* (*DuplicateString)(const WCHAR *lpszString);
 
     //
     // Determine if a process is running with elevate privileges
     //
-    bool   (CALLBACK *IsElevated)(HANDLE hProcess, bool *lpbIsElevated);
+    bool   (*IsElevated)(HANDLE hProcess, bool *lpbIsElevated);
 
     //
     // Verify the signature on a PE file
     //
-    bool   (CALLBACK *VerifyPeSignature)(const WCHAR* lpszFileName, bool bCheckRevocations);
+    bool   (*VerifyPeSignature)(const WCHAR* lpszFileName, bool bCheckRevocations);
 };
 #pragma pack(pop)
 

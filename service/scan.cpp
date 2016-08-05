@@ -122,7 +122,6 @@ struct callback_user_data {
 
 static
 void
-CALLBACK
 OnMatchCallback(char *lpszRuleName, void *user_data)
 {
 	CALLBACK_USER_DATA *cud = (CALLBACK_USER_DATA*)user_data;
@@ -142,7 +141,6 @@ OnMatchCallback(char *lpszRuleName, void *user_data)
 
 static
 void
-CALLBACK
 OnMetaCallback(char *lpszRuleName, char *lpszMetaTagName, char *lpszStringValue, int dNumericValue, void *user_data)
 {
 	CALLBACK_USER_DATA *cud = (CALLBACK_USER_DATA*)user_data;
