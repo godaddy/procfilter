@@ -1,5 +1,7 @@
 # ProcFilter
 
++[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/procfilter/procfilter?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 ProcFilter is a process filtering system for Windows with built-in [YARA](https://github.com/virustotal/yara) integration. YARA rules can be instrumented with custom meta tags that tailor its response to rule matches. It runs as a Windows service and is integrated with [Microsoft's ETW API](https://msdn.microsoft.com/en-us/library/windows/desktop/bb968803%28v=vs.85%29.aspx), making results viewable in the Windows Event Log. Installation, activation, and removal can be done dynamically and does not require a reboot.
 
 ProcFilter's intended use is for malware analysts to be able to create YARA signatures that protect their Windows environments against a specific threat. It does not include a large signature set. Think lightweight, precise, and targeted rather than broad or all-encompassing. ProcFilter is also intended for use in controlled analysis environments where custom plugins can perform artifact-specific actions.
@@ -239,6 +241,12 @@ A malware analyst needs to get a memory snapshot of a packed sample but running 
 ### Use Case #7
 
 A malware analyst wants to know if a packed sample is related to a sample found before. Scans against the file turn up nothing due to the packing. The analyst runs the sample in a controlled environment containing ProcFilter with post-execution memory scanning enabled. At program termination the address space is scanned which matches rules in the set, indicating the type of payload.
+
+# Questions?
+
+We're here to help! The ProcFilter development team can be contacted by email at [procfilter@godaddy.com](mailto:procfilter@godaddy.com) or on Gitter for general discussion.
+
++[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/procfilter/procfilter?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 # License
 
