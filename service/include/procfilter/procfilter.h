@@ -43,7 +43,7 @@ extern "C" {
 // multiple threads can be doing scanning at onces, so multiple scans can be handling events simultaneously.
 //
 
-#define PROCFILTER_VERSION L"1.0.0-beta.2"
+#define PROCFILTER_VERSION ((const WCHAR*)L"1.0.0-beta.2")
 
 //
 // PROCFILTER_EVENT_INIT / PROCFILTER_EVENT_SHUTDOWN
