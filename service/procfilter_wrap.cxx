@@ -2933,6 +2933,22 @@ SWIGINTERN int SWIG_lua_isnilstring(lua_State *L, int idx) {
   return ret;
 }
 
+
+#include <stdlib.h>
+	
+char* wstr2str(const wchar_t *str, int len)
+{
+  char *result = (char*)malloc(len + 1);
+  if (!result) return 0;
+
+  int i;
+  for (i = 0; i < len; ++i) {
+    result[i] = (char)str[i];
+  }
+  result[i] = '\0';
+  return result;
+}
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -8145,7 +8161,6 @@ static swig_lua_attribute swig_SwigModule_attributes[] = {
     {0,0,0}
 };
 static swig_lua_const_info swig_SwigModule_constants[]= {
-    { SWIG_LUA_CONSTTAB_POINTER("PROCFILTER_VERSION",L"1.0.0-beta.2", SWIGTYPE_p_wchar_t) },
     {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_NONE", 0)},
     {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_INIT", 1)},
     {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_SHUTDOWN", 2)},
