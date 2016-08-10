@@ -39,3 +39,4 @@ deps/libgit2/x86/git2.dll
 deps/libgit2/x86/git2.lib
 deps/libgit2/x64/git2.dll
 deps/libgit2/x64/git2.lib
+*.VC.db
