@@ -301,6 +301,9 @@ usage(const WCHAR *progname)
 	fwprintf(stderr, L"Usage: %ls -benchmark-timed <pool size> <duration> <target program> [args]\n", progname);
 	fwprintf(stderr, L"Usage: %ls -benchmark-counted <num executions> <target program> [args]\n", progname);
 	fwprintf(stderr, L"Usage: %ls -status\n", progname);
+	// No need to display this option since it's not useful to end users since it's only used internally
+	//fwprintf(stderr, L"Usage: %ls -prompt <title> <text> <icon> <options>\n", progname);
+
 }
 
 
@@ -371,9 +374,64 @@ RunningAsProgram() {
 }
 
 
+static
+int
+Prompt(int argc, WCHAR *argv[])
+{
+	if (argc < 6) {
+		printf("Usage: %ls -prompt <duration> <title> <text> <options> [options [...]]\n", argv[0]);
+		return 0;
+	}
+
+	int dDuration = _wtoi(argv[2]);
+	WCHAR *lpszTitle = argv[3];
+	WCHAR *lpszText = argv[4];
+
+	UINT uType = MB_OK;
+	for (int i = 5; i < argc; ++i) {
+		WCHAR *lpszOptions = argv[i];
+
+		if (_wcsicmp(lpszOptions, L"OKCANCEL") == 0) uType |= MB_OKCANCEL;
+		if (_wcsicmp(lpszOptions, L"YESNO") == 0) uType |= MB_YESNO;
+		if (_wcsicmp(lpszOptions, L"YESNOCANCEL") == 0) uType |= MB_YESNOCANCEL;
+		if (_wcsicmp(lpszOptions, L"ABORTRETRYIGNORE") == 0) uType |= MB_ABORTRETRYIGNORE;
+
+		if (_wcsicmp(lpszOptions, L"ICONINFORMATION") == 0) uType |= MB_ICONINFORMATION;
+		if (_wcsicmp(lpszOptions, L"ICONQUESTION") == 0) uType |= MB_ICONQUESTION;
+		if (_wcsicmp(lpszOptions, L"ICONERROR") == 0) uType |= MB_ICONERROR;
+		if (_wcsicmp(lpszOptions, L"ICONWARNING") == 0) uType |= MB_ICONWARNING;
+		
+		if (_wcsicmp(lpszOptions, L"SYSTEMMODAL") == 0) uType |= MB_SYSTEMMODAL;
+		if (_wcsicmp(lpszOptions, L"SETFOREGROUND") == 0) uType |= MB_SETFOREGROUND;
+	}
+
+	int dResult = MessageBoxW(NULL, lpszText, lpszTitle, uType);
+
+	int rv = -1;
+	if ((uType & MB_YESNO) == MB_YESNO || (uType & MB_YESNOCANCEL) == MB_YESNOCANCEL) {
+		if (dResult == IDYES) rv = 1;
+		if (dResult == IDNO) rv = 2;
+		if (dResult == IDCANCEL) rv = 3;
+	} else if ((uType & MB_ABORTRETRYIGNORE) == MB_ABORTRETRYIGNORE) {
+		if (dResult == IDABORT) rv = 1;
+		if (dResult == IDRETRY) rv = 2;
+		if (dResult == IDIGNORE) rv = 3;
+	} else if ((uType & MB_OKCANCEL) == MB_OKCANCEL) {
+		if (dResult == IDOK) rv = 1;
+		if (dResult == IDCANCEL) rv = 2;
+	} else { // MB_OK
+		if (dResult == IDOK) rv = 1;
+	}
+
+	return rv;
+}
+
+
 int
 wmain(int argc, WCHAR *argv[])
 {
+	int rv = 0;
+
 	SetUnhandledExceptionFilter(TopLevelExceptionHandler);
 
 	// Seed the prng
@@ -472,6 +530,8 @@ wmain(int argc, WCHAR *argv[])
 			StatusQuery();
 		} else if (TestArg(arg, L"-licenses", L"-l")) {
 			DisplayLicenses();
+		} else if (TestArg(arg, L"-prompt", NULL)) {
+			rv = Prompt(argc, argv);
 		} else {
 			usage(argv[0]);
 		}
@@ -488,5 +548,5 @@ wmain(int argc, WCHAR *argv[])
 	git_libgit2_shutdown();
 	yr_finalize();
 
-	return 0;
+	return rv;
 }
