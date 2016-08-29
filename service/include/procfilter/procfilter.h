@@ -31,6 +31,7 @@
 
 #include <stdarg.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -140,7 +141,7 @@ extern "C" {
 
 typedef struct yarascan_context YARASCAN_CONTEXT;
 typedef void (*OnMatchCallback_cb)(char *lpszRuleName, void *user_data);
-typedef void (*OnMetaCallback_cb)(char *lpszRuleName, char *lpszMetaTagName, char *lpszStringValue, int dNumericValue, void *user_data);
+typedef void (*OnMetaCallback_cb)(char *lpszRuleName, char *lpszMetaTagName, char *lpszStringValue, int64_t dNumericValue, void *user_data);
 
 #pragma pack(push, 1)
 typedef struct scan_result SCAN_RESULT;
@@ -192,7 +193,7 @@ struct procfilter_event {
     int   dMatchLocation;        // One of PROCFILTER_MATCH_Xxx
     char *lpszRuleName;          // The rule name matched
     char *lpszMetaTagName;       // The meta tag name
-    int   dNumericValue;         // The meta tag's numeric value, 0 if the type is string
+    int64_t   dNumericValue;     // The meta tag's numeric value, 0 if the type is string
     char *lpszStringValue;       // The meta tag's string value, may be NULL
 
     WCHAR *lpszArgument;         // Plugin-specific INI-specified configuration flags

@@ -141,7 +141,7 @@ OnMatchCallback(char *lpszRuleName, void *user_data)
 
 static
 void
-OnMetaCallback(char *lpszRuleName, char *lpszMetaTagName, char *lpszStringValue, int dNumericValue, void *user_data)
+OnMetaCallback(char *lpszRuleName, char *lpszMetaTagName, char *lpszStringValue, int64_t dNumericValue, void *user_data)
 {
 	CALLBACK_USER_DATA *cud = (CALLBACK_USER_DATA*)user_data;
 	PROCFILTER_EVENT *e = cud->e;

@@ -268,7 +268,7 @@ callback(int message, void *message_data, void *user_data)
 			callback_meta_conditionally_update("Quarantine", meta, &bQuarantine);
 
 			if (cud->lpfnOnMetaCallback) {
-				int dNumericValue = 0;
+				int64_t dNumericValue = 0;
 				char *lpszStringValue = NULL;
 				if (meta->type == META_TYPE_INTEGER || meta->type == META_TYPE_BOOLEAN) dNumericValue = meta->integer;
 				if (meta->type == META_TYPE_STRING) lpszStringValue = meta->string;

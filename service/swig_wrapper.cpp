@@ -10,9 +10,9 @@
 // having the changes overwritten each time the SWIG wrapper generator is rerun.
 //
 
-#pragma warning(disable: 4244)// 4996 4800)
+#pragma warning(disable: 4244 4267)// 4996 4800)
 #include "procfilter_wrap.cxx"
-#pragma warning(default: 4244)// 4996 4800)
+#pragma warning(default: 4244 4267)// 4996 4800)
 
 void SwigPushApiEvent(lua_State *L, PROCFILTER_EVENT *e) {
 	SWIG_Lua_NewPointerObj(L, e, SWIGTYPE_p_procfilter_event, 0);
