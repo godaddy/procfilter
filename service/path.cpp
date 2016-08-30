@@ -24,8 +24,12 @@
 //
 
 #include <Windows.h>
+#include <Shlwapi.h>
+
+#pragma comment (lib, "shlwapi.lib")
 
 #include "strlcat.hpp"
+
 
 
 bool
@@ -59,3 +63,9 @@ GetNtPathName(const WCHAR *lpszDosPath, WCHAR *lpszNtDevice, DWORD dwNtDeviceSiz
 	return false;
 }
 
+
+bool
+IsPathAbsolute(const WCHAR *lpszPath)
+{
+	return !PathIsRelativeW(lpszPath);
+}

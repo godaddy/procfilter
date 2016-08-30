@@ -31,3 +31,8 @@
 // Get the NT path name for a DOS path.  All output parameters are optional.
 //
 bool GetNtPathName(const WCHAR *lpszDosPath, WCHAR *lpszNtDevice, DWORD dwNtDeviceSize, WCHAR *lpszFilePath, DWORD dwFilePathSize, WCHAR *lpszFullPath, DWORD dwFullPathSize);
+
+//
+// Is path absolute?
+//
+bool IsPathAbsolute(const WCHAR *lpszPath);
