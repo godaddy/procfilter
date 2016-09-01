@@ -1,4 +1,5 @@
 *.cpp text eol=crlf
+*.bat text eol=crlf
 *.hpp text eol=crlf
 *.ini text eol=crlf
 *.md text eol=crlf
