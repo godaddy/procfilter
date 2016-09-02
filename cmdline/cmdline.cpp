@@ -84,16 +84,16 @@ CaptureCommandLine(PROCFILTER_EVENT *e)
 // Log the scan result and update the process block flags
 //
 DWORD
-LogCommandLineScanResult(PROCFILTER_EVENT *e, SCAN_RESULT *srResult, bool bBlock, bool bLog)
+LogCommandLineScanResult(PROCFILTER_EVENT *e, SCAN_RESULT *srResult, WCHAR *lpszCommandLine, bool bBlock, bool bLog)
 {
 	DWORD dwResultFlags = PROCFILTER_RESULT_NONE;
 
 	if (srResult->bScanSuccessful) {
-		if (bLog && srResult->bLog) e->LogFmt("Process PID %d (%ls) matched rule with Log tag: %ls",
-			e->dwProcessId, e->lpszFileName, srResult->szLogRuleNames);
+		if (bLog && srResult->bLog) e->LogFmt("Process PID %d (%ls) matched rule with Log tag: %ls\n Command Line:%ls",
+			e->dwProcessId, e->lpszFileName, srResult->szLogRuleNames, lpszCommandLine);
 		if (bBlock && srResult->bBlock) {
-			e->LogFmt("Process PID %d (%ls) matched rule with Block tag: %ls",
-				e->dwProcessId, e->lpszFileName, srResult->szBlockRuleNames);
+			e->LogFmt("Process PID %d (%ls) matched rule with Block tag: %ls\n Command Line:%ls",
+				e->dwProcessId, e->lpszFileName, srResult->szBlockRuleNames, lpszCommandLine);
 			dwResultFlags |= PROCFILTER_RESULT_BLOCK_PROCESS;
 		}
 	} else {
@@ -160,7 +160,7 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 			SCAN_RESULT srUnicodeResult;
 			ZeroMemory(&srUnicodeResult, sizeof(SCAN_RESULT));
 			e->ScanData(tg_CommandLineRulesContext, lpszCommandLine, dwCommandLineCharCount * sizeof(WCHAR) + sizeof(WCHAR), NULL, NULL, NULL, &srUnicodeResult);
-			dwResultFlags |= LogCommandLineScanResult(e, &srUnicodeResult, true, true);
+			dwResultFlags |= LogCommandLineScanResult(e, &srUnicodeResult, lpszCommandLine, true, true);
 			
 			// For convenience also scan with ASCII
 			char *lpszAsciiCommandLine = (char*)e->AllocateMemory(dwCommandLineCharCount + 1 , sizeof(char));
@@ -174,7 +174,7 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 				e->ScanData(tg_CommandLineRulesContext, lpszAsciiCommandLine, dwCommandLineCharCount + 1, NULL, NULL, NULL, &srAsciiResult);
 				
 				// Only Block/Log the result if it wasn't logged before
-				dwResultFlags |= LogCommandLineScanResult(e, &srAsciiResult, !srUnicodeResult.bBlock, !srUnicodeResult.bLog);
+				dwResultFlags |= LogCommandLineScanResult(e, &srAsciiResult, lpszCommandLine, !srUnicodeResult.bBlock, !srUnicodeResult.bLog);
 
 				// Cleanup
 				e->FreeMemory(lpszAsciiCommandLine);
