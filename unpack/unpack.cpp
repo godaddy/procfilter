@@ -91,7 +91,7 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 		e->RegisterPlugin(PROCFILTER_VERSION, L"Unpack", 0, sizeof(SCAN_DATA), false,
 			PROCFILTER_EVENT_YARA_SCAN_COMPLETE, PROCFILTER_EVENT_YARA_RULE_MATCH_META_TAG, PROCFILTER_EVENT_NONE);
 
-		e->GetProcFilterDirectory(g_szUnpackDirectory, sizeof(g_szUnpackDirectory), L"unpack");
+		e->GetProcFilterPath(g_szUnpackDirectory, sizeof(g_szUnpackDirectory), L"unpack", NULL);
 		CreateDirectoryW(g_szUnpackDirectory, NULL);
 	} else if (e->dwEventId == PROCFILTER_EVENT_YARA_RULE_MATCH_META_TAG) {
 		// this event happens for each meta value name in every rule that matches

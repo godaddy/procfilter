@@ -103,6 +103,11 @@ void ConfigInit();
 void ConfigDestroy();
 
 //
+// Get a ProcFilter path. Both input arguments are optional.
+//
+bool GetProcFilterPath(WCHAR *lpszResult, DWORD dwResultSize, const WCHAR *lpszSubDirectoryBaseName, const WCHAR *lpszFileBaseName);
+
+//
 // Print the stats
 //
 void ConfigStatusPrint();

@@ -36,7 +36,7 @@
 typedef struct yarascan_input_file YARASCAN_INPUT_FILE;
 struct yarascan_input_file {
 	const WCHAR *lpszFileName;
-	bool bOptional;
+	bool bRequired;
 	struct {
 		bool  bSuccess;
 		WCHAR szError[256];
@@ -52,6 +52,7 @@ struct yarascan_input_file {
 // If the function returns NULL, lpszError (if given) is valid.
 //
 YARASCAN_CONTEXT* YarascanAllocDefault(WCHAR *lpszError, DWORD dwErrorSize, bool bLogToEventLog, bool bLogToConsole);
+YARASCAN_CONTEXT* YarascanAllocLocalAndRemoteRuleFile(WCHAR *lpszBaseName, WCHAR *lpszError, DWORD dwErrorSize, bool bLogToEventLog, bool bLogToConsole);
 YARASCAN_CONTEXT* YarascanAlloc3(const WCHAR *lpszFileName, WCHAR *lpszError, DWORD dwErrorSize);
 YARASCAN_CONTEXT* YarascanAlloc4(YARASCAN_INPUT_FILE *yifInputFiles, size_t nInputFiles, WCHAR *lpszError, DWORD dwErrorSize);
 void YarascanFree(YARASCAN_CONTEXT *ctx);
@@ -63,4 +64,6 @@ void YarascanFree(YARASCAN_CONTEXT *ctx);
 void YarascanScanFile(YARASCAN_CONTEXT *ctx, WCHAR *lpszFile, DWORD dwScanFileSizeLimit,
 	OnMatchCallback_cb lpfnOnMatchCallback, OnMetaCallback_cb lpfnOnMetaCallback, void *user_data, SCAN_RESULT *o_result);
 void YarascanScanMemory(YARASCAN_CONTEXT *ctx, DWORD pid,
+	OnMatchCallback_cb lpfnOnMatchCallback, OnMetaCallback_cb lpfnOnMetaCallback, void *user_data, SCAN_RESULT *o_result);
+void YarascanScanData(YARASCAN_CONTEXT *ctx, const void *lpvData, DWORD dwDataSize,
 	OnMatchCallback_cb lpfnOnMatchCallback, OnMetaCallback_cb lpfnOnMetaCallback, void *user_data, SCAN_RESULT *o_result);

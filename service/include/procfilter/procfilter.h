@@ -38,7 +38,8 @@ extern "C" {
 #endif
 
 //
-// The ProcFilter API follows an event-driven, multi-threaded model. For each scan that occurs, a prescan
+// The ProcFilter API follows an event-driven, multi-threaded model. For each process, thread, and DLL that's
+// loaded in the system an event is generated to each plugin. For each YARA scan that occurs, a prescan
 // event happens, optionally followed by match and match meta events as rules are matched by the scanning
 // engine, finally followed by a postscan event. The sequence of these events is guaranteed per-scan, but
 // multiple threads can be doing scanning at onces, so multiple scans can be handling events simultaneously.
@@ -47,13 +48,40 @@ extern "C" {
 #define PROCFILTER_VERSION ((const WCHAR*)L"1.0.0-beta.3")
 
 //
-// PROCFILTER_EVENT_INIT / PROCFILTER_EVENT_SHUTDOWN
+// PROCFILTER_EVENT_INIT, PROCFILTER_EVENT_SHUTDOWN
 //
 // Plugins must call RegisterPlugin() first in PROCFILTER_EVENT_INIT to any other API calls.
 // 
 // Plugin must release resources and be ready for unloading after the shutdown event.
 //
-// Both of these events occur when only 1 thread is running within the API, so it is safe to modify global values.
+// Both of these events occur when only 1 thread is running within the API so it is safe to modify global values.
+//
+// Both of these events occur regardless of whether specified in RegisterPlugin().
+//
+//
+// PROCFILTER_EVENT_PROCFILTER_THREAD_INIT, PROCFILTER_EVENT_PROCFILTER_THREAD_SHUTDOWN
+//
+// Generated whenever a thread interacting within plugins is spawned within ProcFilter's core. This provides
+// the opportunity for a thread to initialize thread-global data if needed.
+//
+// Both of these events occur regardless of whether specified in RegisterPlugin().
+//
+//
+// PROCFILTER_EVENT_PROCESS_CREATE, PROCFILTER_EVENT_PROCESS_TERMINATE, PROCFILTER_EVENT_PROCESS_DATA_CLEANUP
+//
+// Generated whenever a process is created or terminated. lpvProcessData is plugin-specific data available
+// on a per process basis. It can be initialized during the process create event and deinitialized during
+// the process data clenaup event. Deinitialization is not done in the process terminate event since processes
+// still running when procfilter exits will not have a corresponding process terminate event, however, a
+// a process data cleanup event is guaranteed to be generated.
+//
+// These events are not generated for processes created by the ProcFilter service.
+//
+//
+// PROCFILTER_EVENT_THREAD_CREATE, PROCFILTER_EVENT_THREAD_TERMINATE
+// 
+// Generated whenever a usermode thread is created or terminated on the system, except for
+// threads within the ProcFilter process itself.
 //
 //
 // PROCFILTER_EVENT_YARA_SCAN_INIT, PROCFILTER_EVENT_YARA_SCAN_COMPLETE
@@ -86,31 +114,46 @@ extern "C" {
 // Called for each meta tag found in a scan match.
 //
 //
+// PROCFILTER_EVENT_STATUS
+//
+// Generated when "procfilter.exe -status" is run. Plugins can use StatusPrintFmt() to send status information
+// to the console.
+//
+//
+// PROCFILTER_EVENT_TICK
+//
+// This tick event happens periodically at >= 100ms intervals. This timer is not backed by an accumulator so
+// tick drift is possible over long periods. For example, 100 tick events equates to /at least/ 100 * 100ms of
+// time, not exactly 100 * 100ms of time.
+//
+
 #define PROCFILTER_EVENT_NONE                        0 // Valid: None
 
 #define PROCFILTER_EVENT_INIT                        1 // Valid: lpszArgument
 #define PROCFILTER_EVENT_SHUTDOWN                    2 // Valid: None
+#define PROCFILTER_EVENT_PROCFILTER_THREAD_INIT      3 // Valid: None
+#define PROCFILTER_EVENT_PROCFILTER_THREAD_SHUTDOWN  4 // Valid: None
 
-#define PROCFILTER_EVENT_PROCESS_CREATE              3 // Valid: dwProcessId, dwParentProcessId*, lpszFileName, lpvProcessData
-#define PROCFILTER_EVENT_PROCESS_TERMINATE           4 // Valid: dwProcessId, lpszFileName, lpvProcessData
-#define PROCFILTER_EVENT_PROCESS_DATA_CLEANUP        5 // Valid: lpvProcessData
+#define PROCFILTER_EVENT_PROCESS_CREATE              5 // Valid: dwProcessId, dwParentProcessId*, lpszFileName, lpvProcessData
+#define PROCFILTER_EVENT_PROCESS_TERMINATE           6 // Valid: dwProcessId, lpszFileName, lpvProcessData
+#define PROCFILTER_EVENT_PROCESS_DATA_CLEANUP        7 // Valid: lpvProcessData
 
-#define PROCFILTER_EVENT_THREAD_CREATE               6 // Valid: dwProcessId, dwParentProcessId, dwThreadId
-#define PROCFILTER_EVENT_THREAD_TERMINATE            7 // Valid: dwProcessId, dwThreadId
+#define PROCFILTER_EVENT_THREAD_CREATE               8 // Valid: dwProcessId, dwParentProcessId, dwThreadId
+#define PROCFILTER_EVENT_THREAD_TERMINATE            9 // Valid: dwProcessId, dwThreadId
 
-#define PROCFILTER_EVENT_IMAGE_LOAD                  8 // Valid: dwProcessId, lpszFileName*
+#define PROCFILTER_EVENT_IMAGE_LOAD                 10 // Valid: dwProcessId, lpszFileName*
 
-#define PROCFILTER_EVENT_YARA_SCAN_INIT              9 // Valid: dwProcessId, lpvScanData, dwParentProcessId*, lpszFileName, dScanContext, bScanFile, bScanMemory, dwCurrentResult
-#define PROCFILTER_EVENT_YARA_SCAN_COMPLETE         10 // Valid: dwProcessId, lpvScanData, dwParentProcessId*, lpszFileName, dScanContext, bScanFile, bScanMemory, dwCurrentResult
-#define PROCFILTER_EVENT_YARA_SCAN_CLEANUP          11 // Valid: dwProcessId, lpvScanData, dwParentProcessId*, lpszFileName, dScanContext, bBlockProcess, bProcessBlocked, srFileResult*, srMemoryResult*
-#define PROCFILTER_EVENT_YARA_RULE_MATCH            12 // Valid: dwProcessId, lpvScanData, lpszFileName*, dScanContext, dMatchLocation, lpszRuleName
-#define PROCFILTER_EVENT_YARA_RULE_MATCH_META_TAG   13 // Valid: dwProcessId, lpvScanData, lpszFileName*, dScanContext, dMatchLocation, lpszRuleName, lpszMetaTagName, dNumericValue, lpszStringValue*
+#define PROCFILTER_EVENT_YARA_SCAN_INIT             11 // Valid: dwProcessId, lpvScanData, dwParentProcessId*, lpszFileName, dScanContext, bScanFile, bScanMemory, dwCurrentResult
+#define PROCFILTER_EVENT_YARA_SCAN_COMPLETE         12 // Valid: dwProcessId, lpvScanData, dwParentProcessId*, lpszFileName, dScanContext, bScanFile, bScanMemory, dwCurrentResult
+#define PROCFILTER_EVENT_YARA_SCAN_CLEANUP          13 // Valid: dwProcessId, lpvScanData, dwParentProcessId*, lpszFileName, dScanContext, bBlockProcess, bProcessBlocked, srFileResult*, srMemoryResult*
+#define PROCFILTER_EVENT_YARA_RULE_MATCH            14 // Valid: dwProcessId, lpvScanData, lpszFileName*, dScanContext, dMatchLocation, lpszRuleName
+#define PROCFILTER_EVENT_YARA_RULE_MATCH_META_TAG   15 // Valid: dwProcessId, lpvScanData, lpszFileName*, dScanContext, dMatchLocation, lpszRuleName, lpszMetaTagName, dNumericValue, lpszStringValue*
 
-#define PROCFILTER_EVENT_STATUS                     14 // Valid: None
+#define PROCFILTER_EVENT_STATUS                     16 // Valid: None
 
-#define PROCFILTER_EVENT_TICK                       15 // Valid: None
+#define PROCFILTER_EVENT_TICK                       17 // Valid: None
     
-#define PROCFILTER_EVENT_NUM                        16
+#define PROCFILTER_EVENT_NUM                        18
 #define PROCFILTER_EVENT_ALL                        PROCFILTER_EVENT_NUM // Convenience value to pass in to RegisterPlugin() that signifies all events
                                                     
                                                        // * - May be NULL
@@ -233,10 +276,11 @@ struct procfilter_event {
     const WCHAR* (*GetProcessBaseNamePointer)(WCHAR *lpszProcessFileName);
 
     //
-    // Get a full path to a directory or file in ProcFilter's base directory.  Directories contain a trailing slash.
+    // Get a full path to a directory or file in ProcFilter's base directory. Directories contain a trailing slash.
     //
-    bool  (*GetProcFilterDirectory)(WCHAR *lpszResult, DWORD dwResultSize, const WCHAR *lpszSubDirectoryBaseName);
-    bool  (*GetProcFilterFile)(WCHAR *lpszResult, DWORD dwResultSize, const WCHAR *lpszFileBaseName);
+    // Both input argumnets are optional.
+    //
+    bool  (*GetProcFilterPath)(WCHAR *lpszResult, DWORD dwResultSize, const WCHAR *lpszSubDirectoryBaseName, const WCHAR *lpszFileBaseName);
 
     //
     // Convert a DOS path name such as 'C:\windows\system32\cmd.exe' to an NT path such as '\Device\HarddiskVolume2\Windows\system32\cmd.exe'
@@ -284,9 +328,16 @@ struct procfilter_event {
     // Scanning contexts must be freed with FreeScanContext().
     //
     YARASCAN_CONTEXT* (*AllocateScanContext)(const WCHAR *lpszYaraRuleFile, WCHAR *szError, DWORD dwErrorSize);
+    YARASCAN_CONTEXT* (*AllocateScanContextLocalAndRemote)(WCHAR *lpszBaseName, WCHAR *lpszError, DWORD dwErrorSize, bool bLogToEventLog);
     void  (*FreeScanContext)(YARASCAN_CONTEXT *ctx);
     void  (*ScanFile)(YARASCAN_CONTEXT *ctx, const WCHAR *lpszFileName, OnMatchCallback_cb lpfnOnMatchCallback, OnMetaCallback_cb lpfnOnMetaCallback, void *lpvUserData, SCAN_RESULT *o_result);
     void  (*ScanMemory)(YARASCAN_CONTEXT *ctx, DWORD dwProcessId, OnMatchCallback_cb lpfnOnMatchCallback, OnMetaCallback_cb lpfnOnMetaCallback, void *lpvUserData, SCAN_RESULT *o_result);
+    void  (*ScanData)(YARASCAN_CONTEXT *ctx, const void *lpvData, DWORD dwDataSize, OnMatchCallback_cb lpfnOnMatchCallback, OnMetaCallback_cb lpfnOnMetaCallback, void *lpvUserData, SCAN_RESULT *o_result);
+
+    //
+    // Scan data using the default context from ProcFilter.
+    //
+    void  (*Scan)(const void *lpvData, DWORD dwDataSize, OnMatchCallback_cb lpfnOnMatchCallback, OnMetaCallback_cb lpfnOnMetaCallback, void *lpvUserData, SCAN_RESULT *o_result);
 
     //
     // Read memory from the associated process

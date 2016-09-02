@@ -23,21 +23,18 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
+#include <Windows.h>
+#include <Shlwapi.h>
+
 #include "file.hpp"
+
+#pragma comment (lib, "shlwapi.lib")
 
 
 bool
 FileExists(const WCHAR *lpszFileName)
 {
-	bool rv = false;
-
-	HANDLE h = CreateFile(lpszFileName, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, 0, NULL);
-	if (h != INVALID_HANDLE_VALUE) {
-		rv = true;
-		CloseHandle(h);
-	}
-
-	return rv;
+	return PathFileExistsW(lpszFileName) != FALSE;
 }
 
 

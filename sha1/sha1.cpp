@@ -119,7 +119,7 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 		InitializeCriticalSection(&g_CriticalSection);
 		g_RunningMode = e->GetConfigBool(L"BuildWhitelist", false) ? MODE_BUILD_WHITELIST : MODE_CHECK_WHITELIST;
 		g_bBlockFilesNotWhitelisted = e->GetConfigBool(L"BlockFilesNotWhitelisted", false);
-		e->GetProcFilterFile(g_WhitelistFile, sizeof(g_WhitelistFile), L"whitelist.txt");
+		e->GetProcFilterPath(g_WhitelistFile, sizeof(g_WhitelistFile), NULL, L"whitelist.txt");
 		if (g_RunningMode == MODE_CHECK_WHITELIST && !LoadHashfile(e, g_WhitelistHashes, g_WhitelistFile)) e->Die("Unable to load whitelist");
 	} else if (e->dwEventId == PROCFILTER_EVENT_SHUTDOWN) {
 		if (g_RunningMode == MODE_BUILD_WHITELIST) {

@@ -110,7 +110,7 @@ ProcFilterServiceMainloop(HANDLE hStopEvent)
 {
 	CONFIG_DATA *cd = GetConfigData();
 
-	// The service thread runs at high p
+	// The service runs at high priority
 	if (!SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS)) Die("Unable to set process priority class");
 
 	EventWritePROCFILTERSERVICE_STARTED();
@@ -119,6 +119,8 @@ ProcFilterServiceMainloop(HANDLE hStopEvent)
 	UpdateInit();
 	ApiInit();
 	StatusInit();
+
+	ApiThreadInit();
 
 	DWORD dwLastScanTick = GetTickCount() - (cd->dwScanIntervalSeconds * 1000);
 	void *lpvScanDataArray = ApiAllocateScanDataArray();
@@ -159,6 +161,7 @@ ProcFilterServiceMainloop(HANDLE hStopEvent)
 
 	StatusShutdown();
 	ApiFreeScanDataArray(lpvScanDataArray);
+	ApiThreadShutdown();
 	ApiShutdown();
 	UpdateShutdown();
 	ScanShutdown();

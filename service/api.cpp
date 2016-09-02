@@ -114,6 +114,9 @@ typedef NTSTATUS (WINAPI *NtQueryInformationProcessFunction)(HANDLE ProcessHandl
 static HMODULE g_hNtdll = NULL;
 NtQueryInformationProcessFunction g_NtQueryInformationProcess = NULL;
 
+static __declspec(thread) bool tg_ApiThreadInitialized = false;				// Set once ApiThreadInit() has been called and used by ApiExportEvent() to make sure the thread initialized
+static __declspec(thread) YARASCAN_CONTEXT *tg_DefaultScanContext = NULL;	// The default scan context for use in Scan()
+
 //
 // These are set during plugin registation when plugins register interest in related events
 //
@@ -299,6 +302,8 @@ Export_RegisterPlugin(const WCHAR *szApiVersion, const WCHAR *lpszShortName, DWO
 	// Force select events on
 	p->bDesiredEventsArray[PROCFILTER_EVENT_SHUTDOWN] = true;
 	p->bDesiredEventsArray[PROCFILTER_EVENT_STATUS] = true;
+	p->bDesiredEventsArray[PROCFILTER_EVENT_PROCFILTER_THREAD_INIT] = true;
+	p->bDesiredEventsArray[PROCFILTER_EVENT_PROCFILTER_THREAD_SHUTDOWN] = true;
 	if (dwProcessDataSize) p->bDesiredEventsArray[PROCFILTER_EVENT_PROCESS_DATA_CLEANUP] = true;
 }
 
@@ -504,6 +509,13 @@ Export_AllocateScanContext(const WCHAR *lpszYaraRuleFile, WCHAR *szError, DWORD 
 }
 
 
+YARASCAN_CONTEXT*
+Export_AllocateScanContextLocalAndRemote(WCHAR *lpszBaseName, WCHAR *lpszError, DWORD dwErrorSize, bool bLogToEventLog)
+{
+	return YarascanAllocLocalAndRemoteRuleFile(lpszBaseName, lpszError, dwErrorSize, bLogToEventLog, false);
+}
+
+
 void
 Export_FreeScanContext(YARASCAN_CONTEXT *ctx)
 {
@@ -524,6 +536,26 @@ Export_ScanMemory(YARASCAN_CONTEXT *ctx, DWORD dwProcessId, OnMatchCallback_cb l
 	YarascanScanMemory(ctx, dwProcessId, lpfnOnMatchCallback, lpfnOnMetaCallback, lpvUserData, o_result);
 }
 
+
+void
+Export_ScanData(YARASCAN_CONTEXT *ctx, const void *lpvData, DWORD dwDataSize, OnMatchCallback_cb lpfnOnMatchCallback, OnMetaCallback_cb lpfnOnMetaCallback, void *lpvUserData, SCAN_RESULT *o_result)
+{
+	YarascanScanData(ctx, lpvData, dwDataSize, lpfnOnMatchCallback, lpfnOnMetaCallback, lpvUserData, o_result);
+}
+
+
+void
+Export_Scan(const void *lpvData, DWORD dwDataSize, OnMatchCallback_cb lpfnOnMatchCallback, OnMetaCallback_cb lpfnOnMetaCallback, void *lpvUserData, SCAN_RESULT *o_result)
+{
+	ZeroMemory(o_result, sizeof(SCAN_RESULT));
+
+	if (tg_DefaultScanContext) {
+		YarascanScanData(tg_DefaultScanContext, lpvData, dwDataSize, lpfnOnMatchCallback, lpfnOnMetaCallback, lpvUserData, o_result);
+	} else {
+		Warning(L"Default rules unavailable in Scan() in plugin %ls while handling event %d",
+			GetCurrentPlugin()->szShortName, GetCurrentEvent()->dwEventId);
+	}
+}
 
 
 bool
@@ -692,22 +724,9 @@ Export_FreeMemory(void *lpPointer)
 
 
 bool
-Export_GetProcFilterDirectory(WCHAR *lpszResult, DWORD dwResultSize, const WCHAR *lpszSubDirectoryBaseName)
+Export_GetProcFilterPath(WCHAR *lpszResult, DWORD dwResultSize, const WCHAR *lpszSubDirectoryBaseName, const WCHAR *lpszFileBaseName)
 {
-	CONFIG_DATA *cd = GetConfigData();
-
-	size_t dwSubDirLength = wcslen(lpszSubDirectoryBaseName);
-	bool bAddTrailingSlash = dwSubDirLength > 0 && lpszSubDirectoryBaseName[dwSubDirLength-1] != '\\' && lpszSubDirectoryBaseName[dwSubDirLength-1] != '/';
-	return wstrlprintf(lpszResult, dwResultSize, L"%ls%ls%hs", cd->szBaseDirectory, lpszSubDirectoryBaseName, bAddTrailingSlash ? "\\" : "");
-}
-
-
-bool
-Export_GetProcFilterFile(WCHAR *lpszResult, DWORD dwResultSize, const WCHAR *lpszFileBaseName)
-{
-	CONFIG_DATA *cd = GetConfigData();
-
-	return wstrlprintf(lpszResult, dwResultSize, L"%ls%ls", cd->szBaseDirectory, lpszFileBaseName);
+	return GetProcFilterPath(lpszResult, dwResultSize, lpszSubDirectoryBaseName, lpszFileBaseName);
 }
 
 
@@ -866,6 +885,8 @@ DWORD
 WINAPI
 ep_ApiEventThread(void *lpUnused)
 {
+	ApiThreadInit();
+
 	PROCFILTER_EVENT e;
 	ApiEventInit(&e, PROCFILTER_EVENT_TICK);
 
@@ -873,6 +894,8 @@ ep_ApiEventThread(void *lpUnused)
 		ApiEventReinit(&e, PROCFILTER_EVENT_TICK);
 		ApiEventExport(&e);
 	}
+
+	ApiThreadShutdown();
 
 	return 0;
 }
@@ -970,6 +993,36 @@ ApiShutdown()
 	}
 
 	DeleteCriticalSection(&g_ProcessDataMapMutex);
+}
+
+
+void
+ApiThreadInit()
+{
+	tg_DefaultScanContext = YarascanAllocDefault(NULL, 0, false, false);
+	
+	tg_ApiThreadInitialized = true;
+
+	PROCFILTER_EVENT e;
+	ApiEventInit(&e, PROCFILTER_EVENT_PROCFILTER_THREAD_INIT);
+	ApiEventExport(&e);
+}
+
+
+void
+ApiThreadShutdown()
+{
+	
+	PROCFILTER_EVENT e;
+	ApiEventInit(&e, PROCFILTER_EVENT_PROCFILTER_THREAD_SHUTDOWN);
+	ApiEventExport(&e);
+
+	if (tg_DefaultScanContext) {
+		YarascanFree(tg_DefaultScanContext);
+		tg_DefaultScanContext = NULL;
+	}
+
+	tg_ApiThreadInitialized = false;
 }
 
 
@@ -1083,6 +1136,13 @@ ApiFreeScanDataArray(void *lpvScanDataArray)
 DWORD
 ApiEventExport(PROCFILTER_EVENT *e)
 {
+	// These events can be exported before/after ApiThreadShutdown() is called.
+	if ((e->dwEventId != PROCFILTER_EVENT_SHUTDOWN &&
+		 e->dwEventId != PROCFILTER_EVENT_INIT &&
+		 e->dwEventId != PROCFILTER_EVENT_PROCESS_DATA_CLEANUP) && !tg_ApiThreadInitialized) {
+		Die("Attempt to export event %d from a thread that didn't call ApiThreadInit()", e->dwEventId);
+	}
+
 	DWORD dwResult = e->dwCurrentResult;
 
 	if (e->dwEventId >= PROCFILTER_EVENT_NUM) Die("Event ID out of range: %d", e->dwEventId);

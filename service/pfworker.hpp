@@ -37,7 +37,6 @@
 typedef struct pool_data POOL_DATA;
 struct pool_data {
 	HANDLE hSharedDriverHandle;           // The driver handled shared between workers where results are written
-	int dEventPriorities[NUM_EVENTTYPES]; // The array containing thread priorities
 };
 
 //

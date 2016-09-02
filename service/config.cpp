@@ -151,6 +151,21 @@ GetConfigDirectory(const WCHAR *lpszKey, const WCHAR *lpszDefault, WCHAR *lpszRe
 }
 
 
+bool
+GetProcFilterPath(WCHAR *lpszResult, DWORD dwResultSize, const WCHAR *lpszSubDirectoryBaseName, const WCHAR *lpszFileBaseName)
+{
+	if (!lpszSubDirectoryBaseName) lpszSubDirectoryBaseName = L"";
+	if (!lpszFileBaseName) lpszFileBaseName = L"";
+
+	CONFIG_DATA *cd = GetConfigData();
+
+	size_t dwSubDirLength = wcslen(lpszSubDirectoryBaseName);
+	bool bAddSubDirTrailingSlash = dwSubDirLength > 0 && lpszSubDirectoryBaseName[dwSubDirLength-1] != '\\' && lpszSubDirectoryBaseName[dwSubDirLength-1] != '/';
+	return wstrlprintf(lpszResult, dwResultSize, L"%ls%ls%hs%ls",
+		cd->szBaseDirectory, lpszSubDirectoryBaseName, bAddSubDirTrailingSlash ? "\\" : "", lpszFileBaseName);
+}
+
+
 static
 bool
 GetBool(const WCHAR *lpszKey, bool bDefault)

@@ -30,10 +30,16 @@
 #include "config.hpp"
 
 //
-// Init and shutdown the API
+// Init and shutdown the API globally for the process
 //
 void ApiInit();
 void ApiShutdown();
+
+// 
+// All threads that generate API events must call this before calling ApiEventXxx
+//
+void ApiThreadInit();
+void ApiThreadShutdown();
 
 //
 // Initialize an API event structure, reinitialize it for reuse, and export the event

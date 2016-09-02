@@ -38,7 +38,6 @@ typedef struct threadpool THREADPOOL;
 // destroyfn - Called by each thread on threadpool shutdown
 // lpPoolData - User data pointer passed in to all callbacks
 // dwThreadDataSize - Size of thread data allocated for each thread and passed in as the lpThreadData argument
-// nPriority - Priority for each thread
 //
 // Worker threads each call initfn() and destroyfn() on creation/shutdown.
 //
@@ -48,8 +47,7 @@ THREADPOOL* ThreadPoolAlloc(int dNumThreads,
 							void (*workfn)(void *lpPoolData, void *lpThreadData, void *lpTaskData, bool bCancel),
 							void (*destroyfn)(void *lpPoolData, void *lpThreadData),
 							void *lpPoolData,
-							DWORD dwThreadDataSize,
-							int nPriority);
+							DWORD dwThreadDataSize);
 void ThreadPoolFree(THREADPOOL *tp);
 
 //

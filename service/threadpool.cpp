@@ -166,8 +166,7 @@ ThreadPoolAlloc(int dNumThreads,
 				void (*workfn)(void *lpPoolData, void *lpThreadData, void *lpTaskData, bool bCancel),
 				void (*destroyfn)(void *lpPoolData, void *lpThreadData),
 				void *lpPoolData,
-				DWORD dwThreadDataSize,
-				int nPriority)
+				DWORD dwThreadDataSize)
 {
 	THREADPOOL *tp = (THREADPOOL*)calloc(1, sizeof(THREADPOOL));
 	if (!tp) return NULL;
@@ -259,8 +258,6 @@ ThreadPoolAlloc(int dNumThreads,
 			failed = true;
 			break;
 		}
-
-		SetThreadPriority(tc->hThread, nPriority);
 	}
 
 	if (failed) {

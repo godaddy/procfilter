@@ -240,14 +240,12 @@ ep_DriverService(void *arg)
 {
 	const CONFIG_DATA *cd = GetConfigData();
 
-	SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST);
-
 	// Build the threadpool
 	POOL_DATA pd;
 	ZeroMemory(&pd, sizeof(POOL_DATA));
 	pd.hSharedDriverHandle = g_hDriver;
 	const DWORD dwNumChannels = NUM_EVENTTYPES-1; // -1 to ignore EVENT_NONE
-	THREADPOOL *tp = ThreadPoolAlloc(cd->dThreadPoolSize, dwNumChannels, PfWorkerInit, PfWorkerWork, PfWorkerDestroy, &pd, sizeof(WORKER_DATA), THREAD_PRIORITY_NORMAL);
+	THREADPOOL *tp = ThreadPoolAlloc(cd->dThreadPoolSize, dwNumChannels, PfWorkerInit, PfWorkerWork, PfWorkerDestroy, &pd, sizeof(WORKER_DATA));
 	if (!tp) Die("Unable to allocate threadpool");
 
 	// Create the read file event for use with overlapped I/O

@@ -31,9 +31,11 @@
 #include "ProcFilterEvents.h"
 #include "strlcat.hpp"
 #include "log.hpp"
+#include "file.hpp"
 #include "winerr.hpp"
 #include "sha1.hpp"
 #include "quarantine.hpp"
+#include "path.hpp"
 #include "config.hpp"
 
 #include "yara.hpp"
@@ -72,13 +74,13 @@ YarascanAllocDefault(WCHAR *lpszError, DWORD dwErrorSize, bool bLogToEventLog, b
 	int i = 0;
 	if (cd->bUseLocalRuleFile) {
 		yifInputFiles[i].lpszFileName = cd->szLocalYaraRuleFile;
-		yifInputFiles[i].bOptional = true;
+		yifInputFiles[i].bRequired = false;
 		++i;
 	}
 
 	if (cd->bUseRemoteRuleFile) {
 		yifInputFiles[i].lpszFileName = cd->szRemoteYaraRuleFile;
-		yifInputFiles[i].bOptional = true;
+		yifInputFiles[i].bRequired = false;
 		++i;
 	}
 
@@ -92,6 +94,52 @@ YarascanAllocDefault(WCHAR *lpszError, DWORD dwErrorSize, bool bLogToEventLog, b
 				}
 				if (bLogToConsole) {
 					fwprintf(stderr, L"Rule compilation failed for %ls: %ls\n", yifInputFiles[j].lpszFileName, yifInputFiles[j].result.szError);
+				}
+			}
+		}
+	}
+
+	return ctx;
+}
+
+
+YARASCAN_CONTEXT*
+YarascanAllocLocalAndRemoteRuleFile(WCHAR *lpszBaseName, WCHAR *lpszError, DWORD dwErrorSize, bool bLogToEventLog, bool bLogToConsole)
+{
+	CONFIG_DATA *cd = GetConfigData();
+
+	YARASCAN_INPUT_FILE yifInputFiles[2];
+	ZeroMemory(yifInputFiles, sizeof(yifInputFiles));
+	
+	WCHAR szLocalRuleFile[MAX_PATH+1] = { '\0' };
+	WCHAR szRemoteRuleFile[MAX_PATH+1] = { '\0' };
+	
+	if (!GetProcFilterPath(szLocalRuleFile, sizeof(szLocalRuleFile), L"localrules", lpszBaseName)) {
+		if (lpszError) wstrlprintf(lpszError, dwErrorSize, L"localrules path too long");
+		return NULL;
+	}
+	if (!GetProcFilterPath(szRemoteRuleFile, sizeof(szRemoteRuleFile), L"remoterules", lpszBaseName)) {
+		if (lpszError) wstrlprintf(lpszError, dwErrorSize, L"remoterules path too long");
+		return NULL;
+	}
+
+	yifInputFiles[0].lpszFileName = szLocalRuleFile;
+	yifInputFiles[0].bRequired = FileExists(szLocalRuleFile);
+
+	yifInputFiles[1].lpszFileName = szRemoteRuleFile;
+	yifInputFiles[1].bRequired = FileExists(szRemoteRuleFile);
+
+	YARASCAN_CONTEXT *ctx = YarascanAlloc4(yifInputFiles, 2, lpszError, dwErrorSize);
+	if (ctx) {
+		// Print a warning for rule files that didnt successfully compile
+		for (int i = 0; i < 2; ++i) {
+			// Log if it was a required file OR the file exists but wasn't successfully compiled
+			if (yifInputFiles[i].bRequired && !yifInputFiles[i].result.bSuccess) {
+				if (bLogToEventLog) {
+					EventWriteRULE_COMPILATION_FAILED(yifInputFiles[i].lpszFileName, yifInputFiles[i].result.szError);
+				}
+				if (bLogToConsole) {
+					fwprintf(stderr, L"Rule compilation failed for %ls: %ls\n", yifInputFiles[i].lpszFileName, yifInputFiles[i].result.szError);
 				}
 			}
 		}
@@ -153,22 +201,23 @@ YarascanAlloc4(YARASCAN_INPUT_FILE *yifInputFiles, size_t nInputFiles, WCHAR *lp
 				char szYaraError[512] = { '\0' };
 				yr_compiler_get_error_message(compiler, szYaraError, _countof(szYaraError)-1);
 
-				if (yifInputFile->bOptional) {
-					wstrlprintf(yifInputFile->result.szError, sizeof(yifInputFile->result.szError),
-						L"YARA rule file compilation error: %hs\n%ls", szYaraError, ctx->szCompilationError);
-				} else {
+				if (yifInputFile->bRequired) {
 					if (lpszError) wstrlprintf(lpszError, dwErrorSize, L"YARA rule file compilation error: %hs\n%ls", szYaraError, ctx->szCompilationError);
 					goto fail;
+				} else {
+					wstrlprintf(yifInputFile->result.szError, sizeof(yifInputFile->result.szError),
+							L"YARA rule file compilation error: %hs\n%ls", szYaraError, ctx->szCompilationError);
 				}
 			}
 			fclose(f);
 			f = NULL;
 		} else {
-			if (yifInputFile->bOptional) {
-				wstrlprintf(yifInputFile->result.szError, sizeof(yifInputFile->result.szError), L"Unable to read rules file: %ls", yifInputFile->lpszFileName);
-			} else {
+			if (yifInputFile->bRequired) {
 				if (lpszError) wstrlprintf(lpszError, dwErrorSize, L"Unable to read rules file: %ls", yifInputFile->lpszFileName);
 				goto fail;
+			} else {
+				wstrlprintf(yifInputFile->result.szError, sizeof(yifInputFile->result.szError),
+					L"Unable to read rules file: %ls", yifInputFile->lpszFileName);
 			}
 		}
 	}
@@ -298,6 +347,11 @@ callback(int message, void *message_data, void *user_data)
 	return CALLBACK_ERROR;
 }
 
+//
+// NOTE: These three YarascanScanXxx() functions could be refactored to remove duplication between the functions, but
+// the new prototype would either require a large number of arguments or a struct/union for the various parameters and
+// this would overall lead to more code.
+//
 
 //
 // Scan the specified process with YARA
@@ -372,5 +426,32 @@ YarascanScanFile(YARASCAN_CONTEXT *ctx, WCHAR *lpszFile, DWORD dwScanFileSizeLim
 		}
 	} else if (dwScanFileSizeLimit) {
 		wstrlprintf(result->szError, sizeof(result->szError), L"File exceeds limit of %u bytes: %u bytes in file", dwScanFileSizeLimit, dwFileSize);
+	}
+}
+
+
+void YarascanScanData(YARASCAN_CONTEXT *ctx, const void *lpvData, DWORD dwDataSize,
+	OnMatchCallback_cb lpfnOnMatchCallback, OnMetaCallback_cb lpfnOnMetaCallback, void *user_data, SCAN_RESULT *o_result)
+{
+	SCAN_RESULT *result = o_result;
+	ZeroMemory(result, sizeof(SCAN_RESULT));
+	
+	if (!ctx || !ctx->rules) { result->bScanSuccessful = true; return; }
+	
+	CALLBACK_USER_DATA cud = { result, lpfnOnMatchCallback, lpfnOnMetaCallback, user_data };
+	int error = yr_rules_scan_mem(ctx->rules, (uint8_t*)lpvData, dwDataSize, SCAN_FLAGS_FAST_MODE, callback, &cud, 0);
+	if (error == ERROR_SUCCESS) {
+		result->bScanSuccessful = true;
+	} else {
+		char *szError = NULL;
+		switch (error) {
+		case ERROR_COULD_NOT_ATTACH_TO_PROCESS: szError = "Could not scan data"; break;
+		default: break;
+		}
+		if (szError) {
+			wstrlprintf(result->szError, sizeof(result->szError), L"%hs", szError);
+		} else {
+			wstrlprintf(result->szError, sizeof(result->szError), L"YARA error during data scan: Error code 0x%08X", error);
+		}
 	}
 }

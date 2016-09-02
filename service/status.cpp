@@ -200,6 +200,8 @@ ep_StatusWorker(void *lpvHandle)
 	HANDLE hPipe = (HANDLE)lpvHandle;
 
 	HANDLE hWriteCompletionEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	
+	ApiThreadInit();
 
 	if (hWriteCompletionEvent && DisplayStatus(hPipe, hWriteCompletionEvent)) {
 		EVENT_DATA ed = { hPipe, hWriteCompletionEvent, false };
@@ -216,6 +218,8 @@ ep_StatusWorker(void *lpvHandle)
 	EnterCriticalSection(&g_cs);
 	g_nWorkerThreads -= 1;
 	LeaveCriticalSection(&g_cs);
+	
+	ApiThreadShutdown();
 
 	return 0;
 }

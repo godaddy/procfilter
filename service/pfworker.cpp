@@ -55,6 +55,8 @@ PfWorkerInit(void *lpPoolData, void *lpThreadData)
 
 	LogDebug("Worker Initializing");
 
+	ApiThreadInit();
+
 	ApiEventInit(&wd->pfProcFilterEvent, PROCFILTER_EVENT_NONE);
 	wd->hWriteCompletionEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 	if (wd->hWriteCompletionEvent == NULL) Die("Unable to create write completion event in worker");
@@ -68,16 +70,6 @@ PfWorkerInit(void *lpPoolData, void *lpThreadData)
 
 	wd->lpvScanDataArray = ApiAllocateScanDataArray();
 	if (!wd->lpvScanDataArray) Die("Unable to allocate match data array in worker thread");
-
-	// Setup an array containing task -> priority mappings for worker threads
-	for (int i = 0; i < NUM_EVENTTYPES; ++i) {
-		pd->dEventPriorities[i] = THREAD_PRIORITY_NORMAL;
-	}
-	pd->dEventPriorities[EVENTTYPE_THREADCREATE] = THREAD_PRIORITY_HIGHEST;
-	pd->dEventPriorities[EVENTTYPE_THREADTERMINATE] = THREAD_PRIORITY_HIGHEST;
-	pd->dEventPriorities[EVENTTYPE_IMAGELOAD] = THREAD_PRIORITY_ABOVE_NORMAL;
-
-	SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST);
 }
 
 
@@ -95,6 +87,7 @@ PfWorkerDestroy(void *lpPoolData, void *lpThreadData)
 	CloseHandle(wd->hWriteCompletionEvent);
 	ApiFreeScanDataArray(wd->lpvScanDataArray);
 	YarascanFree(wd->ctx);
+	ApiThreadShutdown();
 }
 
 
@@ -116,13 +109,6 @@ PfWorkerWork(void *lpPoolData, void *lpThreadData, void *lpTaskData, bool bCance
 	HANDLE hSelf = GetCurrentThread();
 
 	LogDebug("Worker starting");
-
-	// Set the current thread's priority according to the task type given
-	int dOriginalPriority = GetThreadPriority(hSelf);
-	bool bChangePriority = dOriginalPriority != pd->dEventPriorities[req->dwEventType];
-	if (bChangePriority) {
-		SetThreadPriority(hSelf, pd->dEventPriorities[req->dwEventType]);
-	}
 	
 	// Map the event type from kernel mode to an api event type
 	DWORD dwApiEventId = PROCFILTER_EVENT_NONE;
@@ -186,11 +172,6 @@ PfWorkerWork(void *lpPoolData, void *lpThreadData, void *lpTaskData, bool bCance
 			Scan(req->dwEventType, PROCFILTER_SCAN_CONTEXT_IMAGE_LOAD, &wd->pfProcFilterEvent, wd->ctx, pd->hSharedDriverHandle, wd->hWriteCompletionEvent, req->dwProcessId, 0, req->szFileName, req->lpImageBase, wd->lpvScanDataArray);
 			LogDebugFmt("Image load scan complete: 0x%08X / %ls", req->dwProcessId, req->szFileName);
 		}
-	}
-	
-	// Revert back to original thread priority
-	if (bChangePriority) {
-		SetThreadPriority(hSelf, dOriginalPriority);
 	}
 
 	free(wtd);

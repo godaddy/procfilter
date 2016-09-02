@@ -23,8 +23,11 @@ public:
 	bool bLogSubprocess;
 };
 typedef std::map<DWORD, ParentData> PidSet;
-PidSet g_pidSet;
-CRITICAL_SECTION g_pidSetMutex;
+static PidSet g_pidSet;
+static CRITICAL_SECTION g_pidSetMutex;
+static WCHAR g_szRuleFileBaseName[MAX_PATH+1] = { '\0' };
+
+static __declspec(thread) YARASCAN_CONTEXT *tg_CommandLineRulesContext = NULL;
 
 typedef struct match_data SCAN_DATA;
 struct match_data {
@@ -33,6 +36,19 @@ struct match_data {
 	bool   bAskSubprocesses;    // Ask about creating subprocesses of this process?
 	WCHAR *lpszCommandLine;     // A copy of the command line if captured
 };
+
+
+void
+LoadCommandLineRules(PROCFILTER_EVENT *e)
+{
+	if (wcslen(g_szRuleFileBaseName) > 0) {
+		WCHAR szError[256] = { '\0' };
+		tg_CommandLineRulesContext = e->AllocateScanContextLocalAndRemote(g_szRuleFileBaseName, szError, sizeof(szError), true);
+		if (!tg_CommandLineRulesContext) {
+			e->LogFmt("Error compiling rules file %ls: %ls", g_szRuleFileBaseName, szError);
+		}
+	}
+}
 
 
 //
@@ -65,6 +81,29 @@ CaptureCommandLine(PROCFILTER_EVENT *e)
 
 
 //
+// Log the scan result and update the process block flags
+//
+DWORD
+LogCommandLineScanResult(PROCFILTER_EVENT *e, SCAN_RESULT *srResult, bool bBlock, bool bLog)
+{
+	DWORD dwResultFlags = PROCFILTER_RESULT_NONE;
+
+	if (srResult->bScanSuccessful) {
+		if (bLog && srResult->bLog) e->LogFmt("Process PID %d (%ls) matched rule with Log tag: %ls",
+			e->dwProcessId, e->lpszFileName, srResult->szLogRuleNames);
+		if (bBlock && srResult->bBlock) {
+			e->LogFmt("Process PID %d (%ls) matched rule with Block tag: %ls",
+				e->dwProcessId, e->lpszFileName, srResult->szBlockRuleNames);
+			dwResultFlags |= PROCFILTER_RESULT_BLOCK_PROCESS;
+		}
+	} else {
+		e->LogFmt("'cmdline' plugin unable to scan command line for PID %d: %ls", e->dwProcessId, srResult->szError);
+	}
+
+	return dwResultFlags;
+}
+
+//
 // ProcFilter event handler
 //
 DWORD
@@ -79,10 +118,18 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 			PROCFILTER_EVENT_YARA_SCAN_INIT, PROCFILTER_EVENT_YARA_SCAN_COMPLETE, PROCFILTER_EVENT_YARA_SCAN_CLEANUP,
 			PROCFILTER_EVENT_YARA_RULE_MATCH, PROCFILTER_EVENT_YARA_RULE_MATCH_META_TAG, PROCFILTER_EVENT_PROCESS_CREATE,
 			PROCFILTER_EVENT_PROCESS_TERMINATE, PROCFILTER_EVENT_NONE);
+		
 		InitializeCriticalSection(&g_pidSetMutex);
+
+		e->GetConfigString(L"RuleFile", L"", g_szRuleFileBaseName, sizeof(g_szRuleFileBaseName));
 	} else if (e->dwEventId == PROCFILTER_EVENT_SHUTDOWN) {
 		DeleteCriticalSection(&g_pidSetMutex);
-	} else if (e->dwEventId == PROCFILTER_EVENT_PROCESS_CREATE && e->dwParentProcessId) {
+	} else if (e->dwEventId == PROCFILTER_EVENT_PROCFILTER_THREAD_INIT) {
+		LoadCommandLineRules(e);
+	} else if (e->dwEventId == PROCFILTER_EVENT_PROCFILTER_THREAD_SHUTDOWN) {
+		if (tg_CommandLineRulesContext) e->FreeScanContext(tg_CommandLineRulesContext);
+	} else if (e->dwEventId == PROCFILTER_EVENT_PROCESS_CREATE) {
+		// Get the data associated with this processes parent
 		ParentData parentData;
 		EnterCriticalSection(&g_pidSetMutex);
 		auto iter = g_pidSet.find(e->dwParentProcessId);
@@ -90,16 +137,52 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 			parentData = iter->second;
 		}
 		LeaveCriticalSection(&g_pidSetMutex);
+
+		// Extract the command line data associated with the current process, if needed
 		WCHAR *lpszCommandLine = NULL;
-		if (parentData.bLogSubprocess || parentData.bAskSubprocess) {
+		if (parentData.bLogSubprocess || parentData.bAskSubprocess || tg_CommandLineRulesContext) {
 			lpszCommandLine = CaptureCommandLine(e);
 		}
+
+		// Subprocesses logged?
 		if (parentData.bLogSubprocess) {
 			e->LogFmt("Subprocess of %d %ls: %d %ls: %ls",
 				e->dwParentProcessId, parentData.wsBasename.c_str(), e->dwProcessId, e->lpszFileName,
 				lpszCommandLine ? lpszCommandLine : L"NULL");
 		}
-		if (parentData.bAskSubprocess) {
+
+		// If the command line data, filename, and scanning context is available then scan
+		// the command line arguments with the rules specified for it
+		if (lpszCommandLine && e->lpszFileName && tg_CommandLineRulesContext) {
+			const DWORD dwCommandLineCharCount = (DWORD)wcslen(lpszCommandLine);
+
+			// Scan the UNICODE command line and log the result
+			SCAN_RESULT srUnicodeResult;
+			ZeroMemory(&srUnicodeResult, sizeof(SCAN_RESULT));
+			e->ScanData(tg_CommandLineRulesContext, lpszCommandLine, dwCommandLineCharCount * sizeof(WCHAR) + sizeof(WCHAR), NULL, NULL, NULL, &srUnicodeResult);
+			dwResultFlags |= LogCommandLineScanResult(e, &srUnicodeResult, true, true);
+			
+			// For convenience also scan with ASCII
+			char *lpszAsciiCommandLine = (char*)e->AllocateMemory(dwCommandLineCharCount + 1 , sizeof(char));
+			if (lpszAsciiCommandLine) {
+				snprintf(lpszAsciiCommandLine, dwCommandLineCharCount + 1, "%ls", lpszCommandLine);
+				lpszAsciiCommandLine[dwCommandLineCharCount] = '\0';
+				
+				// Scan the ASCII command line
+				SCAN_RESULT srAsciiResult;
+				ZeroMemory(&srAsciiResult, sizeof(SCAN_RESULT));
+				e->ScanData(tg_CommandLineRulesContext, lpszAsciiCommandLine, dwCommandLineCharCount + 1, NULL, NULL, NULL, &srAsciiResult);
+				
+				// Only Block/Log the result if it wasn't logged before
+				dwResultFlags |= LogCommandLineScanResult(e, &srAsciiResult, !srUnicodeResult.bBlock, !srUnicodeResult.bLog);
+
+				// Cleanup
+				e->FreeMemory(lpszAsciiCommandLine);
+			}
+		}
+
+		// If the process isn't blocked yet prompt the user interactively
+		if (parentData.bAskSubprocess && !(dwResultFlags & PROCFILTER_RESULT_BLOCK_PROCESS)) {
 			if (e->ShellNoticeFmt(0, true, MB_ICONWARNING | MB_YESNO, L"Allow process?",
 				L"The program \"%ls\" is trying to run the following file:\n%ls\n\nCommand line:\n%ls\n\nAllow? Select 'No' if unsure.",
 				parentData.wsBasename.c_str(), e->lpszFileName,
@@ -107,6 +190,7 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 				dwResultFlags |= PROCFILTER_RESULT_BLOCK_PROCESS;
 			}
 		}
+
 		if (lpszCommandLine) e->FreeMemory(lpszCommandLine);
 	} else if (e->dwEventId == PROCFILTER_EVENT_PROCESS_TERMINATE) {
 		EnterCriticalSection(&g_pidSetMutex);

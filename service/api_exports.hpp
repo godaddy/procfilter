@@ -27,9 +27,11 @@ bool Export_ConcatenateString(WCHAR *lpszDestination, DWORD dwDestinationSize, c
 bool Export_VFormatString(WCHAR *lpszDestination, DWORD dwDestinationSize, const WCHAR *lpszFormatString, va_list ap);
 bool Export_VConcatenateString(WCHAR *lpszDestination, DWORD dwDestinationSize, const WCHAR *lpszFormatString, va_list ap);
 YARASCAN_CONTEXT* Export_AllocateScanContext(const WCHAR *lpszYaraRuleFile, WCHAR *szError, DWORD dwErrorSize);
+YARASCAN_CONTEXT* Export_AllocateScanContextLocalAndRemote(WCHAR *lpszBaseName, WCHAR *lpszError, DWORD dwErrorSize, bool bLogToEventLog);
 void Export_FreeScanContext(YARASCAN_CONTEXT *ctx);
 void Export_ScanFile(YARASCAN_CONTEXT *ctx, const WCHAR *lpszFileName, OnMatchCallback_cb lpfnOnMatchCallback, OnMetaCallback_cb lpfnOnMetaCallback, void *lpvUserData, SCAN_RESULT *o_result);
 void Export_ScanMemory(YARASCAN_CONTEXT *ctx, DWORD dwProcessId, OnMatchCallback_cb lpfnOnMatchCallback, OnMetaCallback_cb lpfnOnMetaCallback, void *lpvUserData, SCAN_RESULT *o_result);
+void Export_ScanData(YARASCAN_CONTEXT *ctx, const void *lpvData, DWORD dwDataSize, OnMatchCallback_cb lpfnOnMatchCallback, OnMetaCallback_cb lpfnOnMetaCallback, void *lpvUserData, SCAN_RESULT *o_result);
 bool Export_GetFile(const WCHAR *lpszUrl, void *lpvResult, DWORD dwResultSize, DWORD *lpdwBytesUsed);
 void Export_Log(const char *str);
 int Export_GetConfigInt(const WCHAR *lpszKey, int dDefault);
@@ -42,11 +44,11 @@ DWORD Export_ShellNotice(DWORD dwDurationSeconds, bool bWait, DWORD dwStyle, WCH
 bool Export_Sha1File(const WCHAR *lpszFileName, char *lpszHexDigest, DWORD dwHexDigestSize, void *lpbaRawDigest, DWORD dwRawDigestSize);
 void* Export_AllocateMemory(size_t dwNumElements, size_t dwElementSize);
 void Export_FreeMemory(void *lpPointer);
-bool Export_GetProcFilterDirectory(WCHAR *lpszResult, DWORD dwResultSize, const WCHAR *lpszSubDirectoryBaseName);
-bool Export_GetProcFilterFile(WCHAR *lpszResult, DWORD dwResultSize, const WCHAR *lpszFileBaseName);
+bool Export_GetProcFilterPath(WCHAR *lpszResult, DWORD dwResultSize, const WCHAR *lpszFileBaseName, const WCHAR *lpszSubDirectoryBaseName);
 WCHAR* Export_DuplicateString(const WCHAR *lpszString);
 bool Export_VerifyPeSignature(const WCHAR *lpszFileName, bool bCheckRevocations);
 void Export_StatusPrintFmt(const WCHAR *lpszFmt, ...);
+void Export_Scan(const void *lpvData, DWORD dwDataSize, OnMatchCallback_cb lpfnOnMatchCallback, OnMetaCallback_cb lpfnOnMetaCallback, void *lpvUserData, SCAN_RESULT *o_result);
 }
 
 #else 
@@ -61,11 +63,13 @@ StoreExport(AllocateScanContext);
 StoreExport(FreeScanContext);
 StoreExport(GetNtPathName);
 StoreExport(ShellNotice);
+StoreExport(AllocateScanContextLocalAndRemote);
 StoreExport(ShellNoticeFmt);
 StoreExport(QuarantineFile);
 StoreExport(Sha1File);
 StoreExport(ScanFile);
 StoreExport(ScanMemory);
+StoreExport(ScanData);
 StoreExport(Die);
 StoreExport(Log);
 StoreExport(LogFmt);
@@ -80,13 +84,13 @@ StoreExport(VConcatenateString);
 StoreExport(VFormatString);
 StoreExport(ReadProcessMemory);
 StoreExport(ReadProcessPeb);
-StoreExport(GetProcFilterDirectory);
-StoreExport(GetProcFilterFile);
+StoreExport(GetProcFilterPath);
 StoreExport(StatusPrintFmt);
 StoreExport(GetProcessFileName);
 StoreExport(GetProcessBaseNamePointer);
 StoreExport(LockPid);
 StoreExport(IsElevated);
+StoreExport(Scan);
 
 #undef StoreExport
 

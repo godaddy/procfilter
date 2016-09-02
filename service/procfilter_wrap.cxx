@@ -2686,52 +2686,55 @@ SWIG_Lua_dostring(lua_State *L, const char *str) {
 #define SWIGTYPE_p_f_p_q_const__char__void swig_types[8]
 #define SWIGTYPE_p_f_p_q_const__char_v_______void swig_types[9]
 #define SWIGTYPE_p_f_p_q_const__void_p_void_unsigned_long__bool swig_types[10]
-#define SWIGTYPE_p_f_p_q_const__wchar_t__p_wchar_t swig_types[11]
-#define SWIGTYPE_p_f_p_q_const__wchar_t_bool__bool swig_types[12]
-#define SWIGTYPE_p_f_p_q_const__wchar_t_int__int swig_types[13]
-#define SWIGTYPE_p_f_p_q_const__wchar_t_p_char_unsigned_long__bool swig_types[14]
-#define SWIGTYPE_p_f_p_q_const__wchar_t_p_char_unsigned_long_p_void_unsigned_long__bool swig_types[15]
-#define SWIGTYPE_p_f_p_q_const__wchar_t_p_q_const__wchar_t_p_wchar_t_unsigned_long__void swig_types[16]
-#define SWIGTYPE_p_f_p_q_const__wchar_t_p_q_const__wchar_t_unsigned_long_unsigned_long_bool_v_______void swig_types[17]
-#define SWIGTYPE_p_f_p_q_const__wchar_t_p_void_unsigned_long_p_unsigned_long__bool swig_types[18]
-#define SWIGTYPE_p_f_p_q_const__wchar_t_p_wchar_t_unsigned_long__p_yarascan_context swig_types[19]
-#define SWIGTYPE_p_f_p_q_const__wchar_t_p_wchar_t_unsigned_long_p_wchar_t_unsigned_long_p_wchar_t_unsigned_long__bool swig_types[20]
-#define SWIGTYPE_p_f_p_q_const__wchar_t_v_______void swig_types[21]
-#define SWIGTYPE_p_f_p_void__void swig_types[22]
-#define SWIGTYPE_p_f_p_void_p_bool__bool swig_types[23]
-#define SWIGTYPE_p_f_p_wchar_t__p_wchar_t swig_types[24]
-#define SWIGTYPE_p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t__bool swig_types[25]
-#define SWIGTYPE_p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_v_______bool swig_types[26]
-#define SWIGTYPE_p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_va_list__bool swig_types[27]
-#define SWIGTYPE_p_f_p_yarascan_context__void swig_types[28]
-#define SWIGTYPE_p_f_p_yarascan_context_p_q_const__wchar_t_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void swig_types[29]
-#define SWIGTYPE_p_f_p_yarascan_context_unsigned_long_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void swig_types[30]
-#define SWIGTYPE_p_f_size_t_size_t__p_void swig_types[31]
-#define SWIGTYPE_p_f_unsigned_long_bool_unsigned_long_p_wchar_t_p_wchar_t__unsigned_long swig_types[32]
-#define SWIGTYPE_p_f_unsigned_long_bool_unsigned_long_p_wchar_t_p_wchar_t_v_______unsigned_long swig_types[33]
-#define SWIGTYPE_p_f_unsigned_long_p_wchar_t_unsigned_long__bool swig_types[34]
-#define SWIGTYPE_p_float swig_types[35]
-#define SWIGTYPE_p_int swig_types[36]
-#define SWIGTYPE_p_int64_t swig_types[37]
-#define SWIGTYPE_p_long swig_types[38]
-#define SWIGTYPE_p_p_char swig_types[39]
-#define SWIGTYPE_p_p_unsigned_long swig_types[40]
-#define SWIGTYPE_p_procfilter_event swig_types[41]
-#define SWIGTYPE_p_scan_result swig_types[42]
-#define SWIGTYPE_p_short swig_types[43]
-#define SWIGTYPE_p_signed___int64 swig_types[44]
-#define SWIGTYPE_p_signed_char swig_types[45]
-#define SWIGTYPE_p_unsigned___int64 swig_types[46]
-#define SWIGTYPE_p_unsigned_char swig_types[47]
-#define SWIGTYPE_p_unsigned_int swig_types[48]
-#define SWIGTYPE_p_unsigned_long swig_types[49]
-#define SWIGTYPE_p_unsigned_short swig_types[50]
-#define SWIGTYPE_p_va_list swig_types[51]
-#define SWIGTYPE_p_void swig_types[52]
-#define SWIGTYPE_p_wchar_t swig_types[53]
-#define SWIGTYPE_p_yarascan_context swig_types[54]
-static swig_type_info *swig_types[56];
-static swig_module_info swig_module = {swig_types, 55, 0, 0, 0, 0};
+#define SWIGTYPE_p_f_p_q_const__void_unsigned_long_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void swig_types[11]
+#define SWIGTYPE_p_f_p_q_const__wchar_t__p_wchar_t swig_types[12]
+#define SWIGTYPE_p_f_p_q_const__wchar_t_bool__bool swig_types[13]
+#define SWIGTYPE_p_f_p_q_const__wchar_t_int__int swig_types[14]
+#define SWIGTYPE_p_f_p_q_const__wchar_t_p_char_unsigned_long__bool swig_types[15]
+#define SWIGTYPE_p_f_p_q_const__wchar_t_p_char_unsigned_long_p_void_unsigned_long__bool swig_types[16]
+#define SWIGTYPE_p_f_p_q_const__wchar_t_p_q_const__wchar_t_p_wchar_t_unsigned_long__void swig_types[17]
+#define SWIGTYPE_p_f_p_q_const__wchar_t_p_q_const__wchar_t_unsigned_long_unsigned_long_bool_v_______void swig_types[18]
+#define SWIGTYPE_p_f_p_q_const__wchar_t_p_void_unsigned_long_p_unsigned_long__bool swig_types[19]
+#define SWIGTYPE_p_f_p_q_const__wchar_t_p_wchar_t_unsigned_long__p_yarascan_context swig_types[20]
+#define SWIGTYPE_p_f_p_q_const__wchar_t_p_wchar_t_unsigned_long_p_wchar_t_unsigned_long_p_wchar_t_unsigned_long__bool swig_types[21]
+#define SWIGTYPE_p_f_p_q_const__wchar_t_v_______void swig_types[22]
+#define SWIGTYPE_p_f_p_void__void swig_types[23]
+#define SWIGTYPE_p_f_p_void_p_bool__bool swig_types[24]
+#define SWIGTYPE_p_f_p_wchar_t__p_wchar_t swig_types[25]
+#define SWIGTYPE_p_f_p_wchar_t_p_wchar_t_unsigned_long_bool__p_yarascan_context swig_types[26]
+#define SWIGTYPE_p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_p_q_const__wchar_t__bool swig_types[27]
+#define SWIGTYPE_p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_v_______bool swig_types[28]
+#define SWIGTYPE_p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_va_list__bool swig_types[29]
+#define SWIGTYPE_p_f_p_yarascan_context__void swig_types[30]
+#define SWIGTYPE_p_f_p_yarascan_context_p_q_const__void_unsigned_long_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void swig_types[31]
+#define SWIGTYPE_p_f_p_yarascan_context_p_q_const__wchar_t_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void swig_types[32]
+#define SWIGTYPE_p_f_p_yarascan_context_unsigned_long_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void swig_types[33]
+#define SWIGTYPE_p_f_size_t_size_t__p_void swig_types[34]
+#define SWIGTYPE_p_f_unsigned_long_bool_unsigned_long_p_wchar_t_p_wchar_t__unsigned_long swig_types[35]
+#define SWIGTYPE_p_f_unsigned_long_bool_unsigned_long_p_wchar_t_p_wchar_t_v_______unsigned_long swig_types[36]
+#define SWIGTYPE_p_f_unsigned_long_p_wchar_t_unsigned_long__bool swig_types[37]
+#define SWIGTYPE_p_float swig_types[38]
+#define SWIGTYPE_p_int swig_types[39]
+#define SWIGTYPE_p_int64_t swig_types[40]
+#define SWIGTYPE_p_long swig_types[41]
+#define SWIGTYPE_p_p_char swig_types[42]
+#define SWIGTYPE_p_p_unsigned_long swig_types[43]
+#define SWIGTYPE_p_procfilter_event swig_types[44]
+#define SWIGTYPE_p_scan_result swig_types[45]
+#define SWIGTYPE_p_short swig_types[46]
+#define SWIGTYPE_p_signed___int64 swig_types[47]
+#define SWIGTYPE_p_signed_char swig_types[48]
+#define SWIGTYPE_p_unsigned___int64 swig_types[49]
+#define SWIGTYPE_p_unsigned_char swig_types[50]
+#define SWIGTYPE_p_unsigned_int swig_types[51]
+#define SWIGTYPE_p_unsigned_long swig_types[52]
+#define SWIGTYPE_p_unsigned_short swig_types[53]
+#define SWIGTYPE_p_va_list swig_types[54]
+#define SWIGTYPE_p_void swig_types[55]
+#define SWIGTYPE_p_wchar_t swig_types[56]
+#define SWIGTYPE_p_yarascan_context swig_types[57]
+static swig_type_info *swig_types[59];
+static swig_module_info swig_module = {swig_types, 58, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -5122,25 +5125,25 @@ fail:
 }
 
 
-static int _wrap_procfilter_event_GetProcFilterDirectory_set(lua_State* L) {
+static int _wrap_procfilter_event_GetProcFilterPath_set(lua_State* L) {
   int SWIG_arg = 0;
   procfilter_event *arg1 = (procfilter_event *) 0 ;
-  bool (*arg2)(WCHAR *,DWORD,WCHAR const *) = (bool (*)(WCHAR *,DWORD,WCHAR const *)) 0 ;
+  bool (*arg2)(WCHAR *,DWORD,WCHAR const *,WCHAR const *) = (bool (*)(WCHAR *,DWORD,WCHAR const *,WCHAR const *)) 0 ;
   
-  SWIG_check_num_args("procfilter_event::GetProcFilterDirectory",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("procfilter_event::GetProcFilterDirectory",1,"procfilter_event *");
-  if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("procfilter_event::GetProcFilterDirectory",2,"bool (*)(WCHAR *,DWORD,WCHAR const *)");
+  SWIG_check_num_args("procfilter_event::GetProcFilterPath",2,2)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("procfilter_event::GetProcFilterPath",1,"procfilter_event *");
+  if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("procfilter_event::GetProcFilterPath",2,"bool (*)(WCHAR *,DWORD,WCHAR const *,WCHAR const *)");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_procfilter_event,0))){
-    SWIG_fail_ptr("procfilter_event_GetProcFilterDirectory_set",1,SWIGTYPE_p_procfilter_event);
+    SWIG_fail_ptr("procfilter_event_GetProcFilterPath_set",1,SWIGTYPE_p_procfilter_event);
   }
   
   
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t__bool,0))){
-    SWIG_fail_ptr("procfilter_event_GetProcFilterDirectory_set",2,SWIGTYPE_p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t__bool);
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_p_q_const__wchar_t__bool,0))){
+    SWIG_fail_ptr("procfilter_event_GetProcFilterPath_set",2,SWIGTYPE_p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_p_q_const__wchar_t__bool);
   }
   
-  if (arg1) (arg1)->GetProcFilterDirectory = arg2;
+  if (arg1) (arg1)->GetProcFilterPath = arg2;
   
   return SWIG_arg;
   
@@ -5152,74 +5155,20 @@ fail:
 }
 
 
-static int _wrap_procfilter_event_GetProcFilterDirectory_get(lua_State* L) {
+static int _wrap_procfilter_event_GetProcFilterPath_get(lua_State* L) {
   int SWIG_arg = 0;
   procfilter_event *arg1 = (procfilter_event *) 0 ;
-  bool (*result)(WCHAR *,DWORD,WCHAR const *) = 0 ;
+  bool (*result)(WCHAR *,DWORD,WCHAR const *,WCHAR const *) = 0 ;
   
-  SWIG_check_num_args("procfilter_event::GetProcFilterDirectory",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("procfilter_event::GetProcFilterDirectory",1,"procfilter_event *");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_procfilter_event,0))){
-    SWIG_fail_ptr("procfilter_event_GetProcFilterDirectory_get",1,SWIGTYPE_p_procfilter_event);
-  }
-  
-  result = (bool (*)(WCHAR *,DWORD,WCHAR const *)) ((arg1)->GetProcFilterDirectory);
-  SWIG_NewPointerObj(L,result,SWIGTYPE_p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t__bool,0); SWIG_arg++; 
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_procfilter_event_GetProcFilterFile_set(lua_State* L) {
-  int SWIG_arg = 0;
-  procfilter_event *arg1 = (procfilter_event *) 0 ;
-  bool (*arg2)(WCHAR *,DWORD,WCHAR const *) = (bool (*)(WCHAR *,DWORD,WCHAR const *)) 0 ;
-  
-  SWIG_check_num_args("procfilter_event::GetProcFilterFile",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("procfilter_event::GetProcFilterFile",1,"procfilter_event *");
-  if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("procfilter_event::GetProcFilterFile",2,"bool (*)(WCHAR *,DWORD,WCHAR const *)");
+  SWIG_check_num_args("procfilter_event::GetProcFilterPath",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("procfilter_event::GetProcFilterPath",1,"procfilter_event *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_procfilter_event,0))){
-    SWIG_fail_ptr("procfilter_event_GetProcFilterFile_set",1,SWIGTYPE_p_procfilter_event);
+    SWIG_fail_ptr("procfilter_event_GetProcFilterPath_get",1,SWIGTYPE_p_procfilter_event);
   }
   
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t__bool,0))){
-    SWIG_fail_ptr("procfilter_event_GetProcFilterFile_set",2,SWIGTYPE_p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t__bool);
-  }
-  
-  if (arg1) (arg1)->GetProcFilterFile = arg2;
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_procfilter_event_GetProcFilterFile_get(lua_State* L) {
-  int SWIG_arg = 0;
-  procfilter_event *arg1 = (procfilter_event *) 0 ;
-  bool (*result)(WCHAR *,DWORD,WCHAR const *) = 0 ;
-  
-  SWIG_check_num_args("procfilter_event::GetProcFilterFile",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("procfilter_event::GetProcFilterFile",1,"procfilter_event *");
-  
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_procfilter_event,0))){
-    SWIG_fail_ptr("procfilter_event_GetProcFilterFile_get",1,SWIGTYPE_p_procfilter_event);
-  }
-  
-  result = (bool (*)(WCHAR *,DWORD,WCHAR const *)) ((arg1)->GetProcFilterFile);
-  SWIG_NewPointerObj(L,result,SWIGTYPE_p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t__bool,0); SWIG_arg++; 
+  result = (bool (*)(WCHAR *,DWORD,WCHAR const *,WCHAR const *)) ((arg1)->GetProcFilterPath);
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_p_q_const__wchar_t__bool,0); SWIG_arg++; 
   return SWIG_arg;
   
   if(0) SWIG_fail;
@@ -5824,6 +5773,60 @@ fail:
 }
 
 
+static int _wrap_procfilter_event_AllocateScanContextLocalAndRemote_set(lua_State* L) {
+  int SWIG_arg = 0;
+  procfilter_event *arg1 = (procfilter_event *) 0 ;
+  YARASCAN_CONTEXT *(*arg2)(WCHAR *,WCHAR *,DWORD,bool) = (YARASCAN_CONTEXT *(*)(WCHAR *,WCHAR *,DWORD,bool)) 0 ;
+  
+  SWIG_check_num_args("procfilter_event::AllocateScanContextLocalAndRemote",2,2)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("procfilter_event::AllocateScanContextLocalAndRemote",1,"procfilter_event *");
+  if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("procfilter_event::AllocateScanContextLocalAndRemote",2,"YARASCAN_CONTEXT *(*)(WCHAR *,WCHAR *,DWORD,bool)");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_procfilter_event,0))){
+    SWIG_fail_ptr("procfilter_event_AllocateScanContextLocalAndRemote_set",1,SWIGTYPE_p_procfilter_event);
+  }
+  
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_f_p_wchar_t_p_wchar_t_unsigned_long_bool__p_yarascan_context,0))){
+    SWIG_fail_ptr("procfilter_event_AllocateScanContextLocalAndRemote_set",2,SWIGTYPE_p_f_p_wchar_t_p_wchar_t_unsigned_long_bool__p_yarascan_context);
+  }
+  
+  if (arg1) (arg1)->AllocateScanContextLocalAndRemote = arg2;
+  
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_procfilter_event_AllocateScanContextLocalAndRemote_get(lua_State* L) {
+  int SWIG_arg = 0;
+  procfilter_event *arg1 = (procfilter_event *) 0 ;
+  YARASCAN_CONTEXT *(*result)(WCHAR *,WCHAR *,DWORD,bool) = 0 ;
+  
+  SWIG_check_num_args("procfilter_event::AllocateScanContextLocalAndRemote",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("procfilter_event::AllocateScanContextLocalAndRemote",1,"procfilter_event *");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_procfilter_event,0))){
+    SWIG_fail_ptr("procfilter_event_AllocateScanContextLocalAndRemote_get",1,SWIGTYPE_p_procfilter_event);
+  }
+  
+  result = (YARASCAN_CONTEXT *(*)(WCHAR *,WCHAR *,DWORD,bool)) ((arg1)->AllocateScanContextLocalAndRemote);
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_f_p_wchar_t_p_wchar_t_unsigned_long_bool__p_yarascan_context,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
 static int _wrap_procfilter_event_FreeScanContext_set(lua_State* L) {
   int SWIG_arg = 0;
   procfilter_event *arg1 = (procfilter_event *) 0 ;
@@ -5976,6 +5979,114 @@ static int _wrap_procfilter_event_ScanMemory_get(lua_State* L) {
   
   result = (void (*)(YARASCAN_CONTEXT *,DWORD,OnMatchCallback_cb,OnMetaCallback_cb,void *,SCAN_RESULT *)) ((arg1)->ScanMemory);
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_f_p_yarascan_context_unsigned_long_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_procfilter_event_ScanData_set(lua_State* L) {
+  int SWIG_arg = 0;
+  procfilter_event *arg1 = (procfilter_event *) 0 ;
+  void (*arg2)(YARASCAN_CONTEXT *,void const *,DWORD,OnMatchCallback_cb,OnMetaCallback_cb,void *,SCAN_RESULT *) = (void (*)(YARASCAN_CONTEXT *,void const *,DWORD,OnMatchCallback_cb,OnMetaCallback_cb,void *,SCAN_RESULT *)) 0 ;
+  
+  SWIG_check_num_args("procfilter_event::ScanData",2,2)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("procfilter_event::ScanData",1,"procfilter_event *");
+  if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("procfilter_event::ScanData",2,"void (*)(YARASCAN_CONTEXT *,void const *,DWORD,OnMatchCallback_cb,OnMetaCallback_cb,void *,SCAN_RESULT *)");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_procfilter_event,0))){
+    SWIG_fail_ptr("procfilter_event_ScanData_set",1,SWIGTYPE_p_procfilter_event);
+  }
+  
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_f_p_yarascan_context_p_q_const__void_unsigned_long_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void,0))){
+    SWIG_fail_ptr("procfilter_event_ScanData_set",2,SWIGTYPE_p_f_p_yarascan_context_p_q_const__void_unsigned_long_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void);
+  }
+  
+  if (arg1) (arg1)->ScanData = arg2;
+  
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_procfilter_event_ScanData_get(lua_State* L) {
+  int SWIG_arg = 0;
+  procfilter_event *arg1 = (procfilter_event *) 0 ;
+  void (*result)(YARASCAN_CONTEXT *,void const *,DWORD,OnMatchCallback_cb,OnMetaCallback_cb,void *,SCAN_RESULT *) = 0 ;
+  
+  SWIG_check_num_args("procfilter_event::ScanData",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("procfilter_event::ScanData",1,"procfilter_event *");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_procfilter_event,0))){
+    SWIG_fail_ptr("procfilter_event_ScanData_get",1,SWIGTYPE_p_procfilter_event);
+  }
+  
+  result = (void (*)(YARASCAN_CONTEXT *,void const *,DWORD,OnMatchCallback_cb,OnMetaCallback_cb,void *,SCAN_RESULT *)) ((arg1)->ScanData);
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_f_p_yarascan_context_p_q_const__void_unsigned_long_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void,0); SWIG_arg++; 
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_procfilter_event_Scan_set(lua_State* L) {
+  int SWIG_arg = 0;
+  procfilter_event *arg1 = (procfilter_event *) 0 ;
+  void (*arg2)(void const *,DWORD,OnMatchCallback_cb,OnMetaCallback_cb,void *,SCAN_RESULT *) = (void (*)(void const *,DWORD,OnMatchCallback_cb,OnMetaCallback_cb,void *,SCAN_RESULT *)) 0 ;
+  
+  SWIG_check_num_args("procfilter_event::Scan",2,2)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("procfilter_event::Scan",1,"procfilter_event *");
+  if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("procfilter_event::Scan",2,"void (*)(void const *,DWORD,OnMatchCallback_cb,OnMetaCallback_cb,void *,SCAN_RESULT *)");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_procfilter_event,0))){
+    SWIG_fail_ptr("procfilter_event_Scan_set",1,SWIGTYPE_p_procfilter_event);
+  }
+  
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_f_p_q_const__void_unsigned_long_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void,0))){
+    SWIG_fail_ptr("procfilter_event_Scan_set",2,SWIGTYPE_p_f_p_q_const__void_unsigned_long_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void);
+  }
+  
+  if (arg1) (arg1)->Scan = arg2;
+  
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_procfilter_event_Scan_get(lua_State* L) {
+  int SWIG_arg = 0;
+  procfilter_event *arg1 = (procfilter_event *) 0 ;
+  void (*result)(void const *,DWORD,OnMatchCallback_cb,OnMetaCallback_cb,void *,SCAN_RESULT *) = 0 ;
+  
+  SWIG_check_num_args("procfilter_event::Scan",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("procfilter_event::Scan",1,"procfilter_event *");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_procfilter_event,0))){
+    SWIG_fail_ptr("procfilter_event_Scan_get",1,SWIGTYPE_p_procfilter_event);
+  }
+  
+  result = (void (*)(void const *,DWORD,OnMatchCallback_cb,OnMetaCallback_cb,void *,SCAN_RESULT *)) ((arg1)->Scan);
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_f_p_q_const__void_unsigned_long_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void,0); SWIG_arg++; 
   return SWIG_arg;
   
   if(0) SWIG_fail;
@@ -6638,8 +6749,7 @@ static swig_lua_attribute swig_procfilter_event_attributes[] = {
     { "LockPid", _wrap_procfilter_event_LockPid_get, _wrap_procfilter_event_LockPid_set },
     { "GetProcessFileName", _wrap_procfilter_event_GetProcessFileName_get, _wrap_procfilter_event_GetProcessFileName_set },
     { "GetProcessBaseNamePointer", _wrap_procfilter_event_GetProcessBaseNamePointer_get, _wrap_procfilter_event_GetProcessBaseNamePointer_set },
-    { "GetProcFilterDirectory", _wrap_procfilter_event_GetProcFilterDirectory_get, _wrap_procfilter_event_GetProcFilterDirectory_set },
-    { "GetProcFilterFile", _wrap_procfilter_event_GetProcFilterFile_get, _wrap_procfilter_event_GetProcFilterFile_set },
+    { "GetProcFilterPath", _wrap_procfilter_event_GetProcFilterPath_get, _wrap_procfilter_event_GetProcFilterPath_set },
     { "GetNtPathName", _wrap_procfilter_event_GetNtPathName_get, _wrap_procfilter_event_GetNtPathName_set },
     { "ShellNotice", _wrap_procfilter_event_ShellNotice_get, _wrap_procfilter_event_ShellNotice_set },
     { "ShellNoticeFmt", _wrap_procfilter_event_ShellNoticeFmt_get, _wrap_procfilter_event_ShellNoticeFmt_set },
@@ -6651,9 +6761,12 @@ static swig_lua_attribute swig_procfilter_event_attributes[] = {
     { "VConcatenateString", _wrap_procfilter_event_VConcatenateString_get, _wrap_procfilter_event_VConcatenateString_set },
     { "StatusPrintFmt", _wrap_procfilter_event_StatusPrintFmt_get, _wrap_procfilter_event_StatusPrintFmt_set },
     { "AllocateScanContext", _wrap_procfilter_event_AllocateScanContext_get, _wrap_procfilter_event_AllocateScanContext_set },
+    { "AllocateScanContextLocalAndRemote", _wrap_procfilter_event_AllocateScanContextLocalAndRemote_get, _wrap_procfilter_event_AllocateScanContextLocalAndRemote_set },
     { "FreeScanContext", _wrap_procfilter_event_FreeScanContext_get, _wrap_procfilter_event_FreeScanContext_set },
     { "ScanFile", _wrap_procfilter_event_ScanFile_get, _wrap_procfilter_event_ScanFile_set },
     { "ScanMemory", _wrap_procfilter_event_ScanMemory_get, _wrap_procfilter_event_ScanMemory_set },
+    { "ScanData", _wrap_procfilter_event_ScanData_get, _wrap_procfilter_event_ScanData_set },
+    { "Scan", _wrap_procfilter_event_Scan_get, _wrap_procfilter_event_Scan_set },
     { "ReadProcessMemory", _wrap_procfilter_event_ReadProcessMemory_get, _wrap_procfilter_event_ReadProcessMemory_set },
     { "ReadProcessPeb", _wrap_procfilter_event_ReadProcessPeb_get, _wrap_procfilter_event_ReadProcessPeb_set },
     { "GetFile", _wrap_procfilter_event_GetFile_get, _wrap_procfilter_event_GetFile_set },
@@ -7319,6 +7432,58 @@ fail:
 }
 
 
+static int _wrap_AllocateScanContextLocalAndRemote(lua_State* L) {
+  int SWIG_arg = 0;
+  WCHAR *arg1 = (WCHAR *) 0 ;
+  WCHAR *arg2 = (WCHAR *) 0 ;
+  DWORD arg3 ;
+  bool arg4 ;
+  YARASCAN_CONTEXT *result = 0 ;
+  
+  SWIG_check_num_args("Export_AllocateScanContextLocalAndRemote",4,4)
+  if(!SWIG_lua_isnilstring(L,1)) SWIG_fail_arg("Export_AllocateScanContextLocalAndRemote",1,"WCHAR *");
+  if(!SWIG_lua_isnilstring(L,2)) SWIG_fail_arg("Export_AllocateScanContextLocalAndRemote",2,"WCHAR *");
+  if(!lua_isnumber(L,3)) SWIG_fail_arg("Export_AllocateScanContextLocalAndRemote",3,"DWORD");
+  if(!lua_isboolean(L,4)) SWIG_fail_arg("Export_AllocateScanContextLocalAndRemote",4,"bool");
+  
+  arg1 = str2wstr(lua_tostring( L, 1 ),lua_rawlen( L, 1 ));
+  if (arg1==0) {
+    SWIG_Lua_pushferrstring(L,"Error in converting to wchar (arg %d)",1);goto fail;
+  }
+  
+  
+  arg2 = str2wstr(lua_tostring( L, 2 ),lua_rawlen( L, 2 ));
+  if (arg2==0) {
+    SWIG_Lua_pushferrstring(L,"Error in converting to wchar (arg %d)",2);goto fail;
+  }
+  
+  SWIG_contract_assert((lua_tonumber(L,3)>=0),"number must not be negative")
+  arg3 = (DWORD)lua_tonumber(L, 3);
+  arg4 = (lua_toboolean(L, 4)!=0);
+  result = (YARASCAN_CONTEXT *)Export_AllocateScanContextLocalAndRemote(arg1,arg2,arg3,arg4);
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_yarascan_context,0); SWIG_arg++; 
+  
+  free(arg1);
+  
+  
+  free(arg2);
+  
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  
+  free(arg1);
+  
+  
+  free(arg2);
+  
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
 static int _wrap_FreeScanContext(lua_State* L) {
   int SWIG_arg = 0;
   YARASCAN_CONTEXT *arg1 = (YARASCAN_CONTEXT *) 0 ;
@@ -7443,6 +7608,60 @@ static int _wrap_ScanMemory(lua_State* L) {
   }
   
   Export_ScanMemory(arg1,arg2,arg3,arg4,arg5,arg6);
+  
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
+static int _wrap_ScanData(lua_State* L) {
+  int SWIG_arg = 0;
+  YARASCAN_CONTEXT *arg1 = (YARASCAN_CONTEXT *) 0 ;
+  void *arg2 = (void *) 0 ;
+  DWORD arg3 ;
+  OnMatchCallback_cb arg4 = (OnMatchCallback_cb) 0 ;
+  OnMetaCallback_cb arg5 = (OnMetaCallback_cb) 0 ;
+  void *arg6 = (void *) 0 ;
+  SCAN_RESULT *arg7 = (SCAN_RESULT *) 0 ;
+  
+  SWIG_check_num_args("Export_ScanData",7,7)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Export_ScanData",1,"YARASCAN_CONTEXT *");
+  if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Export_ScanData",2,"void const *");
+  if(!lua_isnumber(L,3)) SWIG_fail_arg("Export_ScanData",3,"DWORD");
+  if(!SWIG_isptrtype(L,4)) SWIG_fail_arg("Export_ScanData",4,"OnMatchCallback_cb");
+  if(!SWIG_isptrtype(L,5)) SWIG_fail_arg("Export_ScanData",5,"OnMetaCallback_cb");
+  if(!SWIG_isptrtype(L,6)) SWIG_fail_arg("Export_ScanData",6,"void *");
+  if(!SWIG_isptrtype(L,7)) SWIG_fail_arg("Export_ScanData",7,"SCAN_RESULT *");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_yarascan_context,0))){
+    SWIG_fail_ptr("ScanData",1,SWIGTYPE_p_yarascan_context);
+  }
+  
+  arg2=(void *)SWIG_MustGetPtr(L,2,0,0,2,"ScanData");
+  SWIG_contract_assert((lua_tonumber(L,3)>=0),"number must not be negative")
+  arg3 = (DWORD)lua_tonumber(L, 3);
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,4,(void**)&arg4,SWIGTYPE_p_f_p_char_p_void__void,0))){
+    SWIG_fail_ptr("ScanData",4,SWIGTYPE_p_f_p_char_p_void__void);
+  }
+  
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,5,(void**)&arg5,SWIGTYPE_p_f_p_char_p_char_p_char_int64_t_p_void__void,0))){
+    SWIG_fail_ptr("ScanData",5,SWIGTYPE_p_f_p_char_p_char_p_char_int64_t_p_void__void);
+  }
+  
+  arg6=(void *)SWIG_MustGetPtr(L,6,0,0,6,"ScanData");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,7,(void**)&arg7,SWIGTYPE_p_scan_result,0))){
+    SWIG_fail_ptr("ScanData",7,SWIGTYPE_p_scan_result);
+  }
+  
+  Export_ScanData(arg1,(void const *)arg2,arg3,arg4,arg5,arg6,arg7);
   
   return SWIG_arg;
   
@@ -7973,17 +8192,19 @@ fail:
 }
 
 
-static int _wrap_GetProcFilterDirectory(lua_State* L) {
+static int _wrap_GetProcFilterPath(lua_State* L) {
   int SWIG_arg = 0;
   WCHAR *arg1 = (WCHAR *) 0 ;
   DWORD arg2 ;
   WCHAR *arg3 = (WCHAR *) 0 ;
+  WCHAR *arg4 = (WCHAR *) 0 ;
   bool result;
   
-  SWIG_check_num_args("Export_GetProcFilterDirectory",3,3)
-  if(!SWIG_lua_isnilstring(L,1)) SWIG_fail_arg("Export_GetProcFilterDirectory",1,"WCHAR *");
-  if(!lua_isnumber(L,2)) SWIG_fail_arg("Export_GetProcFilterDirectory",2,"DWORD");
-  if(!SWIG_lua_isnilstring(L,3)) SWIG_fail_arg("Export_GetProcFilterDirectory",3,"WCHAR const *");
+  SWIG_check_num_args("Export_GetProcFilterPath",4,4)
+  if(!SWIG_lua_isnilstring(L,1)) SWIG_fail_arg("Export_GetProcFilterPath",1,"WCHAR *");
+  if(!lua_isnumber(L,2)) SWIG_fail_arg("Export_GetProcFilterPath",2,"DWORD");
+  if(!SWIG_lua_isnilstring(L,3)) SWIG_fail_arg("Export_GetProcFilterPath",3,"WCHAR const *");
+  if(!SWIG_lua_isnilstring(L,4)) SWIG_fail_arg("Export_GetProcFilterPath",4,"WCHAR const *");
   
   arg1 = str2wstr(lua_tostring( L, 1 ),lua_rawlen( L, 1 ));
   if (arg1==0) {
@@ -7998,13 +8219,22 @@ static int _wrap_GetProcFilterDirectory(lua_State* L) {
     SWIG_Lua_pushferrstring(L,"Error in converting to wchar (arg %d)",3);goto fail;
   }
   
-  result = (bool)Export_GetProcFilterDirectory(arg1,arg2,(wchar_t const *)arg3);
+  
+  arg4 = str2wstr(lua_tostring( L, 4 ),lua_rawlen( L, 4 ));
+  if (arg4==0) {
+    SWIG_Lua_pushferrstring(L,"Error in converting to wchar (arg %d)",4);goto fail;
+  }
+  
+  result = (bool)Export_GetProcFilterPath(arg1,arg2,(wchar_t const *)arg3,(wchar_t const *)arg4);
   lua_pushboolean(L,(int)(result!=0)); SWIG_arg++;
   
   free(arg1);
   
   
   free(arg3);
+  
+  
+  free(arg4);
   
   return SWIG_arg;
   
@@ -8017,54 +8247,8 @@ fail:
   
   free(arg3);
   
-  lua_error(L);
-  return SWIG_arg;
-}
-
-
-static int _wrap_GetProcFilterFile(lua_State* L) {
-  int SWIG_arg = 0;
-  WCHAR *arg1 = (WCHAR *) 0 ;
-  DWORD arg2 ;
-  WCHAR *arg3 = (WCHAR *) 0 ;
-  bool result;
   
-  SWIG_check_num_args("Export_GetProcFilterFile",3,3)
-  if(!SWIG_lua_isnilstring(L,1)) SWIG_fail_arg("Export_GetProcFilterFile",1,"WCHAR *");
-  if(!lua_isnumber(L,2)) SWIG_fail_arg("Export_GetProcFilterFile",2,"DWORD");
-  if(!SWIG_lua_isnilstring(L,3)) SWIG_fail_arg("Export_GetProcFilterFile",3,"WCHAR const *");
-  
-  arg1 = str2wstr(lua_tostring( L, 1 ),lua_rawlen( L, 1 ));
-  if (arg1==0) {
-    SWIG_Lua_pushferrstring(L,"Error in converting to wchar (arg %d)",1);goto fail;
-  }
-  
-  SWIG_contract_assert((lua_tonumber(L,2)>=0),"number must not be negative")
-  arg2 = (DWORD)lua_tonumber(L, 2);
-  
-  arg3 = str2wstr(lua_tostring( L, 3 ),lua_rawlen( L, 3 ));
-  if (arg3==0) {
-    SWIG_Lua_pushferrstring(L,"Error in converting to wchar (arg %d)",3);goto fail;
-  }
-  
-  result = (bool)Export_GetProcFilterFile(arg1,arg2,(wchar_t const *)arg3);
-  lua_pushboolean(L,(int)(result!=0)); SWIG_arg++;
-  
-  free(arg1);
-  
-  
-  free(arg3);
-  
-  return SWIG_arg;
-  
-  if(0) SWIG_fail;
-  
-fail:
-  
-  free(arg1);
-  
-  
-  free(arg3);
+  free(arg4);
   
   lua_error(L);
   return SWIG_arg;
@@ -8167,6 +8351,53 @@ fail:
 }
 
 
+static int _wrap_Scan(lua_State* L) {
+  int SWIG_arg = 0;
+  void *arg1 = (void *) 0 ;
+  DWORD arg2 ;
+  OnMatchCallback_cb arg3 = (OnMatchCallback_cb) 0 ;
+  OnMetaCallback_cb arg4 = (OnMetaCallback_cb) 0 ;
+  void *arg5 = (void *) 0 ;
+  SCAN_RESULT *arg6 = (SCAN_RESULT *) 0 ;
+  
+  SWIG_check_num_args("Export_Scan",6,6)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Export_Scan",1,"void const *");
+  if(!lua_isnumber(L,2)) SWIG_fail_arg("Export_Scan",2,"DWORD");
+  if(!SWIG_isptrtype(L,3)) SWIG_fail_arg("Export_Scan",3,"OnMatchCallback_cb");
+  if(!SWIG_isptrtype(L,4)) SWIG_fail_arg("Export_Scan",4,"OnMetaCallback_cb");
+  if(!SWIG_isptrtype(L,5)) SWIG_fail_arg("Export_Scan",5,"void *");
+  if(!SWIG_isptrtype(L,6)) SWIG_fail_arg("Export_Scan",6,"SCAN_RESULT *");
+  arg1=(void *)SWIG_MustGetPtr(L,1,0,0,1,"Scan");
+  SWIG_contract_assert((lua_tonumber(L,2)>=0),"number must not be negative")
+  arg2 = (DWORD)lua_tonumber(L, 2);
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,3,(void**)&arg3,SWIGTYPE_p_f_p_char_p_void__void,0))){
+    SWIG_fail_ptr("Scan",3,SWIGTYPE_p_f_p_char_p_void__void);
+  }
+  
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,4,(void**)&arg4,SWIGTYPE_p_f_p_char_p_char_p_char_int64_t_p_void__void,0))){
+    SWIG_fail_ptr("Scan",4,SWIGTYPE_p_f_p_char_p_char_p_char_int64_t_p_void__void);
+  }
+  
+  arg5=(void *)SWIG_MustGetPtr(L,5,0,0,5,"Scan");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,6,(void**)&arg6,SWIGTYPE_p_scan_result,0))){
+    SWIG_fail_ptr("Scan",6,SWIGTYPE_p_scan_result);
+  }
+  
+  Export_Scan((void const *)arg1,arg2,arg3,arg4,arg5,arg6);
+  
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
 static swig_lua_attribute swig_SwigModule_attributes[] = {
     {0,0,0}
 };
@@ -8174,21 +8405,23 @@ static swig_lua_const_info swig_SwigModule_constants[]= {
     {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_NONE", 0)},
     {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_INIT", 1)},
     {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_SHUTDOWN", 2)},
-    {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_PROCESS_CREATE", 3)},
-    {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_PROCESS_TERMINATE", 4)},
-    {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_PROCESS_DATA_CLEANUP", 5)},
-    {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_THREAD_CREATE", 6)},
-    {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_THREAD_TERMINATE", 7)},
-    {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_IMAGE_LOAD", 8)},
-    {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_YARA_SCAN_INIT", 9)},
-    {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_YARA_SCAN_COMPLETE", 10)},
-    {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_YARA_SCAN_CLEANUP", 11)},
-    {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_YARA_RULE_MATCH", 12)},
-    {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_YARA_RULE_MATCH_META_TAG", 13)},
-    {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_STATUS", 14)},
-    {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_TICK", 15)},
-    {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_NUM", 16)},
-    {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_ALL", 16)},
+    {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_PROCFILTER_THREAD_INIT", 3)},
+    {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_PROCFILTER_THREAD_SHUTDOWN", 4)},
+    {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_PROCESS_CREATE", 5)},
+    {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_PROCESS_TERMINATE", 6)},
+    {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_PROCESS_DATA_CLEANUP", 7)},
+    {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_THREAD_CREATE", 8)},
+    {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_THREAD_TERMINATE", 9)},
+    {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_IMAGE_LOAD", 10)},
+    {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_YARA_SCAN_INIT", 11)},
+    {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_YARA_SCAN_COMPLETE", 12)},
+    {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_YARA_SCAN_CLEANUP", 13)},
+    {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_YARA_RULE_MATCH", 14)},
+    {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_YARA_RULE_MATCH_META_TAG", 15)},
+    {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_STATUS", 16)},
+    {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_TICK", 17)},
+    {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_NUM", 18)},
+    {SWIG_LUA_CONSTTAB_INT("PROCFILTER_EVENT_ALL", 18)},
     {SWIG_LUA_CONSTTAB_INT("PROCFILTER_RESULT_NONE", 0x00)},
     {SWIG_LUA_CONSTTAB_INT("PROCFILTER_RESULT_BLOCK_PROCESS", 0x01)},
     {SWIG_LUA_CONSTTAB_INT("PROCFILTER_RESULT_DONT_SCAN_MEMORY", 0x02)},
@@ -8225,9 +8458,11 @@ static swig_lua_method swig_SwigModule_methods[]= {
     { "VFormatString", _wrap_VFormatString},
     { "VConcatenateString", _wrap_VConcatenateString},
     { "AllocateScanContext", _wrap_AllocateScanContext},
+    { "AllocateScanContextLocalAndRemote", _wrap_AllocateScanContextLocalAndRemote},
     { "FreeScanContext", _wrap_FreeScanContext},
     { "ScanFile", _wrap_ScanFile},
     { "ScanMemory", _wrap_ScanMemory},
+    { "ScanData", _wrap_ScanData},
     { "GetFile", _wrap_GetFile},
     { "Log", _wrap_Log},
     { "GetConfigInt", _wrap_GetConfigInt},
@@ -8240,11 +8475,11 @@ static swig_lua_method swig_SwigModule_methods[]= {
     { "Sha1File", _wrap_Sha1File},
     { "AllocateMemory", _wrap_AllocateMemory},
     { "FreeMemory", _wrap_FreeMemory},
-    { "GetProcFilterDirectory", _wrap_GetProcFilterDirectory},
-    { "GetProcFilterFile", _wrap_GetProcFilterFile},
+    { "GetProcFilterPath", _wrap_GetProcFilterPath},
     { "DuplicateString", _wrap_DuplicateString},
     { "VerifyPeSignature", _wrap_VerifyPeSignature},
     { "StatusPrintFmt", _wrap_StatusPrintFmt},
+    { "Scan", _wrap_Scan},
     {0,0}
 };
 static swig_lua_class* swig_SwigModule_classes[]= {
@@ -8281,6 +8516,7 @@ static swig_type_info _swigt__p_f_p_char_p_void__void = {"_p_f_p_char_p_void__vo
 static swig_type_info _swigt__p_f_p_q_const__char__void = {"_p_f_p_q_const__char__void", "void (*)(char const *)", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_q_const__char_v_______void = {"_p_f_p_q_const__char_v_______void", "void (*)(char const *,...)", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_q_const__void_p_void_unsigned_long__bool = {"_p_f_p_q_const__void_p_void_unsigned_long__bool", "bool (*)(void const *,void *,DWORD)|bool (*)(void const *,void *,unsigned long)", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_f_p_q_const__void_unsigned_long_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void = {"_p_f_p_q_const__void_unsigned_long_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void", "void (*)(void const *,unsigned long,void (*)(char *,void *),void (*)(char *,char *,char *,int64_t,void *),void *,scan_result *)|void (*)(void const *,DWORD,OnMatchCallback_cb,OnMetaCallback_cb,void *,SCAN_RESULT *)", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_q_const__wchar_t__p_wchar_t = {"_p_f_p_q_const__wchar_t__p_wchar_t", "wchar_t *(*)(wchar_t const *)|WCHAR *(*)(WCHAR const *)", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_q_const__wchar_t_bool__bool = {"_p_f_p_q_const__wchar_t_bool__bool", "bool (*)(wchar_t const *,bool)|bool (*)(WCHAR const *,bool)", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_q_const__wchar_t_int__int = {"_p_f_p_q_const__wchar_t_int__int", "int (*)(wchar_t const *,int)|int (*)(WCHAR const *,int)", 0, 0, (void*)0, 0};
@@ -8295,10 +8531,12 @@ static swig_type_info _swigt__p_f_p_q_const__wchar_t_v_______void = {"_p_f_p_q_c
 static swig_type_info _swigt__p_f_p_void__void = {"_p_f_p_void__void", "void (*)(void *)", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_void_p_bool__bool = {"_p_f_p_void_p_bool__bool", "bool (*)(void *,bool *)|bool (*)(HANDLE,bool *)", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_wchar_t__p_wchar_t = {"_p_f_p_wchar_t__p_wchar_t", "wchar_t *(*)(wchar_t *)|WCHAR *(*)(WCHAR *)", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t__bool = {"_p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t__bool", "bool (*)(wchar_t *,unsigned long,wchar_t const *)|bool (*)(WCHAR *,DWORD,WCHAR const *)", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_f_p_wchar_t_p_wchar_t_unsigned_long_bool__p_yarascan_context = {"_p_f_p_wchar_t_p_wchar_t_unsigned_long_bool__p_yarascan_context", "yarascan_context *(*)(wchar_t *,wchar_t *,unsigned long,bool)|YARASCAN_CONTEXT *(*)(WCHAR *,WCHAR *,DWORD,bool)", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_p_q_const__wchar_t__bool = {"_p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_p_q_const__wchar_t__bool", "bool (*)(WCHAR *,DWORD,WCHAR const *,WCHAR const *)|bool (*)(wchar_t *,unsigned long,wchar_t const *,wchar_t const *)", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_v_______bool = {"_p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_v_______bool", "bool (*)(WCHAR *,DWORD,WCHAR const *,...)|bool (*)(wchar_t *,unsigned long,wchar_t const *,...)", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_va_list__bool = {"_p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_va_list__bool", "bool (*)(wchar_t *,unsigned long,wchar_t const *,va_list)|bool (*)(WCHAR *,DWORD,WCHAR const *,va_list)", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_yarascan_context__void = {"_p_f_p_yarascan_context__void", "void (*)(yarascan_context *)|void (*)(YARASCAN_CONTEXT *)", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_f_p_yarascan_context_p_q_const__void_unsigned_long_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void = {"_p_f_p_yarascan_context_p_q_const__void_unsigned_long_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void", "void (*)(yarascan_context *,void const *,unsigned long,void (*)(char *,void *),void (*)(char *,char *,char *,int64_t,void *),void *,scan_result *)|void (*)(YARASCAN_CONTEXT *,void const *,DWORD,OnMatchCallback_cb,OnMetaCallback_cb,void *,SCAN_RESULT *)", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_yarascan_context_p_q_const__wchar_t_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void = {"_p_f_p_yarascan_context_p_q_const__wchar_t_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void", "void (*)(YARASCAN_CONTEXT *,WCHAR const *,OnMatchCallback_cb,OnMetaCallback_cb,void *,SCAN_RESULT *)|void (*)(yarascan_context *,wchar_t const *,void (*)(char *,void *),void (*)(char *,char *,char *,int64_t,void *),void *,scan_result *)", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_yarascan_context_unsigned_long_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void = {"_p_f_p_yarascan_context_unsigned_long_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void", "void (*)(YARASCAN_CONTEXT *,DWORD,OnMatchCallback_cb,OnMetaCallback_cb,void *,SCAN_RESULT *)|void (*)(yarascan_context *,unsigned long,void (*)(char *,void *),void (*)(char *,char *,char *,int64_t,void *),void *,scan_result *)", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_size_t_size_t__p_void = {"_p_f_size_t_size_t__p_void", "void *(*)(size_t,size_t)", 0, 0, (void*)0, 0};
@@ -8338,6 +8576,7 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_f_p_q_const__char__void,
   &_swigt__p_f_p_q_const__char_v_______void,
   &_swigt__p_f_p_q_const__void_p_void_unsigned_long__bool,
+  &_swigt__p_f_p_q_const__void_unsigned_long_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void,
   &_swigt__p_f_p_q_const__wchar_t__p_wchar_t,
   &_swigt__p_f_p_q_const__wchar_t_bool__bool,
   &_swigt__p_f_p_q_const__wchar_t_int__int,
@@ -8352,10 +8591,12 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_f_p_void__void,
   &_swigt__p_f_p_void_p_bool__bool,
   &_swigt__p_f_p_wchar_t__p_wchar_t,
-  &_swigt__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t__bool,
+  &_swigt__p_f_p_wchar_t_p_wchar_t_unsigned_long_bool__p_yarascan_context,
+  &_swigt__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_p_q_const__wchar_t__bool,
   &_swigt__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_v_______bool,
   &_swigt__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_va_list__bool,
   &_swigt__p_f_p_yarascan_context__void,
+  &_swigt__p_f_p_yarascan_context_p_q_const__void_unsigned_long_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void,
   &_swigt__p_f_p_yarascan_context_p_q_const__wchar_t_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void,
   &_swigt__p_f_p_yarascan_context_unsigned_long_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void,
   &_swigt__p_f_size_t_size_t__p_void,
@@ -8395,6 +8636,7 @@ static swig_cast_info _swigc__p_f_p_char_p_void__void[] = {  {&_swigt__p_f_p_cha
 static swig_cast_info _swigc__p_f_p_q_const__char__void[] = {  {&_swigt__p_f_p_q_const__char__void, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_p_q_const__char_v_______void[] = {  {&_swigt__p_f_p_q_const__char_v_______void, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_p_q_const__void_p_void_unsigned_long__bool[] = {  {&_swigt__p_f_p_q_const__void_p_void_unsigned_long__bool, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_f_p_q_const__void_unsigned_long_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void[] = {  {&_swigt__p_f_p_q_const__void_unsigned_long_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_p_q_const__wchar_t__p_wchar_t[] = {  {&_swigt__p_f_p_q_const__wchar_t__p_wchar_t, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_p_q_const__wchar_t_bool__bool[] = {  {&_swigt__p_f_p_q_const__wchar_t_bool__bool, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_p_q_const__wchar_t_int__int[] = {  {&_swigt__p_f_p_q_const__wchar_t_int__int, 0, 0, 0},{0, 0, 0, 0}};
@@ -8409,10 +8651,12 @@ static swig_cast_info _swigc__p_f_p_q_const__wchar_t_v_______void[] = {  {&_swig
 static swig_cast_info _swigc__p_f_p_void__void[] = {  {&_swigt__p_f_p_void__void, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_p_void_p_bool__bool[] = {  {&_swigt__p_f_p_void_p_bool__bool, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_p_wchar_t__p_wchar_t[] = {  {&_swigt__p_f_p_wchar_t__p_wchar_t, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t__bool[] = {  {&_swigt__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t__bool, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_f_p_wchar_t_p_wchar_t_unsigned_long_bool__p_yarascan_context[] = {  {&_swigt__p_f_p_wchar_t_p_wchar_t_unsigned_long_bool__p_yarascan_context, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_p_q_const__wchar_t__bool[] = {  {&_swigt__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_p_q_const__wchar_t__bool, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_v_______bool[] = {  {&_swigt__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_v_______bool, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_va_list__bool[] = {  {&_swigt__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_va_list__bool, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_p_yarascan_context__void[] = {  {&_swigt__p_f_p_yarascan_context__void, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_f_p_yarascan_context_p_q_const__void_unsigned_long_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void[] = {  {&_swigt__p_f_p_yarascan_context_p_q_const__void_unsigned_long_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_p_yarascan_context_p_q_const__wchar_t_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void[] = {  {&_swigt__p_f_p_yarascan_context_p_q_const__wchar_t_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_p_yarascan_context_unsigned_long_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void[] = {  {&_swigt__p_f_p_yarascan_context_unsigned_long_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_size_t_size_t__p_void[] = {  {&_swigt__p_f_size_t_size_t__p_void, 0, 0, 0},{0, 0, 0, 0}};
@@ -8452,6 +8696,7 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_f_p_q_const__char__void,
   _swigc__p_f_p_q_const__char_v_______void,
   _swigc__p_f_p_q_const__void_p_void_unsigned_long__bool,
+  _swigc__p_f_p_q_const__void_unsigned_long_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void,
   _swigc__p_f_p_q_const__wchar_t__p_wchar_t,
   _swigc__p_f_p_q_const__wchar_t_bool__bool,
   _swigc__p_f_p_q_const__wchar_t_int__int,
@@ -8466,10 +8711,12 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_f_p_void__void,
   _swigc__p_f_p_void_p_bool__bool,
   _swigc__p_f_p_wchar_t__p_wchar_t,
-  _swigc__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t__bool,
+  _swigc__p_f_p_wchar_t_p_wchar_t_unsigned_long_bool__p_yarascan_context,
+  _swigc__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_p_q_const__wchar_t__bool,
   _swigc__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_v_______bool,
   _swigc__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_va_list__bool,
   _swigc__p_f_p_yarascan_context__void,
+  _swigc__p_f_p_yarascan_context_p_q_const__void_unsigned_long_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void,
   _swigc__p_f_p_yarascan_context_p_q_const__wchar_t_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void,
   _swigc__p_f_p_yarascan_context_unsigned_long_p_f_p_char_p_void__void_p_f_p_char_p_char_p_char_int64_t_p_void__void_p_void_p_scan_result__void,
   _swigc__p_f_size_t_size_t__p_void,
