@@ -246,7 +246,7 @@ A malware analyst wants to know if a packed sample is related to a sample found 
 
 We're here to help! The ProcFilter development team can be contacted by email at [procfilter@godaddy.com](mailto:procfilter@godaddy.com) or on Gitter for general discussion.
 
-+[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/procfilter/procfilter?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/procfilter/procfilter?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 # License
 
