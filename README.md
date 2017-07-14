@@ -181,7 +181,7 @@ Analysts at a peer organization detected or were hit by a spear phishing attack.
 
 ### Use Case #2
 
-US-CERT releases a report containing a YARA signature for a malware family, [https://www.us-cert.gov/ncas/alerts/TA14-353A](such as in this 2014 report). You incorporate their YARA signatures into your rule set to minimize the chance your organization will be hit by a variant of the same.
+US-CERT releases a report containing a YARA signature for a malware family, [such as in this 2014 report](https://www.us-cert.gov/ncas/alerts/TA14-353A). You incorporate their YARA signatures into your rule set to minimize the chance your organization will be hit by a variant of the same.
 
 ### Use Case #3
 
