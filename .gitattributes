@@ -1,3 +1,4 @@
+COPYING text eol=crlf
 *.cpp text eol=crlf
 *.cxx text eol=crlf
 *.bat text eol=crlf
