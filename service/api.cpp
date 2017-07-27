@@ -441,14 +441,14 @@ Export_LogFmt(const char *fmt, ...)
 {
 	PROCFILTER_PLUGIN *p = GetCurrentPlugin();
 
-	char szMessage[1024];
+	char szMessage[8192];
 
 	va_list ap;
 	va_start(ap, fmt);
 	
 	vstrlprintf(szMessage, sizeof(szMessage), fmt, ap);
 
-	EventWritePLUGIN_LOG(p->szPlugin, szMessage);
+	EventWritePLUGIN_LOG(p->szShortName, szMessage);
 
 	va_end(ap);
 }
@@ -568,7 +568,9 @@ Export_GetFile(const WCHAR *lpszUrl, void *lpvResult, DWORD dwResultSize, DWORD 
 void
 Export_Log(const char *str)
 {
-	Export_LogFmt("%hs", str);
+	PROCFILTER_PLUGIN *p = GetCurrentPlugin();
+
+	EventWritePLUGIN_LOG(p->szShortName, str);
 }
 
 

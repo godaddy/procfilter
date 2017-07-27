@@ -356,7 +356,7 @@ struct procfilter_event {
     void  (*Die)(const char *fmt, ...);
 
     //
-    // Log a string to Event Log.
+    // Log a string to Event Log. LogFmt() is limited to 8192 characters. Log() is unlimited.
     //
     void  (*Log)(const char *str);
     void  (*LogFmt)(const char *fmt, ...);
