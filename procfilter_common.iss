@@ -44,7 +44,8 @@ Source: "{#BuildDir}\users.dll"; DestDir: "{app}\plugins"; Flags: ignoreversion
 Source: "{#BuildDir}\cmdline.dll"; DestDir: "{app}\plugins"; Flags: ignoreversion  
 Source: "{#BuildDir}\unpack.dll"; DestDir: "{app}\plugins"; Flags: ignoreversion   
 Source: "{#BuildDir}\sha1.dll"; DestDir: "{app}\plugins"; Flags: ignoreversion   
-Source: "{#BuildDir}\remotethread.dll"; DestDir: "{app}\plugins"; Flags: ignoreversion   
+Source: "{#BuildDir}\remotethread.dll"; DestDir: "{app}\plugins"; Flags: ignoreversion 
+Source: "{#BuildDir}\core.dll"; DestDir: "{app}\plugins"; Flags: ignoreversion   
 Source: "{#DriverBuildDir}\driver.sys"; DestDir: "{app}\sys"; DestName: "procfilter.sys"; Flags: ignoreversion                
 Source: ".\testlua\testlua.lua"; DestDir: "{app}\plugins"; Flags: confirmoverwrite uninsneveruninstall               
 Source: ".\files\procfilter.ini"; DestDir: "{app}"; Flags: confirmoverwrite uninsneveruninstall 
@@ -62,7 +63,9 @@ Name: "{group}\{cm:UninstallProgram,{#MyAppDir}}"; FileName: "{uninstallexe}"
 [Run]                                                      
 FileName: "{sys}\wevtutil.exe"; Parameters: """uninstall-manifest"" ""{app}\lib\procfilter.man"""; Flags: runhidden
 FileName: "{sys}\wevtutil.exe"; Parameters: """install-manifest"" ""{app}\lib\procfilter.man"" ""/rf:{app}\procfilter.exe"" ""/mf:{app}\procfilter.exe"""; Flags: runhidden
-FileName: "{app}\procfilter.exe"; Parameters: "-install"; Flags: runhidden 
+; Default to delayed-start install since it's safer if ProcFilter were to cause problems
+FileName: "{app}\procfilter.exe"; Parameters: "-install-delayed"; Flags: runhidden 
+FileName: "{app}\procfilter.exe"; Parameters: "-install"; Description: "Set ProcFilter as a boot-time service (vs. delayed start)"; Flags: postinstall skipifsilent runhidden runascurrentuser
 FileName: "{app}\procfilter.exe"; Parameters: "-start"; Description: "Start the ProcFilter service now"; Flags: postinstall skipifsilent runhidden runascurrentuser
 
 [UninstallRun]     
