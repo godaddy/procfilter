@@ -56,22 +56,18 @@ ProcFilterServiceInstall(bool bDelayedStart)
 		// The service was just installed so set the description
 		SERVICE_DESCRIPTION sdDescription = { SERVICE_DESCRIPTION_TEXT };
 		ChangeServiceConfig2(hService, SERVICE_CONFIG_DESCRIPTION, &sdDescription);
-
-		// Also set the delayed start info too if needed
-		if (bDelayedStart) {
-			SERVICE_DELAYED_AUTO_START_INFO data = { TRUE };
-			ChangeServiceConfig2(hService, SERVICE_CONFIG_DELAYED_AUTO_START_INFO, &data);
-		}
-		
-		CloseServiceHandle(hService);
-		rv = true;
 	} else {
 		// Service was unable to be created; try to open the existing one
 		hService = OpenService(hScm, SERVICE_NAME, SERVICE_ALL_ACCESS);
-		if (hService) {
-			CloseServiceHandle(hService);
-			rv = true;
-		}
+	}
+
+	if (hService) {
+		// Also set the delayed start or immediate start option
+		SERVICE_DELAYED_AUTO_START_INFO data = { bDelayedStart ? TRUE : FALSE };
+		ChangeServiceConfig2(hService, SERVICE_CONFIG_DELAYED_AUTO_START_INFO, &data);
+
+		CloseServiceHandle(hService);
+		rv = true;
 	}
 
 	CloseServiceHandle(hScm);
