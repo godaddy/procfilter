@@ -52,7 +52,8 @@ Source: ".\files\procfilter.ini"; DestDir: "{app}"; Flags: confirmoverwrite unin
 Source: ".\service\procfilter.man"; DestDir: "{app}\lib"; Flags: ignoreversion uninsneveruninstall
 Source: ".\service\include\procfilter\procfilter.h"; DestDir: "{app}\sdk\include\procfilter"; Flags: ignoreversion
 Source: ".\files\localrules\*"; DestDir: "{app}\localrules"; Flags: recursesubdirs createallsubdirs  uninsneveruninstall onlyifdoesntexist
-Source: ".\COPYING"; DestDir: "{app}\doc"; DestName: "LICENSE.txt"; Flags: uninsneveruninstall
+Source: ".\COPYING"; DestDir: "{app}\doc"; DestName: "LICENSE.txt"; Flags: uninsneveruninstall   
+Source: ".\files\whitelist_blacklist_example.txt"; DestDir: "{app}"; Flags: ignoreversion   
 
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 

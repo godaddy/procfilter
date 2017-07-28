@@ -1,0 +1,23 @@
+;
+; Whitelist and Blacklist files belong at:
+;   localrules\whitelist.txt
+;   remoterules\whitelist.txt
+;   localrules\blacklist.txt
+;   remoterules\blacklist.txt
+;
+; Comment lines begin with either '#' or ';'.
+;
+; Lines are MD5, SHA1, SHA256 hashes, or regexes (see below).
+;
+; Lines can begin with 'filename:' to indicate a regex to match. For example,
+; uncomment the below to block various versions of "notepad.exe".
+;
+; Will block "anynotepad.exe" too:
+;filename:notepad\.exe
+;
+; Will just block "notepad.exe"
+;filename:\\notepad\.exe
+;
+; Hashes can have a comment suffix:
+;3B508CAE5DEBCBA928B5BC355517E2E6 ; This is an MD5 of notepad
+;
