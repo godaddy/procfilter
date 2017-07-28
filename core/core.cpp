@@ -392,9 +392,9 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 				"",
 				e->lpszFileName,
 				e->dwProcessId,
-				hashes.md5_hexdigest,
-				hashes.sha1_hexdigest,
-				hashes.sha256_hexdigest,
+				g_HashExes ? hashes.md5_hexdigest : "*DISABLED*",
+				g_HashExes ? hashes.sha1_hexdigest : "*DISABLED*",
+				g_HashExes ? hashes.sha256_hexdigest : "*DISABLED*",
 				g_LogCommandLine ? lpszCommandLine : L"*DISABLED*",
 				tg_CommandLineRulesContext ? (srAsciiResult.bScanSuccessful ? srAsciiResult.szBlockRuleNames : L"*FAILED*") : L"*SKIPPED*",
 				tg_CommandLineRulesContext ? (srUnicodeResult.bScanSuccessful ? srUnicodeResult.szBlockRuleNames : L"*FAILED*") : L"*SKIPPED*",
@@ -474,31 +474,34 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 			}
 		}
 	} else if (e->dwEventId == PROCFILTER_EVENT_IMAGE_LOAD) {
-		if (g_HashDlls && e->lpszFileName) {
+		if (e->lpszFileName) {
 
 			// Don't hash DLL loads for whitelisted processes
 			EnterCriticalSection(&g_cs);
 			auto iter = g_WhitelistedPids.find(e->dwProcessId);
 			bool bWhitelisted = iter != g_WhitelistedPids.end();
 			LeaveCriticalSection(&g_cs);
-			if (bWhitelisted) return PROCFILTER_RESULT_NONE;
+			if (bWhitelisted) return PROCFILTER_RESULT_DONT_SCAN;
 
 			// Filename whitelisted?
 			bool bFilenameWhitelisted = StringMatchesRegexInContainer(g_WhitelistRegexes, e->lpszFileName);
-			if (bFilenameWhitelisted) return PROCFILTER_RESULT_NONE;
+			if (bFilenameWhitelisted) return PROCFILTER_RESULT_DONT_SCAN;
 
 			// Filename blacklisted?
 			bool bFilenameBlacklisted = StringMatchesRegexInContainer(g_BlacklistRegexes, e->lpszFileName);
 
-			// Filename whitelisted?
+			// Hashes whitelisted?
+			bool bHashBlacklisted = false;
 			HASHES hashes;
-			e->HashFile(e->lpszFileName, &hashes);
-			if (HashesInSet(e, g_WhitelistHashes, &hashes)) return PROCFILTER_RESULT_NONE;
+			if (g_HashDlls) {
+				e->HashFile(e->lpszFileName, &hashes);
+				if (HashesInSet(e, g_WhitelistHashes, &hashes)) return PROCFILTER_RESULT_DONT_SCAN;
 
-			// Filename blacklisted
-			bool bHashBlacklisted = HashesInSet(e, g_BlacklistHashes, &hashes);
+				// Hashes blacklisted
+				bHashBlacklisted = HashesInSet(e, g_BlacklistHashes, &hashes);
+			}
+
 			bool bBlock = bHashBlacklisted || bFilenameBlacklisted;
-
 			bool bQuarantine = bBlock;
 
 			WCHAR szProcessName[MAX_PATH + 1];
@@ -524,9 +527,9 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 				szProcessName,
 				e->lpszFileName,
 				e->dwProcessId,
-				hashes.md5_hexdigest,
-				hashes.sha1_hexdigest,
-				hashes.sha256_hexdigest,
+				g_HashDlls ? hashes.md5_hexdigest : "*DISABLED*",
+				g_HashDlls ? hashes.sha1_hexdigest : "*DISABLED*",
+				g_HashDlls ? hashes.sha256_hexdigest : "*DISABLED*",
 				bHashBlacklisted ? "Yes" : "No",
 				bFilenameBlacklisted ? "Yes" : "No",
 				bQuarantine ? "Yes" : "No",
