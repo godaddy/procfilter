@@ -471,6 +471,9 @@ OnCreateThread(IN HANDLE ProcessId, IN HANDLE ThreadId, IN BOOLEAN Create)
 	} else if (hDeviceOwnerPid == ProcessId) {
 		KdPrint(("Ignoring thread event related to the process that has the YARA scan device open (0x%p)\n", ProcessId));
 		return;
+	} else if (!ProcessId) {
+		KdPrint(("Ignoring system thread event\n"));
+		return;
 	} else if (!bWantThreadEvents) {
 		return;
 	}
@@ -530,6 +533,8 @@ OnLoadImage(__in_opt PUNICODE_STRING PartialImageName, __in HANDLE  ProcessId, _
 	//
 	// So, generate an event with the full image name when possible, otherwise just use the 'PartialImageName' parameter
 	//
+	bool bTerminateProcess = FALSE;
+	PROCFILTER_RESPONSE response;
 	KdPrint(("OnLoadImage(): IRQL:%d ApcsDisabled:%d AllApcsDisabled:%d\n", KeGetCurrentIrql(), KeAreApcsDisabled(), KeAreAllApcsDisabled()));
 	if (!KeAreAllApcsDisabled() && ImageInfo->ExtendedInfoPresent) {
 		void *HeapPointer = NULL;
@@ -558,14 +563,16 @@ OnLoadImage(__in_opt PUNICODE_STRING PartialImageName, __in HANDLE  ProcessId, _
 
 			if (rc == STATUS_SUCCESS && pObjectNameInfo->Name.Buffer) {
 				KdPrint(("Sending Image load event to userspace\n"));
-				Event(EVENTTYPE_IMAGELOAD, &pObjectNameInfo->Name, ProcessId, NULL, NULL, ImageInfo->ImageBase, NULL);
+				bTerminateProcess = Event(EVENTTYPE_IMAGELOAD, &pObjectNameInfo->Name, ProcessId, NULL, NULL, ImageInfo->ImageBase, &response) && response.bBlock;
 				KdPrint(("Userspace image load event returned\n"));
 			}
 		}
 	} else if (PartialImageName) {
 		// Generate an event that only includes the partial file name
-		Event(EVENTTYPE_IMAGELOAD, PartialImageName, ProcessId, NULL, NULL, ImageInfo->ImageBase, NULL);
+		bTerminateProcess = Event(EVENTTYPE_IMAGELOAD, PartialImageName, ProcessId, NULL, NULL, ImageInfo->ImageBase, &response) && response.bBlock;
 	}
+
+	if (bTerminateProcess) ZwTerminateProcess(ProcessId, STATUS_VIRUS_INFECTED);
 	
 	KdPrint(("OnLoadImage() exited\n"));
 }
