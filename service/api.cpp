@@ -327,7 +327,7 @@ bool
 Export_GetProcessFileName(DWORD dwProcessId, WCHAR *lpszResult, DWORD dwResultSize)
 {
 	if (dwResultSize < sizeof(WCHAR)) return false;
-	lpszResult[(dwResultSize / sizeof(WCHAR)) - 1] = 0;
+	ZeroMemory(lpszResult, dwResultSize);
 
 	bool rv = false;
 
