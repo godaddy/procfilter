@@ -14,6 +14,7 @@ COPYING text eol=crlf
 *.obj binary
 *.rc text eol=crlf
 *.sln text eol=crlf
+*.txt text eol=crlf
 *.vcxproj text eol=crlf
 *.yar text eol=crlf
 *.yara text eol=crlf
