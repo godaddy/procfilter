@@ -63,25 +63,6 @@ static WCHAR g_szCommandLineRuleFileBaseName[MAX_PATH + 1] = { '\0' };
 static __declspec(thread) YARASCAN_CONTEXT *tg_CommandLineRulesContext = NULL;
 
 
-// filesize limit
-//
-// Log remote threads
-//
-// Check subprocesses
-// DLL loads
-// 
-// WhitelistPaths
-// blacklist (filename)
-//
-// Whitelist parent
-// Whitelist process ...
-// Whitelist subprocesses
-//
-
-//
-// LogHashes = 1
-//
-// BlockDlls=0
 //
 // WhitelistFilename=whitelist.txt
 // BlacklistFilename=blacklist.txt
