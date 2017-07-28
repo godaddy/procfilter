@@ -398,7 +398,7 @@ struct procfilter_event {
     WCHAR* (*DuplicateString)(const WCHAR *lpszString);
 
     //
-    // Determine if a process is running with elevate privileges
+    // Determine if a process is running with elevated privileges
     //
     bool   (*IsElevated)(HANDLE hProcess, bool *lpbIsElevated);
 
