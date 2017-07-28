@@ -40,7 +40,7 @@
 #include "die.hpp"
 #include "winerr.hpp"
 #include "status.hpp"
-#include "sha1.hpp"
+#include "hash.hpp"
 #include "log.hpp"
 #include "service.hpp"
 #include "winmain.hpp"
@@ -251,6 +251,10 @@ TopLevelExceptionHandler(PEXCEPTION_POINTERS pExceptionInfo)
 		fflush(f);
 		fclose(f);
 	}
+
+#if !defined(_DEBUG)
+	ExitProcess(-1);
+#endif
 
 	return EXCEPTION_CONTINUE_SEARCH;
 }
@@ -490,12 +494,16 @@ wmain(int argc, WCHAR *argv[])
 			DoScan(argv[i], argc > 3 ? argv[2] : NULL, false);
 		} else if (TestArg(arg, L"-compile", L"-c")) {
 			DoScan(NULL, argc > 2 ? argv[2] : NULL, false);
-		} else if (TestArg(arg, L"-sha1", L"-s1")) {
-			char hexdigest[41];
+		} else if (TestArg(arg, L"-hash", L"-hash")) {
 			if (argc > 2) {
 				for (int i = 2; i < argc; ++i) {
-					if (Sha1File(argv[i], hexdigest, NULL)) {
-						printf("%hs: %ls\n", hexdigest, argv[i]);
+					HASHES hashes;
+					DWORD dwStart = GetTickCount();
+					if (HashFile(argv[i], &hashes)) {
+						printf("MD5(%ls):     %hs\n", argv[i], hashes.md5_hexdigest);
+						printf("SHA1(%ls):    %hs\n", argv[i], hashes.sha1_hexdigest);
+						printf("SHA256(%ls):  %hs\n", argv[i], hashes.sha256_hexdigest);
+						printf("Elapsed time: %u ms\n", GetTickCount() - dwStart);
 					} else {
 						fprintf(stderr, "Unable to hash file: %ls\n", argv[i]);
 					}

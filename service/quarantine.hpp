@@ -27,7 +27,7 @@
 
 #include <Windows.h>
 
-#include "sha1.hpp"
+#include "hash.hpp"
 
 //
 // Quarantine a file if it doesn't already exist in quarantine, to be called by the service

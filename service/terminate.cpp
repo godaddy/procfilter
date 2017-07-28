@@ -33,18 +33,22 @@
 bool
 TerminateProcessByPid(DWORD dwProcessId, bool bLog, const WCHAR *lpszFileName, const WCHAR *lpszFileBlockRuleNames, const WCHAR *lpszMemoryBlockRuleNames)
 {
+	DWORD dwErrorCode = ERROR_SUCCESS;
 	bool rv = false;
 	HANDLE h = OpenProcess(PROCESS_TERMINATE, FALSE, dwProcessId);
 	if (h) {
 		rv = TerminateProcess(h, 'ARAY') == TRUE;
+		dwErrorCode = GetLastError();
 		CloseHandle(h);
 	}
 
 	if (bLog) {
 		if (rv) {
 			EventWritePROCESS_TERMINATED(dwProcessId, lpszFileName, lpszFileBlockRuleNames, lpszMemoryBlockRuleNames);
-		} else {
-			Warning(L"Unable to terminate process with Process ID 0x%08X and filename \"%ls\"", dwProcessId, lpszFileName ? lpszFileName : L"None");
+		} else if (dwErrorCode != ERROR_ACCESS_DENIED) {
+			// Only log if access wasn't denied, often access is denied if a process create event blocks a process before a dll load event does
+			// since DLL load events still happen even if the process is to be blocked by the kernel
+			Warning(L"Unable to terminate process with Process ID %u and filename \"%ls\": %d", dwProcessId, lpszFileName ? lpszFileName : L"None", dwErrorCode);
 		}
 	}
 

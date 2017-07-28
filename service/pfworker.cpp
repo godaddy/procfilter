@@ -32,7 +32,7 @@
 #include "yara.hpp"
 #include "die.hpp"
 #include "log.hpp"
-#include "sha1.hpp"
+#include "hash.hpp"
 #include "quarantine.hpp"
 #include "file.hpp"
 #include "strlcat.hpp"
@@ -141,6 +141,7 @@ PfWorkerWork(void *lpPoolData, void *lpThreadData, void *lpTaskData, bool bCance
 		if (ApiEventExport(e) & PROCFILTER_RESULT_BLOCK_PROCESS) {
 			response.bBlock = true;
 			DriverSendResponse(pd->hSharedDriverHandle, wd->hWriteCompletionEvent, &response);
+			EventWriteEXECUTION_BLOCKED(req->dwProcessId, req->szFileName, NULL, NULL);
 		} else {
 			Scan(req->dwEventType, PROCFILTER_SCAN_CONTEXT_PROCESS_CREATE, &wd->pfProcFilterEvent, wd->ctx, pd->hSharedDriverHandle, wd->hWriteCompletionEvent, req->dwProcessId, req->dwParentProcessId, req->szFileName, NULL, wd->lpvScanDataArray);
 		}
@@ -162,6 +163,7 @@ PfWorkerWork(void *lpPoolData, void *lpThreadData, void *lpTaskData, bool bCance
 		if (ApiEventExport(e) & PROCFILTER_RESULT_BLOCK_PROCESS) {
 			
 			LogDebugFmt("Worker image load API request to terminate process: 0x%08X / %ls", req->dwProcessId, req->szFileName);
+			// XXX: Race condition here blocking on process pid while the DLL is still loading?
 			TerminateProcessByPid(req->dwProcessId, true, req->szFileName, NULL, NULL);
 			LogDebugFmt("Worker image load process terminated: 0x%08X / %ls", req->dwProcessId, req->szFileName);
 			response.bBlock = true;

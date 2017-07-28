@@ -54,7 +54,8 @@ LoadHashfile(PROCFILTER_EVENT *e, set<Hash> &c, const WCHAR *lpszFileName)
 	string line;
 	while (getline(infile, line)) {
 		BYTE baRawDigest[20];
-		std::remove_if(line.begin(), line.end(), [](char c){ return std::isspace(c); });
+		auto space_begin = std::remove_if(line.begin(), line.end(), [](char c){ return std::isspace(c); });
+		line.erase(space_begin, line.end());
 		if (line.length() >= 40) {
 			bool bSuccess = true;
 			for (size_t i = 0; i < 20; ++i) {
@@ -127,17 +128,17 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 		}
 		DeleteCriticalSection(&g_CriticalSection);
 	} else if (e->dwEventId == PROCFILTER_EVENT_PROCESS_CREATE && e->lpszFileName) {
-		BYTE baRawDigest[20];
-		bool bFileHashed = e->Sha1File(e->lpszFileName, NULL, 0, baRawDigest, sizeof(baRawDigest));
+		HASHES hashes;
+		bool bFileHashed = e->HashFile(e->lpszFileName, &hashes);
 		if (g_RunningMode == MODE_BUILD_WHITELIST) {
-			if (bFileHashed && !Sha1InSet(e, g_WhitelistHashes, Hash(baRawDigest, 20))) {
+			if (bFileHashed && !Sha1InSet(e, g_WhitelistHashes, Hash(hashes.sha1_digest, 20))) {
 				EnterCriticalSection(&g_CriticalSection);
-				g_WhitelistAdditions.insert(std::make_pair(Hash(baRawDigest, 20), wstring(e->lpszFileName)));
+				g_WhitelistAdditions.insert(std::make_pair(Hash(hashes.sha1_digest, 20), wstring(e->lpszFileName)));
 				LeaveCriticalSection(&g_CriticalSection);
 			}
 		} else if (g_RunningMode == MODE_CHECK_WHITELIST) {
 			bool bSha1Whitelisted = false;
-			if (bFileHashed) bSha1Whitelisted = Sha1InSet(e, g_WhitelistHashes, Hash(baRawDigest, 20));
+			if (bFileHashed) bSha1Whitelisted = Sha1InSet(e, g_WhitelistHashes, Hash(hashes.sha1_digest, 20));
 
 			if (g_bBlockFilesNotWhitelisted) {
 				if (!bFileHashed || !bSha1Whitelisted) {

@@ -33,7 +33,7 @@
 #include "log.hpp"
 #include "file.hpp"
 #include "winerr.hpp"
-#include "sha1.hpp"
+#include "hash.hpp"
 #include "quarantine.hpp"
 #include "path.hpp"
 #include "config.hpp"

@@ -196,6 +196,9 @@ LoadKernelDriver()
 	yc.bWantImageLoadEvents = cd->bScanFileOnImageLoad || cd->bScanMemoryOnImageLoad || ApiWantImageLoadEvents();
 #endif
 
+	LogDebugFmt("yc.bWantThreadEvents = %s", yc.bWantThreadEvents ? "true" : "false");
+	LogDebugFmt("yc.bWantImageLoadEvents = %s", yc.bWantImageLoadEvents ? "true" : "false");
+
 	// Create the event to be signalled when device configuration succeeds
 	HANDLE hControlDeviceEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 	if (!hControlDeviceEvent) Die("Unable to create event for DeviceIoControl()");

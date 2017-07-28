@@ -31,7 +31,7 @@
 
 #include "config.hpp"
 #include "quarantine.hpp"
-#include "sha1.hpp"
+#include "hash.hpp"
 #include "die.hpp"
 #include "log.hpp"
 #include "status.hpp"

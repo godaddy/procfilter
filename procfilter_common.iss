@@ -65,7 +65,7 @@ FileName: "{sys}\wevtutil.exe"; Parameters: """uninstall-manifest"" ""{app}\lib\
 FileName: "{sys}\wevtutil.exe"; Parameters: """install-manifest"" ""{app}\lib\procfilter.man"" ""/rf:{app}\procfilter.exe"" ""/mf:{app}\procfilter.exe"""; Flags: runhidden
 ; Default to delayed-start install since it's safer if ProcFilter were to cause problems
 FileName: "{app}\procfilter.exe"; Parameters: "-install-delayed"; Flags: runhidden 
-FileName: "{app}\procfilter.exe"; Parameters: "-install"; Description: "Set ProcFilter as a boot-time service (vs. delayed start)"; Flags: postinstall skipifsilent runhidden runascurrentuser
+FileName: "{app}\procfilter.exe"; Parameters: "-install"; Description: "Set ProcFilter as a boot-time service (vs. delayed start)"; Flags: unchecked postinstall skipifsilent runhidden runascurrentuser
 FileName: "{app}\procfilter.exe"; Parameters: "-start"; Description: "Start the ProcFilter service now"; Flags: postinstall skipifsilent runhidden runascurrentuser
 
 [UninstallRun]     

@@ -40,6 +40,7 @@
 #include "config.hpp"
 #include "swig_wrapper.hpp"
 #include "die.hpp"
+#include "log.hpp"
 #include "strlcat.hpp"
 #include "getfile.hpp"
 #include "shellnotice.hpp"
@@ -47,7 +48,7 @@
 #include "path.hpp"
 #include "isadmin.hpp"
 #include "yara.hpp"
-#include "sha1.hpp"
+#include "hash.hpp"
 #include "signing.hpp"
 #include "winerr.hpp"
 #include "status.hpp"
@@ -276,26 +277,14 @@ Export_RegisterPlugin(const WCHAR *szApiVersion, const WCHAR *lpszShortName, DWO
 	g_dwProcessDataTotalSize += dwProcessDataSize;
 	p->bRegistered = true;
 	
+	LogDebugFmt("Loaded Plugin: %ls", p->szShortName);
+
 	// Enable the requested events passed in to the call
 	va_list ap;
 	va_start(ap, bSynchronizeEvents);
 	DWORD dEvent = PROCFILTER_EVENT_NONE;
 	while ((dEvent = va_arg(ap, DWORD)) != PROCFILTER_EVENT_NONE) {
-		if (dEvent == PROCFILTER_EVENT_IMAGE_LOAD) {
-			g_bWantImageLoadEvents = true;
-		} else if (dEvent == PROCFILTER_EVENT_THREAD_CREATE || dEvent == PROCFILTER_EVENT_THREAD_TERMINATE) {
-			g_bWantThreadEvents = true;
-		}
-
-		if (dEvent == PROCFILTER_EVENT_ALL) {
-			for (size_t i = 0; i < PROCFILTER_EVENT_NUM; ++i) {
-				p->bDesiredEventsArray[i] = true;
-			}
-		} else if (dEvent > PROCFILTER_EVENT_NUM) {
-			Die("Invalid event request in RegisterPlugin() for module \"%ls\": %u\n", p->szPlugin, dEvent);
-		} else {
-			p->bDesiredEventsArray[dEvent] = true;
-		}
+		Export_EnableEvent(dEvent);
 	}
 	va_end(ap);
 	
@@ -308,14 +297,43 @@ Export_RegisterPlugin(const WCHAR *szApiVersion, const WCHAR *lpszShortName, DWO
 }
 
 
+void
+Export_EnableEvent(DWORD dEvent)
+{
+	PROCFILTER_PLUGIN *p = GetCurrentPlugin();
+
+	// Enable the config globally so the kernel mode component exports events
+	if (dEvent == PROCFILTER_EVENT_IMAGE_LOAD) {
+		g_bWantImageLoadEvents = true;
+	} else if (dEvent == PROCFILTER_EVENT_THREAD_CREATE || dEvent == PROCFILTER_EVENT_THREAD_TERMINATE) {
+		g_bWantThreadEvents = true;
+	}
+
+	// Convenience value
+	if (dEvent == PROCFILTER_EVENT_ALL) {
+		for (size_t i = 0; i < PROCFILTER_EVENT_NUM; ++i) {
+			p->bDesiredEventsArray[i] = true;
+		}
+	} else if (dEvent > PROCFILTER_EVENT_NUM) {
+		Die("Invalid event request in RegisterPlugin() for module \"%ls\": %u\n", p->szPlugin, dEvent);
+	} else {
+		LogDebugFmt("Enabled Event: %u", dEvent);
+		p->bDesiredEventsArray[dEvent] = true;
+	}
+}
+
+
 bool
 Export_GetProcessFileName(DWORD dwProcessId, WCHAR *lpszResult, DWORD dwResultSize)
 {
+	if (dwResultSize < sizeof(WCHAR)) return false;
+	lpszResult[(dwResultSize / sizeof(WCHAR)) - 1] = 0;
+
 	bool rv = false;
 
 	HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, dwProcessId);
 	if (hProcess) {
-		DWORD dwNumChars = dwResultSize / sizeof(WCHAR);
+		DWORD dwNumChars = (dwResultSize / sizeof(WCHAR)) - 1;
 		if (QueryFullProcessImageName(hProcess, PROCESS_NAME_NATIVE, lpszResult, &dwNumChars)) {
 			rv = true;
 		}
@@ -453,6 +471,40 @@ Export_LogFmt(const char *fmt, ...)
 	va_end(ap);
 }
 
+void
+Export_LogWarningFmt(const char *fmt, ...)
+{
+	PROCFILTER_PLUGIN *p = GetCurrentPlugin();
+
+	char szMessage[8192];
+
+	va_list ap;
+	va_start(ap, fmt);
+
+	vstrlprintf(szMessage, sizeof(szMessage), fmt, ap);
+
+	EventWritePLUGIN_WARNING(p->szShortName, szMessage);
+
+	va_end(ap);
+}
+
+void
+Export_LogCriticalFmt(const char *fmt, ...)
+{
+	PROCFILTER_PLUGIN *p = GetCurrentPlugin();
+
+	char szMessage[8192];
+
+	va_list ap;
+	va_start(ap, fmt);
+
+	vstrlprintf(szMessage, sizeof(szMessage), fmt, ap);
+
+	EventWritePLUGIN_CRITICAL(p->szShortName, szMessage);
+
+	va_end(ap);
+}
+
 
 bool
 Export_FormatString(WCHAR *lpszDestination, DWORD dwDestinationSize, const WCHAR *lpszFormatString, ...)
@@ -573,6 +625,22 @@ Export_Log(const char *str)
 	EventWritePLUGIN_LOG(p->szShortName, str);
 }
 
+void
+Export_LogWarning(const char *str)
+{
+	PROCFILTER_PLUGIN *p = GetCurrentPlugin();
+
+	EventWritePLUGIN_WARNING(p->szShortName, str);
+}
+
+void
+Export_LogCritical(const char *str)
+{
+	PROCFILTER_PLUGIN *p = GetCurrentPlugin();
+
+	EventWritePLUGIN_CRITICAL(p->szShortName, str);
+}
+
 
 int
 Export_GetConfigInt(const WCHAR *lpszKey, int dDefault)
@@ -590,7 +658,9 @@ Export_GetConfigBool(const WCHAR *lpszKey, bool bDefault)
 	PROCFILTER_PLUGIN *p = GetCurrentPlugin();
 	CONFIG_DATA *cd = GetConfigData();
 
-	return GetPrivateProfileIntW(p->szConfigSection, lpszKey, bDefault ? 1 : 0, cd->szConfigFile) != 0;
+	bool bResult = GetPrivateProfileIntW(p->szConfigSection, lpszKey, bDefault ? 1 : 0, cd->szConfigFile) != 0;
+	LogDebugFmt("%ls.GetConfigBool(%ls, %ls, %d, %ls) -> %s", p->szShortName, p->szConfigSection, lpszKey, bDefault ? 1 : 0, cd->szConfigFile, bResult ? "true" : "false");
+	return bResult;
 }
 
 
@@ -639,7 +709,7 @@ Export_QuarantineFile(const WCHAR *lpszFileName, char *o_lpszHexDigest, DWORD dw
 	char o_hexdigest[SHA1_HEXDIGEST_LENGTH+1];
 	bool rv = QuarantineFile(lpszFileName, cd->szQuarantineDirectory, 0, NULL, NULL, o_hexdigest);
 	if (rv) {
-		strlprintf(o_lpszHexDigest, dwHexDigestSize, "%hs", o_hexdigest);
+		if (o_lpszHexDigest) strlprintf(o_lpszHexDigest, dwHexDigestSize, "%hs", o_hexdigest);
 	}
 
 	return rv;
@@ -654,39 +724,65 @@ Export_ShellNotice(DWORD dwDurationSeconds, bool bWait, DWORD dwStyle, WCHAR *lp
 
 
 bool
-Export_Sha1File(const WCHAR *lpszFileName, char *lpszHexDigest, DWORD dwHexDigestSize, void *lpbaRawDigest, DWORD dwRawDigestSize)
+Export_HashFile(const WCHAR *lpszFileName, HASHES *hashes)
 {
 	PROCFILTER_EVENT *e = GetCurrentEvent();
+
+	ZeroMemory(hashes, sizeof(HASHES));
 	
 	bool rv = false;
-
-	char hexdigest[SHA1_HEXDIGEST_LENGTH+1];
-	BYTE rawdigest[SHA1_DIGEST_SIZE];
 
 	// Check for a cache hit within the current event structure
 	if (e->lpszFileName && wcscmp(lpszFileName, e->lpszFileName) == 0) {
 		// Casting away the volatile is okay since the current thread is the only thread that could modify priate data
-		if (e->private_data->bSha1Valid) {
-			memcpy(hexdigest, (void*)e->private_data->szSha1HexDigest, SHA1_HEXDIGEST_LENGTH+1);
-			memcpy(rawdigest, (void*)e->private_data->baSha1Digest, SHA1_DIGEST_SIZE);
+		if (e->private_data->bHashesValid) {
+			memcpy(hashes, (void*)&e->private_data->hashes, sizeof(HASHES));
 		} else {
-			rv = Sha1File(lpszFileName, hexdigest, rawdigest);
+			rv = HashFile(lpszFileName, (HASHES*)&e->private_data->hashes);
 			if (rv) {
-				memcpy((void*)e->private_data->szSha1HexDigest, hexdigest, SHA1_HEXDIGEST_LENGTH+1);
-				memcpy((void*)e->private_data->baSha1Digest, rawdigest, SHA1_DIGEST_SIZE);
-				e->private_data->bSha1Valid = true;
+				memcpy(hashes, (void*)&e->private_data->hashes, sizeof(HASHES));
+				e->private_data->bHashesValid = true;
 			}
 		}
 	} else {
-		rv = Sha1File(lpszFileName, hexdigest, rawdigest);
-	}
-
-	if (rv) {
-		if (lpszHexDigest) strlprintf(lpszHexDigest, dwHexDigestSize, "%hs", hexdigest);
-		if (lpbaRawDigest) memcpy(lpbaRawDigest, rawdigest, dwRawDigestSize < sizeof(rawdigest) ? dwRawDigestSize : sizeof(rawdigest));
+		rv = HashFile(lpszFileName, hashes);
 	}
 
 	return rv;
+}
+
+
+const WCHAR*
+Export_GetProcessCommandLine()
+{
+	PROCFILTER_EVENT *e = GetCurrentEvent();
+
+	if (e->private_data->lpszCommandLine) {
+		return e->private_data->lpszCommandLine;
+	}
+
+	// read the processes PEB and it's Parameters structure
+	WCHAR *lpszResult = NULL;
+	PEB Peb;
+	RTL_USER_PROCESS_PARAMETERS Parameters;
+	if (e->ReadProcessPeb(&Peb) && e->ReadProcessMemory(Peb.ProcessParameters, &Parameters, sizeof(Parameters))) {
+		// check to make sure the command line is present
+		DWORD len = Parameters.CommandLine.Length;
+		if (len > 0) {
+			// allocate memory for the command line and then copy it out from the remote process
+			lpszResult = (WCHAR*)calloc(len + 1, sizeof(WCHAR));
+			if (lpszResult && e->ReadProcessMemory(Parameters.CommandLine.Buffer, lpszResult, len)) {
+				lpszResult[len] = '\0';
+			} else if (lpszResult) {
+				free(lpszResult);
+				lpszResult = NULL;
+			}
+		}
+	}
+
+	e->private_data->lpszCommandLine = lpszResult;
+
+	return lpszResult;
 }
 
 
@@ -1052,7 +1148,11 @@ ApiEventCacheCleanup(PROCFILTER_EVENT *e)
 		CloseHandle(e->private_data->hCurrentPid);
 		e->private_data->hCurrentPid = NULL;
 	}
-	e->private_data->bSha1Valid = false;
+	if (e->private_data->lpszCommandLine) {
+		free(e->private_data->lpszCommandLine);
+		e->private_data->lpszCommandLine = NULL;
+	}
+	e->private_data->bHashesValid = false;
 }
 
 

@@ -32,7 +32,7 @@
 
 #include "procfilter/procfilter.h"
 #include "random.hpp"
-#include "sha1.hpp"
+#include "hash.hpp"
 #include "strlcat.hpp"
 #include "config.hpp"
 #include "rc4.hpp"
@@ -148,10 +148,10 @@ QuarantineFile(const WCHAR *lpszFileName, const WCHAR *lpszQuarantineDirectory, 
 	// Hash the file and copy it to the quarantine directory
 	if (dwFileSizeLimit == 0 || dwFileSize <= dwFileSizeLimit) {
 		WCHAR szQuarantineFileName[MAX_PATH+1] = { '\0' };
-		char hexdigest[SHA1_HEXDIGEST_LENGTH+1];
-		if (Sha1File(lpszFileName, hexdigest, NULL)) {
-			strlprintf(o_hexdigest, sizeof(hexdigest), "%hs", hexdigest);
-			wstrlprintf(szQuarantineFileName, sizeof(szQuarantineFileName), L"%ls%hs", lpszQuarantineDirectory, hexdigest);
+		HASHES hashes;
+		if (HashFile(lpszFileName, &hashes)) {
+			strlprintf(o_hexdigest, SHA1_HEXDIGEST_LENGTH+1, "%hs", hashes.sha1_hexdigest);
+			wstrlprintf(szQuarantineFileName, sizeof(szQuarantineFileName), L"%ls%hs", lpszQuarantineDirectory, hashes.sha1_hexdigest);
 			if (QuarantineStoreFile(lpszFileName, szQuarantineFileName, lpszFileRuleMatches, lpszMemoryRuleMatches)) {
 				rv = true;
 			}

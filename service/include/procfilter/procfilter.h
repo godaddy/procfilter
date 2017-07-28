@@ -178,8 +178,22 @@ extern "C" {
 #define PROCFILTER_MATCH_MEMORY                   1 // Match in address space
 #define PROCFILTER_MATCH_FILE                     2 // Match in file
 
+#define MD5_HEXDIGEST_LENGTH                     (16*2)
+#define MD5_DIGEST_SIZE                          (16)
 #define SHA1_HEXDIGEST_LENGTH                    (20*2)
 #define SHA1_DIGEST_SIZE                         (20)
+#define SHA256_HEXDIGEST_LENGTH                  (32*2)
+#define SHA256_DIGEST_SIZE                       (32)
+
+typedef struct hashes_t HASHES;
+struct hashes_t {
+	BYTE md5_digest[MD5_DIGEST_SIZE];
+	char md5_hexdigest[MD5_HEXDIGEST_LENGTH + 1];
+	BYTE sha1_digest[SHA1_DIGEST_SIZE];
+	char sha1_hexdigest[SHA1_HEXDIGEST_LENGTH + 1];
+	BYTE sha256_digest[SHA256_DIGEST_SIZE];
+	char sha256_hexdigest[SHA256_HEXDIGEST_LENGTH + 1];
+};
 
 
 typedef struct yarascan_context YARASCAN_CONTEXT;
@@ -250,10 +264,15 @@ struct procfilter_event {
         HANDLE hReadMemoryCurrentProcess;
         HANDLE hCurrentPid;
         void  *lpvEventData;
-        bool   bSha1Valid;
-        char   szSha1HexDigest[SHA1_HEXDIGEST_LENGTH+1];
-        BYTE   baSha1Digest[SHA1_DIGEST_SIZE];
+        bool   bHashesValid;
+		HASHES hashes;
+		WCHAR *lpszCommandLine;
     } private_data[1];
+
+	//
+	// Enable an event after having called RegisterPlugin(). Only valid during PROCFILTER_EVENT_INIT.
+	//
+	void  (*EnableEvent)(DWORD dEvent);
 
     //
     // Get a value from configuration.  A plugin's configuration is retrieved from the section name passed in to RegisterPlugin()
@@ -306,9 +325,14 @@ struct procfilter_event {
     //
     // Compute the SHA1 hash of the specified file.
     //
-    bool  (*Sha1File)(const WCHAR *lpszFileName, char *lpszHexDigest, DWORD dwHexDigestSize, void *lpbaRawDigest, DWORD dwRawDigestSize);
-
-    //
+    bool  (*HashFile)(const WCHAR *lpszFileName, HASHES *hashes);
+	
+	//
+	// Get the command line for the current process. Only valid during EVENT_PROCESS_CREATE.
+	//
+	const WCHAR* (*GetProcessCommandLine)();
+    
+	//
     // Format a string.
     //
     bool  (*FormatString)(WCHAR *lpszDestination, DWORD dwDestinationSize, const WCHAR *lpszFormatString, ...);
@@ -360,6 +384,10 @@ struct procfilter_event {
     //
     void  (*Log)(const char *str);
     void  (*LogFmt)(const char *fmt, ...);
+    void  (*LogWarning)(const char *str);
+    void  (*LogWarningFmt)(const char *fmt, ...);
+    void  (*LogCritical)(const char *str);
+    void  (*LogCriticalFmt)(const char *fmt, ...);
 
     //
     // Allocate and free memory.  Allocated memory is zeroed.  AllocateMemory() always succeeds; if no memory

@@ -215,7 +215,7 @@ Remarks:
 #endif
 #endif // MCGEN_DISABLE_PROVIDER_CODE_GENERATION
 //+
-// Provider ProcFilter Event Count 22
+// Provider ProcFilter Event Count 24
 //+
 EXTERN_C __declspec(selectany) const GUID ETW_PROCFILTER_PROVIDER = {0xaaf28f4b, 0xe47b, 0x4200, {0xab, 0x5d, 0xe1, 0xd3, 0xf1, 0x8a, 0xd0, 0xfe}};
 
@@ -250,6 +250,8 @@ EXTERN_C __declspec(selectany) const GUID ETW_PROCFILTER_PROVIDER = {0xaaf28f4b,
 #define LOADEDIMAGEMATCHEDLOGGEDRULE_OPCODE 0x1d
 #define WARNING_OPCODE 0x1e
 #define NOTICE_OPCODE 0x1f
+#define PLUGINWARNING_OPCODE 0x20
+#define PLUGINCRITICAL_OPCODE 0x21
 //
 // Keyword
 //
@@ -275,6 +277,8 @@ EXTERN_C __declspec(selectany) const GUID ETW_PROCFILTER_PROVIDER = {0xaaf28f4b,
 #define LOADEDIMAGEMATCHEDLOGGEDRULE_KEYWORD 0x200000
 #define WARNING_KEYWORD 0x400000
 #define NOTICE_KEYWORD 0x800000
+#define PLUGINWARNING_KEYWORD 0x1000000
+#define PLUGINCRITICAL_KEYWORD 0x2000000
 
 //
 // Event Descriptors
@@ -323,6 +327,10 @@ EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR WARNING = {0x15, 0x0, 0x9,
 #define WARNING_value 0x15
 EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR NOTICE = {0x16, 0x0, 0x9, 0x4, 0x1f, 0x0, 0x8000000000800000};
 #define NOTICE_value 0x16
+EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR PLUGIN_WARNING = {0x17, 0x0, 0x9, 0x3, 0x20, 0x0, 0x8000000001000000};
+#define PLUGIN_WARNING_value 0x17
+EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR PLUGIN_CRITICAL = {0x18, 0x0, 0x9, 0x1, 0x21, 0x0, 0x8000000002000000};
+#define PLUGIN_CRITICAL_value 0x18
 
 //
 // Note on Generate Code from Manifest Windows Vista and above
@@ -352,9 +360,9 @@ EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR NOTICE = {0x16, 0x0, 0x9, 
 //
 
 EXTERN_C __declspec(selectany) DECLSPEC_CACHEALIGN ULONG ProcFilterEnableBits[1];
-EXTERN_C __declspec(selectany) const ULONGLONG ProcFilterKeywords[22] = {0x8000000000000001, 0x8000000000000002, 0x8000000000000004, 0x8000000000000008, 0x8000000000000010, 0x8000000000000020, 0x8000000000000040, 0x8000000000000080, 0x8000000000000100, 0x8000000000000200, 0x8000000000000400, 0x8000000000000800, 0x8000000000001000, 0x8000000000002000, 0x8000000000008000, 0x8000000000010000, 0x8000000000020000, 0x8000000000080000, 0x8000000000100000, 0x8000000000200000, 0x8000000000400000, 0x8000000000800000};
-EXTERN_C __declspec(selectany) const UCHAR ProcFilterLevels[22] = {4, 4, 4, 1, 4, 3, 2, 1, 3, 3, 1, 4, 1, 4, 1, 4, 4, 4, 1, 4, 3, 4};
-EXTERN_C __declspec(selectany) MCGEN_TRACE_CONTEXT ETW_PROCFILTER_PROVIDER_Context = {0, 0, 0, 0, 0, 0, 0, 0, 22, ProcFilterEnableBits, ProcFilterKeywords, ProcFilterLevels};
+EXTERN_C __declspec(selectany) const ULONGLONG ProcFilterKeywords[24] = {0x8000000000000001, 0x8000000000000002, 0x8000000000000004, 0x8000000000000008, 0x8000000000000010, 0x8000000000000020, 0x8000000000000040, 0x8000000000000080, 0x8000000000000100, 0x8000000000000200, 0x8000000000000400, 0x8000000000000800, 0x8000000000001000, 0x8000000000002000, 0x8000000000008000, 0x8000000000010000, 0x8000000000020000, 0x8000000000080000, 0x8000000000100000, 0x8000000000200000, 0x8000000000400000, 0x8000000000800000, 0x8000000001000000, 0x8000000002000000};
+EXTERN_C __declspec(selectany) const UCHAR ProcFilterLevels[24] = {4, 4, 4, 1, 4, 3, 2, 1, 3, 3, 1, 4, 1, 4, 1, 4, 4, 4, 1, 4, 3, 4, 3, 1};
+EXTERN_C __declspec(selectany) MCGEN_TRACE_CONTEXT ETW_PROCFILTER_PROVIDER_Context = {0, 0, 0, 0, 0, 0, 0, 0, 24, ProcFilterEnableBits, ProcFilterKeywords, ProcFilterLevels};
 
 EXTERN_C __declspec(selectany) REGHANDLE ProcFilterHandle = (REGHANDLE)0;
 
@@ -759,6 +767,34 @@ Remarks:
         Template_z(ProcFilterHandle, &NOTICE, Message)\
         : ERROR_SUCCESS\
 
+//
+// Enablement check macro for PLUGIN_WARNING
+//
+
+#define EventEnabledPLUGIN_WARNING() ((ProcFilterEnableBits[0] & 0x00400000) != 0)
+
+//
+// Event Macro for PLUGIN_WARNING
+//
+#define EventWritePLUGIN_WARNING(PluginName, String)\
+        EventEnabledPLUGIN_WARNING() ?\
+        Template_zs(ProcFilterHandle, &PLUGIN_WARNING, PluginName, String)\
+        : ERROR_SUCCESS\
+
+//
+// Enablement check macro for PLUGIN_CRITICAL
+//
+
+#define EventEnabledPLUGIN_CRITICAL() ((ProcFilterEnableBits[0] & 0x00800000) != 0)
+
+//
+// Event Macro for PLUGIN_CRITICAL
+//
+#define EventWritePLUGIN_CRITICAL(PluginName, String)\
+        EventEnabledPLUGIN_CRITICAL() ?\
+        Template_zs(ProcFilterHandle, &PLUGIN_CRITICAL, PluginName, String)\
+        : ERROR_SUCCESS\
+
 #endif // MCGEN_DISABLE_PROVIDER_CODE_GENERATION
 
 
@@ -1121,6 +1157,8 @@ Template_z(
 #define MSG_ProcFilter_event_20_message      0x00000014L
 #define MSG_ProcFilter_event_21_message      0x00000015L
 #define MSG_ProcFilter_event_22_message      0x00000016L
+#define MSG_ProcFilter_event_23_message      0x00000017L
+#define MSG_ProcFilter_event_24_message      0x00000018L
 #define MSG_ProcFilter_keyword_YARAMATCH_KEYWORD_message 0x10000001L
 #define MSG_ProcFilter_keyword_PERIODICSCANSTARTED_KEYWORD_message 0x10000002L
 #define MSG_ProcFilter_keyword_PERIODICSCANFINISHED_KEYWORD_message 0x10000003L
@@ -1143,6 +1181,8 @@ Template_z(
 #define MSG_ProcFilter_Keyword_LOADEDIMAGEMATCHEDLOGGEDRULE_KEYWORD_message 0x10000016L
 #define MSG_ProcFilter_Keyword_WARNING_KEYWORD_message 0x10000017L
 #define MSG_ProcFilter_Keyword_NOTICE_KEYWORD_message 0x10000018L
+#define MSG_ProcFilter_keyword_PLUGINWARNING_KEYWORD_message 0x10000019L
+#define MSG_ProcFilter_Keyword_PLUGINCRITICAL_KEYWORD_message 0x1000001AL
 #define MSG_ProcFilter_opcode_MATCH_OPCODE_message 0x3000000AL
 #define MSG_ProcFilter_opcode_PERIODICSCANSTARTED_OPCODE_message 0x3000000BL
 #define MSG_ProcFilter_opcode_PERIODICSCANFINISHED_OPCODE_message 0x3000000CL
@@ -1165,6 +1205,8 @@ Template_z(
 #define MSG_ProcFilter_opcode_LOADEDIMAGEMATCHEDLOGGEDRULE_OPCODE_message 0x3000001DL
 #define MSG_ProcFilter_opcode_WARNING_OPCODE_message 0x3000001EL
 #define MSG_ProcFilter_opcode_NOTICE_OPCODE_message 0x3000001FL
+#define MSG_ProcFilter_opcode_PLUGINWARNING_OPCODE_message 0x30000020L
+#define MSG_ProcFilter_opcode_PLUGINCRITICAL_OPCODE_message 0x30000021L
 #define MSG_level_Critical                   0x50000001L
 #define MSG_level_Error                      0x50000002L
 #define MSG_level_Warning                    0x50000003L

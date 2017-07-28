@@ -1,18 +1,19 @@
 COPYING text eol=crlf
+*.bat text eol=crlf
+*.c text eol=crlf
 *.cpp text eol=crlf
 *.cxx text eol=crlf
-*.bat text eol=crlf
+*.dll binary
+*.exe binary
+*.h text eol=crlf
 *.hpp text eol=crlf
 *.ini text eol=crlf
+*.iss text eol=crlf
+*.lib binary
 *.md text eol=crlf
-*.yara text eol=crlf
-*.vcxproj text eol=crlf
-*.yar text eol=crlf
-*.h text eol=crlf
-*.c text eol=crlf
+*.obj binary
 *.rc text eol=crlf
 *.sln text eol=crlf
-*.exe binary
-*.dll binary
-*.lib binary
-*.obj binary
+*.vcxproj text eol=crlf
+*.yar text eol=crlf
+*.yara text eol=crlf

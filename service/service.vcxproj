@@ -201,7 +201,7 @@
     <ClCompile Include="scan.cpp" />
     <ClCompile Include="pfservice.cpp" />
     <ClCompile Include="getfile.cpp" />
-    <ClCompile Include="sha1.cpp" />
+    <ClCompile Include="hash.cpp" />
     <ClCompile Include="shellnotice.cpp" />
     <ClCompile Include="signing.cpp" />
     <ClCompile Include="svcutil.cpp" />
@@ -239,7 +239,7 @@
     <ClInclude Include="rc4.hpp" />
     <ClInclude Include="scan.hpp" />
     <ClInclude Include="pfservice.hpp" />
-    <ClInclude Include="sha1.hpp" />
+    <ClInclude Include="hash.hpp" />
     <ClInclude Include="shellnotice.hpp" />
     <ClInclude Include="signing.hpp" />
     <ClInclude Include="status.hpp" />

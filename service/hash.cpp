@@ -32,9 +32,12 @@
 
 
 bool
-HashFile(const WCHAR *lpszFileName, HASHES *hashes)
+HashFile(const WCHAR *lpszFileName, HASHES *result)
 {
-	ZeroMemory(hashes, sizeof(HASHES));
+	HASHES hashes;
+
+	ZeroMemory(result, sizeof(HASHES));
+	ZeroMemory(&hashes, sizeof(HASHES));
 
 	bool rv = false;
 	BOOL rc = FALSE;
@@ -50,7 +53,7 @@ HashFile(const WCHAR *lpszFileName, HASHES *hashes)
 	if (hFile == INVALID_HANDLE_VALUE) goto cleanup;
 
 	// Open up the Wincrypt API
-	if (!CryptAcquireContext(&hCryptoProvider, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_SILENT)) goto cleanup;
+	if (!CryptAcquireContext(&hCryptoProvider, NULL, NULL, PROV_RSA_AES, CRYPT_VERIFYCONTEXT | CRYPT_SILENT)) goto cleanup;
 	if (!CryptCreateHash(hCryptoProvider, CALG_MD5, 0, 0, &hMd5Hash)) goto cleanup;
 	if (!CryptCreateHash(hCryptoProvider, CALG_SHA1, 0, 0, &hSha1Hash)) goto cleanup;
 	if (!CryptCreateHash(hCryptoProvider, CALG_SHA_256, 0, 0, &hSha256Hash)) goto cleanup;
@@ -66,26 +69,27 @@ HashFile(const WCHAR *lpszFileName, HASHES *hashes)
 	if (!rc) goto cleanup;
 
 	// Extract the hash values
-	DWORD dwDigestLen = sizeof(hashes->md5_digest);
-	if (!CryptGetHashParam(hMd5Hash, HP_HASHVAL, hashes->md5_digest, &dwDigestLen, 0)) goto cleanup;
+	DWORD dwDigestLen = sizeof(hashes.md5_digest);
+	if (!CryptGetHashParam(hMd5Hash, HP_HASHVAL, hashes.md5_digest, &dwDigestLen, 0)) goto cleanup;
 
-	dwDigestLen = sizeof(hashes->sha1_digest);
-	if (!CryptGetHashParam(hSha1Hash, HP_HASHVAL, hashes->sha1_digest, &dwDigestLen, 0)) goto cleanup;
+	dwDigestLen = sizeof(hashes.sha1_digest);
+	if (!CryptGetHashParam(hSha1Hash, HP_HASHVAL, hashes.sha1_digest, &dwDigestLen, 0)) goto cleanup;
 
-	dwDigestLen = sizeof(hashes->sha256_digest);
-	if (!CryptGetHashParam(hSha256Hash, HP_HASHVAL, hashes->sha256_digest, &dwDigestLen, 0)) goto cleanup;
+	dwDigestLen = sizeof(hashes.sha256_digest);
+	if (!CryptGetHashParam(hSha256Hash, HP_HASHVAL, hashes.sha256_digest, &dwDigestLen, 0)) goto cleanup;
 
 	// Convert and store the digest to hex
 	for (size_t i = 0; i < MD5_DIGEST_SIZE; ++i) {
-		strlprintf(&hashes->md5_hexdigest[i*2], 3, "%.02X", hashes->md5_digest[i]);
+		strlprintf(&hashes.md5_hexdigest[i*2], 3, "%.02X", hashes.md5_digest[i]);
 	}
 	for (size_t i = 0; i < SHA1_DIGEST_SIZE; ++i) {
-		strlprintf(&hashes->sha1_hexdigest[i*2], 3, "%.02X", hashes->sha1_digest[i]);
+		strlprintf(&hashes.sha1_hexdigest[i*2], 3, "%.02X", hashes.sha1_digest[i]);
 	}
 	for (size_t i = 0; i < SHA256_DIGEST_SIZE; ++i) {
-		strlprintf(&hashes->sha256_hexdigest[i*2], 3, "%.02X", hashes->sha256_digest[i]);
+		strlprintf(&hashes.sha256_hexdigest[i*2], 3, "%.02X", hashes.sha256_digest[i]);
 	}
 
+	memcpy(result, &hashes, sizeof(HASHES));
 	rv = true;
 
 cleanup:
