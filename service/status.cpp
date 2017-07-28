@@ -32,7 +32,9 @@
 #include "status.hpp"
 #include "api.hpp"
 #include "die.hpp"
+#include "minmaxavg.hpp"
 #include "strlcat.hpp"
+#include "pfworker.hpp"
 #include "winerr.hpp"
 #include "scan.hpp"
 
@@ -49,7 +51,6 @@ static HANDLE g_hStatusThread = NULL;
 static HANDLE g_hStatusEvent = NULL;
 static DWORD g_nWorkerThreads = 0;
 static CRITICAL_SECTION g_cs;
-
 
 
 static
@@ -183,9 +184,25 @@ DisplayStatus(HANDLE hPipe, HANDLE hWriteCompletionEvent)
 
 	ConfigStatusPrint();
 	StatusPrint(L"\n");
+	StatusPrint(L"===============================================================\n");
+	StatusPrint(L"= Plugin Data\n");
+	StatusPrint(L"===============================================================\n");
+	StatusPrint(L"\n");
 	ApiStatusPrint();
+
+	StatusPrint(L"\n");
+	StatusPrint(L"===============================================================\n");
+	StatusPrint(L"= YARA Core Data\n");
+	StatusPrint(L"===============================================================\n");
 	StatusPrint(L"\n");
 	ScanStatusPrint();
+
+	StatusPrint(L"\n");
+	StatusPrint(L"===============================================================\n");
+	StatusPrint(L"= Cumulative Stats\n");
+	StatusPrint(L"===============================================================\n");
+	StatusPrint(L"\n");
+	PfWorkerStatusPrint();
 
 	g_EventData = NULL;
 

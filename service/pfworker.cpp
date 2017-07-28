@@ -32,16 +32,77 @@
 #include "yara.hpp"
 #include "die.hpp"
 #include "log.hpp"
+#include "minmaxavg.hpp"
 #include "hash.hpp"
 #include "quarantine.hpp"
 #include "file.hpp"
+#include "status.hpp"
 #include "strlcat.hpp"
 #include "ProcFilterEvents.h"
+#include "timing.hpp"
 #include "umdriver.hpp"
 #include "scan.hpp"
 #include "terminate.hpp"
 #include "warning.hpp"
 
+typedef struct stats STATS;
+struct stats {
+	WCHAR *lpszScanName; // The scan name associated with the stats 
+	MMA    mma;          // The moving average
+};
+
+// TODO: Refactor out commonalities between pfworker.cpp stats and scan.cpp stats
+static STATS g_Stats[NUM_EVENTTYPES + 1];
+
+
+void
+PfWorkerStatsInit()
+{
+	ZeroMemory(g_Stats, sizeof(g_Stats));
+
+	for (int i = 0; i < NUM_EVENTTYPES + 1; ++i) {
+		MmaInit(&g_Stats[i].mma);
+	}
+
+	g_Stats[EVENTTYPE_NONE].lpszScanName = L"None";
+	g_Stats[EVENTTYPE_PROCESSCREATE].lpszScanName = L"ProcessCreate";
+	g_Stats[EVENTTYPE_PROCESSTERMINATE].lpszScanName = L"ProcessTerminate";
+	g_Stats[EVENTTYPE_THREADCREATE].lpszScanName = L"ThreadCreate";
+	g_Stats[EVENTTYPE_THREADTERMINATE].lpszScanName = L"ThreadTerminate";
+	g_Stats[EVENTTYPE_IMAGELOAD].lpszScanName = L"ImageLoad";
+	g_Stats[NUM_EVENTTYPES].lpszScanName = L"AllTypes";
+}
+
+
+void
+PfWorkerStatusPrint()
+{
+	LONG64 llFrequency = GetPerformanceFrequency();
+	MMA_DATA mdTotal;
+	ZeroMemory(&mdTotal, sizeof(MMA_DATA));
+	for (int i = 1; i < NUM_EVENTTYPES + 1; ++i) {
+		WCHAR *lpszName = NULL;
+		MMA_DATA md;
+
+		lpszName = g_Stats[i].lpszScanName;
+		md = MmaGet(&g_Stats[i].mma);
+
+		LONG64 llSma = (LONG64)md.rSma;
+		double rWeight = MmaGetWeight(&g_Stats[i].mma);
+
+		StatusPrint(L"%16ls->Total     = %I64d\n", lpszName, md.llNum);
+		StatusPrint(L"%16ls->MinTime   = %I64d.%03I64d seconds\n",
+			lpszName, GetPerformanceSeconds(md.llMin, llFrequency), GetPerformanceMilliseconds(md.llMin, llFrequency) % 1000);
+		StatusPrint(L"%16ls->MaxTime   = %I64d.%03I64d seconds\n",
+			lpszName, GetPerformanceSeconds(md.llMax, llFrequency), GetPerformanceMilliseconds(md.llMax, llFrequency) % 1000);
+		StatusPrint(L"%16ls->AvgTime   = %I64d.%03I64d seconds (SMA Weight=%0.02f)\n",
+			lpszName, GetPerformanceSeconds(llSma, llFrequency), GetPerformanceMilliseconds(llSma, llFrequency) % 1000, rWeight);
+		StatusPrint(L"%16ls->TotalTime = %I64d.%03I64d seconds\n",
+			lpszName, GetPerformanceSeconds(md.llTotalSum, llFrequency), GetPerformanceMilliseconds(md.llTotalSum, llFrequency) % 1000);
+		StatusPrint(L"\n");
+	}
+	StatusPrint(L" * Time counts include plugins\n");
+}
 
 //
 // Callback used by worker threads to initialize their thread data structs
@@ -175,6 +236,11 @@ PfWorkerWork(void *lpPoolData, void *lpThreadData, void *lpTaskData, bool bCance
 			LogDebugFmt("Image load scan complete: 0x%08X / %ls", req->dwProcessId, req->szFileName);
 		}
 	}
+
+	LONG64 llDuration = GetPerformanceCount() - wtd->ulStartPerformanceCount;
+
+	MmaUpdate(&g_Stats[req->dwEventType].mma, llDuration);
+	MmaUpdate(&g_Stats[NUM_EVENTTYPES].mma, llDuration);
 
 	free(wtd);
 }

@@ -39,6 +39,7 @@
 #include "ProcFilterEvents.h"
 #include "quarantine.hpp"
 #include "scan.hpp"
+#include "pfworker.hpp"
 #include "service.hpp"
 #include "status.hpp"
 #include "strlcat.hpp"
@@ -115,6 +116,7 @@ ProcFilterServiceMainloop(HANDLE hStopEvent)
 
 	EventWritePROCFILTERSERVICE_STARTED();
 
+	PfWorkerStatsInit();
 	ScanInit();
 	UpdateInit();
 	ApiInit();

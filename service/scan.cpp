@@ -50,7 +50,7 @@ struct stats {
 	MMA    mma;          // The moving average
 };
 
-STATS g_Stats[PROCFILTER_NUM_CONTEXTS + 1];
+static STATS g_Stats[PROCFILTER_NUM_CONTEXTS + 1];
 
 void
 ScanInit()
@@ -94,14 +94,14 @@ ScanStatusPrint()
 		LONG64 llSma = (LONG64)md.rSma;
 		double rWeight = MmaGetWeight(&g_Stats[i].mma);
 	
-		StatusPrint(L"%ls->TotalScans        = %I64d\n", lpszName, md.llNum);
-		StatusPrint(L"%ls->MinTimeScanning   = %I64d.%03I64d seconds\n",
+		StatusPrint(L"%11ls->TotalScans        = %I64d\n", lpszName, md.llNum);
+		StatusPrint(L"%11ls->MinTimeScanning   = %I64d.%03I64d seconds\n",
 			lpszName, GetPerformanceSeconds(md.llMin, llFrequency), GetPerformanceMilliseconds(md.llMin, llFrequency) % 1000);
-		StatusPrint(L"%ls->MaxTimeScanning   = %I64d.%03I64d seconds\n",
+		StatusPrint(L"%11ls->MaxTimeScanning   = %I64d.%03I64d seconds\n",
 			lpszName, GetPerformanceSeconds(md.llMax, llFrequency), GetPerformanceMilliseconds(md.llMax, llFrequency) % 1000);
-		StatusPrint(L"%ls->AvgTimeScanning   = %I64d.%03I64d seconds (SMA Weight=%0.02f)\n",
+		StatusPrint(L"%11ls->AvgTimeScanning   = %I64d.%03I64d seconds (SMA Weight=%0.02f)\n",
 			lpszName, GetPerformanceSeconds(llSma, llFrequency), GetPerformanceMilliseconds(llSma, llFrequency) % 1000, rWeight);
-		StatusPrint(L"%ls->TotalTimeScanning = %I64d.%03I64d seconds\n",
+		StatusPrint(L"%11ls->TotalTimeScanning = %I64d.%03I64d seconds\n",
 			lpszName, GetPerformanceSeconds(md.llTotalSum, llFrequency), GetPerformanceMilliseconds(md.llTotalSum, llFrequency) % 1000);
 		StatusPrint(L"\n");
 	}

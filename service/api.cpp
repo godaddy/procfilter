@@ -89,8 +89,8 @@ struct procfilter_plugin {
 	struct {		
 		// These values must only be accessed via InterlockedXxx() functions!
 		size_t nAllocations;                        // Number of allocations the plugin has outstanding
-		size_t nEvents;                             // Number of events the plugin has handled
-		LONG64 liTimeInPlugin;                      // Total time spent inside the plugin
+		size_t nEvents[PROCFILTER_EVENT_NUM];       // Number of events the plugin has handled
+		LONG64 liTimeInPlugin[PROCFILTER_EVENT_NUM];// Total time spent inside the plugin per event
 
 		CRITICAL_SECTION mtx;                       // Mutex protecting non-interlocked values in this section (currently none)
 	} mutable_data[1];
@@ -190,6 +190,32 @@ ApiGetCurrentEvent()
 	return GetCurrentEvent();
 }
 
+static const char*
+GetEventName(DWORD dEvent) {
+	switch (dEvent) {
+	case PROCFILTER_EVENT_NONE: return "None";
+	case PROCFILTER_EVENT_INIT: return "Init";
+	case PROCFILTER_EVENT_SHUTDOWN: return "Shutdown";
+	case PROCFILTER_EVENT_PROCFILTER_THREAD_INIT: return "ThreadInit";
+	case PROCFILTER_EVENT_PROCFILTER_THREAD_SHUTDOWN: return "ThreadShutdown";
+	case PROCFILTER_EVENT_PROCESS_CREATE: return "ProcessCreate";
+	case PROCFILTER_EVENT_PROCESS_TERMINATE: return "ProcessTerminate";
+	case PROCFILTER_EVENT_PROCESS_DATA_CLEANUP: return "ProcessDataCleanup";
+	case PROCFILTER_EVENT_THREAD_CREATE: return "ThreadCreate";
+	case PROCFILTER_EVENT_THREAD_TERMINATE: return "ThreadTerminate";
+	case PROCFILTER_EVENT_IMAGE_LOAD: return "ImageLoad";
+	case PROCFILTER_EVENT_YARA_SCAN_INIT: return "YaraScanInit";
+	case PROCFILTER_EVENT_YARA_SCAN_COMPLETE: return "YaraScanComplete";
+	case PROCFILTER_EVENT_YARA_SCAN_CLEANUP: return "YaraScanCleanup";
+	case PROCFILTER_EVENT_YARA_RULE_MATCH: return "YaraRuleMatch";
+	case PROCFILTER_EVENT_YARA_RULE_MATCH_META_TAG: return "YaraRuleMatchMetaTag";
+	case PROCFILTER_EVENT_STATUS: return "Status";
+	case PROCFILTER_EVENT_TICK: return "Tick";
+	case PROCFILTER_EVENT_NUM: return "Num";
+	}
+	return "Unknown";
+}
+
 //
 // Build a string with debugging information pertaining to the current API state
 //
@@ -214,27 +240,41 @@ ApiStatusPrint()
 {
 	LONG64 liFrequency = GetPerformanceFrequency();
 
-	LONG64 *liTimeArray = (LONG64*)_malloca(sizeof(LONG64) * g_nPlugins);
+	LONG64 *liTimeArray = (LONG64*)_malloca(sizeof(LONG64) * PROCFILTER_EVENT_NUM * g_nPlugins);
+	LONG64 *liTimePerPluginArray = (LONG64*)_malloca(sizeof(LONG64) * g_nPlugins);
 	LONG64 liTotal = 0;
 
 	for (DWORD i = 0; i < g_nPlugins; ++i) {
 		PROCFILTER_PLUGIN *p = &g_Plugins[i];
-		liTimeArray[i] = InterlockedExchangeAdd64(&p->mutable_data->liTimeInPlugin, 0);
-		liTotal += liTimeArray[i];
+		liTimePerPluginArray[i] = 0;
+		for (DWORD j = 0; j < PROCFILTER_EVENT_NUM; ++j) {
+			LONG64 tmp = InterlockedExchangeAdd64(&p->mutable_data->liTimeInPlugin[j], 0);
+			liTimeArray[(i * PROCFILTER_EVENT_NUM) + j] = tmp;
+			liTimePerPluginArray[i] += tmp;
+			liTotal += tmp;
+		}
 	}
-	if (liTotal <= 0) liTotal = 1;
 
 	StatusPrint(L"Number of Plugins: %u\n\n", g_nPlugins);
 	for (DWORD i = 0; i < g_nPlugins; ++i) {
 		PROCFILTER_PLUGIN *p = &g_Plugins[i];
-		size_t nEvents = InterlockedExchangeAddSizeT(&p->mutable_data->nEvents, 0);
+		size_t nTotalEvents = 0;
+		size_t nEvents[PROCFILTER_EVENT_NUM];
 		size_t nAllocations = InterlockedExchangeAddSizeT(&p->mutable_data->nAllocations, 0);
 		StatusPrint(L"#%-2u Path:%ls\n",
 			i + 1, p->szPlugin);
-		StatusPrint(L"#%-2u Name:%ls NumEvents:%Iu NumAllocations:%Iu CfgSection:%ls\n",
-			i + 1, p->szShortName, nEvents, nAllocations, p->szConfigSection);
-		StatusPrint(L"#%-2u TotalTimeInPlugin:%I64d.%03I64d seconds (%.02f%% of plugin time)\n",
-			i + 1, GetPerformanceSeconds(liTimeArray[i], liFrequency), GetPerformanceMilliseconds(liTimeArray[i], liFrequency) % 1000, GetPerformancePercent(liTimeArray[i], liTotal));
+		StatusPrint(L"#%-2u Name:%ls NumAllocations:%Iu CfgSection:%ls\n",
+			i + 1, p->szShortName, nAllocations, p->szConfigSection);
+		for (DWORD j = 0; j < PROCFILTER_EVENT_NUM; ++j) {
+			nEvents[j] = InterlockedExchangeAddSizeT(&p->mutable_data->nEvents[j], 0);
+			nTotalEvents += nEvents[j];
+			LONG64 tmp = liTimeArray[(i * PROCFILTER_EVENT_NUM) + j];
+			StatusPrint(L"#%-2u TotalTimeInEvent:%-21hs:%I64d.%03I64d seconds (%6.2f%% of plugin time) (%10zu events)\n",
+				i + 1, GetEventName(j), GetPerformanceSeconds(tmp, liFrequency), GetPerformanceMilliseconds(tmp, liFrequency) % 1000, GetPerformancePercent(tmp, liTotal), nEvents[j]);
+
+		}
+		StatusPrint(L"#%-2u TotalTimeInPlugin:%I64d.%03I64d seconds (%.2f%% of plugin time) (%zu total events)\n",
+			i + 1, GetPerformanceSeconds(liTimePerPluginArray[i], liFrequency), GetPerformanceMilliseconds(liTimePerPluginArray[i], liFrequency) % 1000, GetPerformancePercent(liTimePerPluginArray[i], liTotal), nTotalEvents);
 		StatusPrint(L"\n");
 	}
 	StatusPrint(L"TotalPluginOverhead:%I64d.%03I64d seconds\n", GetPerformanceSeconds(liTotal, liFrequency), GetPerformanceMilliseconds(liTotal, liFrequency) % 1000);
@@ -1167,6 +1207,7 @@ ExportApiEventPlugin(PROCFILTER_PLUGIN *p, PROCFILTER_EVENT *e, bool bCleanCache
 	
 	// validity check the event to be exported
 	if (e->dwEventId >= PROCFILTER_EVENT_NUM) Die("Event ID out of range: %d", e->dwEventId);
+	DWORD dwOriginalEventId = e->dwEventId;
 
 	// make sure that the target plugin wants the event
 	if (!p->bDesiredEventsArray[e->dwEventId]) return dwResult;
@@ -1193,7 +1234,7 @@ ExportApiEventPlugin(PROCFILTER_PLUGIN *p, PROCFILTER_EVENT *e, bool bCleanCache
 			dwResult |= (DWORD)lua_tonumber(p->L, -1);
 			lua_pop(p->L, 1);
 		}
-		InterlockedIncrementSizeT(&p->mutable_data->nEvents);
+		InterlockedIncrementSizeT(&p->mutable_data->nEvents[dwOriginalEventId]);
 		e->dwCurrentResult = dwResult;
 	} __except (FilterException(GetExceptionCode(), GetExceptionInformation(), &dExceptionCode)) {
 		Die("Fatal exception 0x%08X (%ls) in plugin \"%ls\" during event %u",
@@ -1210,7 +1251,7 @@ ExportApiEventPlugin(PROCFILTER_PLUGIN *p, PROCFILTER_EVENT *e, bool bCleanCache
 	}
 
 	LONG64 llDuration = GetPerformanceCount() - llStart;
-	InterlockedAdd64(&p->mutable_data->liTimeInPlugin, llDuration);
+	InterlockedAdd64(&p->mutable_data->liTimeInPlugin[dwOriginalEventId], llDuration);
 
 	return dwResult;
 }

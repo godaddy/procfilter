@@ -65,3 +65,6 @@ struct worker_task_data {
 void PfWorkerInit(void *lpPoolData, void *lpThreadData);
 void PfWorkerDestroy(void *lpPoolData, void *lpThreadData);
 void PfWorkerWork(void *lpPoolData, void *lpThreadData, void *lpTaskData, bool bCancel);
+
+void PfWorkerStatsInit();
+void PfWorkerStatusPrint();
