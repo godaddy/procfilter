@@ -288,7 +288,7 @@ usage(const WCHAR *progname)
 	fwprintf(stderr, L"\n");
 	fwprintf(stderr, L"Usage: %ls -licenses\n", progname);
 	fwprintf(stderr, L"Usage: %ls [-install|-install-delayed|-uninstall]\n", progname);
-	fwprintf(stderr, L"Usage: %ls [-start|-stop]\n", progname);
+	fwprintf(stderr, L"Usage: %ls [-start|-stop|-restart]\n", progname);
 #if defined(_DEBUG)
 	fwprintf(stderr, L"Usage: %ls [-service|service-program-stop]\n", progname);
 #endif
@@ -466,6 +466,11 @@ wmain(int argc, WCHAR *argv[])
 			if (!ProcFilterServiceUninstall()) printf("Unable to uninstall service\n");
 			if (!DriverUninstall()) printf("Unable to uninstall driver\n");
 		} else if (TestArg(arg, L"-start", NULL)) {
+			if (!ProcFilterServiceStart()) {
+				printf("Unable to start service\n");
+			}
+		} else if (TestArg(arg, L"-restart", NULL)) {
+			ProcFilterServiceStop();
 			if (!ProcFilterServiceStart()) {
 				printf("Unable to start service\n");
 			}
