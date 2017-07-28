@@ -58,6 +58,7 @@ static set<DWORD> g_WhitelistedPids;
 static bool g_HashExes = true;
 static bool g_LogRemoteThreads = false;
 static bool g_HashDlls = false;
+static bool g_LogCommandLine = true;
 
 static WCHAR g_szCommandLineRuleFileBaseName[MAX_PATH + 1] = { '\0' };
 static __declspec(thread) YARASCAN_CONTEXT *tg_CommandLineRulesContext = NULL;
@@ -240,35 +241,6 @@ StringMatchesRegexInContainer(const RegexVector &c, const wstring &str)
 }
 
 
-//
-// Store the command line associated with the current process into the SCAN_DATA structure.
-//
-WCHAR*
-GetCommandLine(PROCFILTER_EVENT *e)
-{
-	// read the processes PEB and it's Parameters structure
-	WCHAR *lpszResult = NULL;
-	PEB Peb;
-	RTL_USER_PROCESS_PARAMETERS Parameters;
-	if (e->ReadProcessPeb(&Peb) && e->ReadProcessMemory(Peb.ProcessParameters, &Parameters, sizeof(Parameters))) {
-		// check to make sure the command line is present
-		DWORD len = Parameters.CommandLine.Length;
-		if (len > 0) {
-			// allocate memory for the command line and then copy it out from the remote process
-			lpszResult = (WCHAR*)e->AllocateMemory(len + 1, sizeof(WCHAR));
-			if (lpszResult && e->ReadProcessMemory(Parameters.CommandLine.Buffer, lpszResult, len)) {
-				lpszResult[len] = '\0';
-			}
-			else if (lpszResult) {
-				e->FreeMemory(lpszResult);
-				lpszResult = NULL;
-			}
-		}
-	}
-
-	return lpszResult;
-}
-
 void
 LoadHashFileFromBasename(PROCFILTER_EVENT *e, set<Hash> &c, RegexVector &rec, const WCHAR *szBasename)
 {
@@ -308,6 +280,8 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 
 		e->GetConfigString(L"BlacklistFilename", L"blacklist.txt", szListBasename, sizeof(szListBasename));
 		if (szListBasename[0]) LoadHashFileFromBasename(e, g_BlacklistHashes, g_BlacklistRegexes, szListBasename);
+		
+		g_LogCommandLine = e->GetConfigBool(L"LogCommandLineArguments", g_LogCommandLine);
 
 		g_HashExes = e->GetConfigBool(L"HashExes", g_HashExes);
 	} else if (e->dwEventId == PROCFILTER_EVENT_SHUTDOWN) {
@@ -421,7 +395,7 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 				hashes.md5_hexdigest,
 				hashes.sha1_hexdigest,
 				hashes.sha256_hexdigest,
-				lpszCommandLine,
+				g_LogCommandLine ? lpszCommandLine : L"*DISABLED*",
 				tg_CommandLineRulesContext ? (srAsciiResult.bScanSuccessful ? srAsciiResult.szBlockRuleNames : L"*FAILED*") : L"*SKIPPED*",
 				tg_CommandLineRulesContext ? (srUnicodeResult.bScanSuccessful ? srUnicodeResult.szBlockRuleNames : L"*FAILED*") : L"*SKIPPED*",
 				e->dwParentProcessId,

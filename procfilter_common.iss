@@ -69,6 +69,7 @@ FileName: "{app}\procfilter.exe"; Parameters: "-install-delayed"; Flags: runhidd
 FileName: "{app}\procfilter.exe"; Parameters: """-iset"" ""CorePlugin"" ""HashExes"" ""1"""; Description: "Hash EXE files"; Flags: postinstall skipifsilent runhidden runascurrentuser 
 FileName: "{app}\procfilter.exe"; Parameters: """-iset"" ""CorePlugin"" ""HashDlls"" ""1"""; Description: "Hash DLL files"; Flags: unchecked postinstall skipifsilent runhidden runascurrentuser
 FileName: "{app}\procfilter.exe"; Parameters: """-iset"" ""CorePlugin"" ""LogRemoteThreads"" ""1"""; Description: "Log remote threads"; Flags: unchecked postinstall skipifsilent runhidden runascurrentuser
+FileName: "{app}\procfilter.exe"; Parameters: """-iset"" ""CorePlugin"" ""LogCommandLineArguments"" ""1"""; Description: "Log process command line arguments"; Flags: unchecked postinstall skipifsilent runhidden runascurrentuser
 FileName: "{app}\procfilter.exe"; Parameters: "-install"; Description: "Set ProcFilter as a boot-time service (vs. delayed start)"; Flags: unchecked postinstall skipifsilent runhidden runascurrentuser
 ; Run -restart here since InnoSetup automatically restarts applications that needed to be shutdown to install (including procfilter if it was already running)
 ; -restart does a Stop and Start and can be used if the service isn't running
