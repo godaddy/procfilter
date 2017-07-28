@@ -546,12 +546,16 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 
 			bool bQuarantine = bBlock;
 
+			WCHAR szProcessName[MAX_PATH + 1];
+			e->GetProcessFileName(e->dwProcessId, szProcessName, sizeof(szProcessName));
+
 			void(*LogFn)(const char *, ...) = bBlock ? e->LogCriticalFmt : e->LogFmt;
 			bool bLog = true;
 			if (bLog) {
 				LogFn(
 				"\n" \
 				"EventType:DllLoad\n" \
+				"ProcessName:%ls\n" \
 				"DllName:%ls\n" \
 				"PID:%u\n" \
 				"MD5:%s\n" \
@@ -562,6 +566,7 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 				"Quarantine:%s\n" \
 				"Blocked:%s\n" \
 				"",
+				szProcessName,
 				e->lpszFileName,
 				e->dwProcessId,
 				hashes.md5_hexdigest,
