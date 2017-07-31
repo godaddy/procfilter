@@ -47,9 +47,11 @@ struct process_data {
 };
 
 static RegexVector g_WhitelistRegexes;
+static RegexVector g_WhitelistExceptionRegexes;
 static RegexVector g_BlacklistRegexes;
 
 static set<Hash> g_WhitelistHashes;
+static set<Hash> g_WhitelistExceptionHashes;
 static set<Hash> g_BlacklistHashes;
 
 static CRITICAL_SECTION g_cs;
@@ -278,6 +280,9 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 		e->GetConfigString(L"WhitelistFilename", L"whitelist.txt", szListBasename, sizeof(szListBasename));
 		if (szListBasename[0]) LoadHashFileFromBasename(e, g_WhitelistHashes, g_WhitelistRegexes, szListBasename);
 
+		e->GetConfigString(L"WhitelistExceptionsFilename", L"whitelist_exceptions.txt", szListBasename, sizeof(szListBasename));
+		if (szListBasename[0]) LoadHashFileFromBasename(e, g_WhitelistExceptionHashes, g_WhitelistExceptionRegexes, szListBasename);
+
 		e->GetConfigString(L"BlacklistFilename", L"blacklist.txt", szListBasename, sizeof(szListBasename));
 		if (szListBasename[0]) LoadHashFileFromBasename(e, g_BlacklistHashes, g_BlacklistRegexes, szListBasename);
 		
@@ -293,7 +298,7 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 	} else if (e->dwEventId == PROCFILTER_EVENT_PROCESS_CREATE && e->lpszFileName) {
 		// Ignore whitelisted files
 		bool bFilenameWhitelisted = StringMatchesRegexInContainer(g_WhitelistRegexes, e->lpszFileName);
-		if (bFilenameWhitelisted) {
+		if (bFilenameWhitelisted && !StringMatchesRegexInContainer(g_WhitelistExceptionRegexes, e->lpszFileName)) {
 			EnterCriticalSection(&g_cs);
 			g_WhitelistedPids.insert(e->dwProcessId);
 			LeaveCriticalSection(&g_cs);
@@ -311,12 +316,14 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 		if (g_HashExes) {
 			e->HashFile(e->lpszFileName, &hashes);
 
-			bHashWhitelisted = HashesInSet(e, g_WhitelistHashes, &hashes);
-			if (bHashWhitelisted) {
-				EnterCriticalSection(&g_cs);
-				g_WhitelistedPids.insert(e->dwProcessId);
-				LeaveCriticalSection(&g_cs);
-				return PROCFILTER_RESULT_DONT_SCAN;
+			if (!HashesInSet(e, g_WhitelistExceptionHashes, &hashes)) {
+				bHashWhitelisted = HashesInSet(e, g_WhitelistHashes, &hashes);
+				if (bHashWhitelisted) {
+					EnterCriticalSection(&g_cs);
+					g_WhitelistedPids.insert(e->dwProcessId);
+					LeaveCriticalSection(&g_cs);
+					return PROCFILTER_RESULT_DONT_SCAN;
+				}
 			}
 
 			// Check if the hash is blocked
@@ -484,8 +491,11 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 			if (bWhitelisted) return PROCFILTER_RESULT_DONT_SCAN;
 
 			// Filename whitelisted?
-			bool bFilenameWhitelisted = StringMatchesRegexInContainer(g_WhitelistRegexes, e->lpszFileName);
-			if (bFilenameWhitelisted) return PROCFILTER_RESULT_DONT_SCAN;
+			bool bFilenameWhitelisted = false;
+			if (!StringMatchesRegexInContainer(g_WhitelistExceptionRegexes, e->lpszFileName)) {
+				bFilenameWhitelisted = StringMatchesRegexInContainer(g_WhitelistRegexes, e->lpszFileName);
+				if (bFilenameWhitelisted) return PROCFILTER_RESULT_DONT_SCAN;
+			}
 
 			// Filename blacklisted?
 			bool bFilenameBlacklisted = StringMatchesRegexInContainer(g_BlacklistRegexes, e->lpszFileName);
@@ -495,7 +505,9 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 			HASHES hashes;
 			if (g_HashDlls) {
 				e->HashFile(e->lpszFileName, &hashes);
-				if (HashesInSet(e, g_WhitelistHashes, &hashes)) return PROCFILTER_RESULT_DONT_SCAN;
+				if (!HashesInSet(e, g_WhitelistExceptionHashes, &hashes)) {
+					if (HashesInSet(e, g_WhitelistHashes, &hashes)) return PROCFILTER_RESULT_DONT_SCAN;
+				}
 
 				// Hashes blacklisted
 				bHashBlacklisted = HashesInSet(e, g_BlacklistHashes, &hashes);
