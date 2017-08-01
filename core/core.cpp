@@ -59,7 +59,7 @@ public:
 		return bCaseSensitive ? case_strings.find(str) != case_strings.end() : icase_strings.find(str) != icase_strings.end();
 	}
 
-	bool insert(const std::wstring &str) {
+	void insert(const std::wstring &str) {
 		case_strings.insert(str);
 
 		std::wstring lstr = str;
@@ -68,8 +68,8 @@ public:
 	}
 
 private:
-	bool (*icmp)(const std::wstring &lhs, const std::wstring &rhs) = [](const std::wstring &lhs, const std::wstring &rhs) { return _wcsicmp(lhs.c_str(), rhs.c_str()) < 0; };
-	std::set<std::wstring, decltype(icmp)> icase_strings;
+	bool (*icmp)(const std::wstring &lhs, const std::wstring &rhs){[](const std::wstring &lhs, const std::wstring &rhs) { return _wcsicmp(lhs.c_str(), rhs.c_str()) < 0; }};
+	std::set<std::wstring, decltype(icmp)> icase_strings{icmp};
 	std::set<std::wstring> case_strings;
 };
 
