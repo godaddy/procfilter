@@ -1110,7 +1110,7 @@ ApiShutdown()
 		e.dwProcessId = iter->first;
 		e.lpvProcessData = iter->second;
 		ApiEventExport(&e);
-		ApiFreeScanDataArray(iter->second);
+		ProcessDataArrayFree(iter->second);
 	}
 	g_ProcessDataMap.clear();
 	LeaveCriticalSection(&g_ProcessDataMapMutex);
