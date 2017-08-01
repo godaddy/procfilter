@@ -1,6 +1,9 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
+#include <Windows.h>
+#include <lmcons.h>
+
 #include "procfilter/procfilter.h"
 
 #include <array>
@@ -25,34 +28,309 @@ class RegexData {
 public:
 	RegexData(const wstring &regexString) :
 		regexString(regexString),
-		regexObject(regexString, wregex::icase)
+		regexObjectInsensitive(regexString, wregex::icase),
+		regexObjectSensitive(regexString)
 	{
 	}
 
 	//
 	// Determinte if the given string matches the object's associated regex
 	//
-	bool matchesString(const wstring &str) const {
-		return std::regex_search(str, regexObject);
+	bool matchesString(const wstring &str, bool bCaseSensitive) const {
+		if (bCaseSensitive) {
+			return std::regex_search(str, regexObjectSensitive);
+		} else {
+			return std::regex_search(str, regexObjectInsensitive);
+		}
 	}
 
 	const wstring regexString;
-	const wregex regexObject;
+	const wregex regexObjectInsensitive;
+	const wregex regexObjectSensitive;
 };
 typedef std::vector<RegexData> RegexVector;
+typedef std::vector<wstring> StringVector;
+
+// Skip whitespace
+const char* skip_whitespace(const char *p) {
+	while (*p != 0 && isspace(*p)) ++p;
+	return p;
+}
+
+// Skip trailing whitespace
+size_t strlen_no_trailing_whitespace(const char *p) {
+	size_t len = strlen(p);
+	while (len > 0 && isspace(p[len - 1])) {
+		len -= 1;
+	}
+	return len;
+}
+
+
+std::wstring path_basename(const std::wstring &str) {
+	const WCHAR *bs = wcsrchr(str.c_str(), L'\\');
+	const WCHAR *fs = wcsrchr(str.c_str(), L'/');
+
+	const WCHAR *p = nullptr;
+	if (bs && fs) {
+		p = bs > fs ? bs : fs;
+	} else if (bs) {
+		p = bs;
+	} else if (fs) {
+		p = fs;
+	} else {
+		return str;
+	}
+
+	return &p[1];
+}
+
+
+class List {
+public:
+	List() { }
+
+	bool loadHashfile(PROCFILTER_EVENT *e, size_t &nhashes, const WCHAR *lpszFileName) {
+		bool rv = false;
+		nhashes = 0;
+
+		ifstream infile(lpszFileName);
+		if (infile.fail()) {
+			return rv;
+		}
+
+		size_t linenum = 0;
+		string line;
+		while (std::getline(infile, line)) {
+			++linenum;
+
+			// Ignore comment lines
+			if (line.length() == 0) continue;
+
+			// File regexes
+			std::wstring value;
+			if (getTaggedValue(line, "filenameregex:", value)) {
+				loadFilename(e, value, true);
+			} else if (getTaggedValue(line, "filename:", value)) {
+				loadFilename(e, value, false);
+			} else if (getTaggedValue(line, "filebasenameregex:", value)) {
+				loadFileBasename(e, value, true);
+			} else if (getTaggedValue(line, "filebasename:", value)) {
+				loadFileBasename(e, value, false);
+			} else if (getTaggedValue(line, "usernameregex:", value)) {
+				loadUsername(e, value, true);
+			} else if (getTaggedValue(line, "username:", value)) {
+				loadUsername(e, value, false);
+			} else if (getTaggedValue(line, "groupnameregex:", value)) {
+				loadGroupname(e, value, true);
+			} else if (getTaggedValue(line, "groupname:", value)) {
+				loadGroupname(e, value, false);
+			} else {
+				if (line[0] == '#' || line[0] == ';') continue;
+
+				// Erase commentted portion of lines
+				auto comment = line.find_first_of('#');
+				if (comment != string::npos) line.erase(comment);
+				comment = line.find_first_of(';');
+				if (comment != string::npos) line.erase(comment);
+
+				// Clear whitespace
+				auto space_begin = std::remove_if(line.begin(), line.end(), [](char c) { return std::isspace(c); });
+				line.erase(space_begin, line.end());
+
+				if (line.length() == 0) continue;
+
+				// MD5, SHA1, SHA256
+				Hash baRawDigest;
+				bool bHashValidLength = line.length() == 32 || line.length() == 40 || line.length() == 64;
+				bool bParseSuccess = true;
+				if (bHashValidLength) {
+					size_t digest_length = line.length() / 2;
+
+					baRawDigest.reserve(digest_length);
+					for (size_t i = 0; i < digest_length; ++i) {
+						int value = 0;
+						if (sscanf(&line.c_str()[i * 2], "%2x", &value) == 1) {
+							baRawDigest.push_back(value & 0xFF);
+						} else {
+							bParseSuccess = false;
+							break;
+						}
+					}
+				}
+
+				if (bHashValidLength && bParseSuccess) {
+					hashes.insert(baRawDigest);
+					nhashes += 1;
+				} else {
+					e->LogFmt("Invalid hash in %ls on line %zu", lpszFileName, linenum);
+				}
+			}
+		}
+
+		return true;
+	}
+
+	void loadFilename(PROCFILTER_EVENT *e, const std::wstring &str, bool bRegex) {
+		// Try to conver the value to a DOS path
+		WCHAR szNtPath[4096];
+		WCHAR szDosDevice[MAX_PATH + 1];
+		std::wstring result = str;
+		if (e->GetNtPathName(str.c_str(), szDosDevice, sizeof(szDosDevice), szNtPath, sizeof(szNtPath), NULL, 0)) {
+			wstring wsDosDevice{ szDosDevice };
+			size_t pos = 0;
+			if (bRegex) {
+				while ((pos = wsDosDevice.find(L"\\", pos)) != wstring::npos) {
+					wsDosDevice.replace(pos, 1, L"\\\\");
+					pos += 2;
+				}
+				result = wstring{ LR"(\\\\\?\\GLOBALROOT)" } + wsDosDevice + szNtPath;
+			} else {
+				result = wstring{ LR"(\\?\GLOBALROOT)" } + wsDosDevice + szNtPath;
+			}
+		}
+
+		// Add the regex to the container
+		if (bRegex) {
+			try {
+				filenameRegexes.push_back(RegexData(result));
+			} catch (std::regex_error &error) {
+				e->LogFmt("Regex compilation failure for value: %ls\nError: %s", str.c_str(), error.what());
+			}
+		} else {
+			filenames.push_back(result);
+		}
+	}
+	
+	void loadFileBasename(PROCFILTER_EVENT *e, const std::wstring &value, bool bRegex) {
+		if (bRegex) {
+			tryAddRegex(e, filebasenameRegexes, value);
+		} else {
+			filebasenames.push_back(value);
+		}
+	}
+
+	void loadUsername(PROCFILTER_EVENT *e, const std::wstring &value, bool bRegex) {
+		if (bRegex) {
+			tryAddRegex(e, usernameRegexes, value);
+		} else {
+			usernames.push_back(value);
+		}
+	}
+
+	void loadGroupname(PROCFILTER_EVENT *e, const std::wstring &value, bool bRegex) {
+		if (bRegex) {
+			tryAddRegex(e, groupnameRegexes, value);
+		} else {
+			groupnames.push_back(value);
+		}
+	}
+
+	void loadHashFileFromBasename(PROCFILTER_EVENT *e, const WCHAR *szBasename) {
+		WCHAR szFullPath[MAX_PATH + 1];
+
+		e->GetProcFilterPath(szFullPath, sizeof(szFullPath), L"localrules", szBasename);
+		size_t nhashes = 0;
+		if (loadHashfile(e, nhashes, szFullPath)) e->LogFmt("Loaded %zu hashes from %ls", nhashes, szFullPath);
+
+		e->GetProcFilterPath(szFullPath, sizeof(szFullPath), L"remoterules", szBasename);
+		nhashes = 0;
+		if (loadHashfile(e, nhashes, szFullPath)) e->LogFmt("Loaded %zu hashes from %ls", nhashes, szFullPath);
+	}
+
+	bool containsAnyHash(const HASHES *hashes) const {
+		bool bResult = containsHash(hashes->md5_digest, MD5_DIGEST_SIZE);
+		if (!bResult) bResult = containsHash(hashes->sha1_digest, SHA1_DIGEST_SIZE);
+		if (!bResult) bResult = containsHash(hashes->sha256_digest, SHA256_DIGEST_SIZE);
+		return bResult;
+	}
+
+	bool containsHash(const BYTE *hash, size_t hash_size) const {
+		Hash value{ (BYTE*)hash, hash_size };
+		return hashes.find(value) != hashes.end();
+	}
+
+	bool matchesFilename(const std::wstring &str) const {
+		std::wstring basenamestr = path_basename(str);
+		return strMatch(filenames, filenameRegexes, str, false) || strMatch(filebasenames, filebasenameRegexes, basenamestr, false);
+	}
+
+	bool matchesUsername(const std::wstring &str) const {
+		return strMatch(usernames, usernameRegexes, str, false);
+	}
+
+	bool matchesGroupname(const std::wstring &str) const {
+		return strMatch(groupnames, groupnameRegexes, str, false);
+	}
+
+private:
+	bool getTaggedValue(const std::string &line, const char *tag, std::wstring &result) {
+		result.clear();
+		size_t taglen = strlen(tag);
+		if (_strnicmp(line.c_str(), tag, taglen) == 0) {
+			const char *p = &line[taglen];
+			p = skip_whitespace(p);
+			size_t len = strlen_no_trailing_whitespace(p);
+			if (len > 0) {
+				std::string value = std::string{p, len};
+				result.reserve(value.size());
+				result.assign(value.begin(), value.end());
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	void tryAddRegex(PROCFILTER_EVENT *e, RegexVector &rev, const std::wstring &re) {
+		try {
+			rev.push_back(RegexData(re));
+		} catch (std::regex_error &error) {
+			e->LogFmt("Regex compilation failure for value: %ls\nError: %s", re.c_str(), error.what());
+		}
+	}
+
+	static bool strMatch(const StringVector &sv, const RegexVector &rv, const std::wstring &lpszString, bool bCaseSensitive) {
+		for (const auto &s : sv) {
+			if (bCaseSensitive) {
+				if (s == lpszString) {
+					return true;
+				}
+			} else {
+				if (_wcsicmp(s.c_str(), lpszString.c_str()) == 0) {
+					return true;
+				}
+			}
+		}
+
+		for (const auto &re : rv) {
+			if (re.matchesString(lpszString, bCaseSensitive)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	set<Hash> hashes;
+	StringVector filenames;
+	RegexVector filenameRegexes;
+	StringVector filebasenames;
+	RegexVector filebasenameRegexes;
+	StringVector usernames;
+	StringVector groupnames;
+	RegexVector usernameRegexes;
+	RegexVector groupnameRegexes;
+};
 
 typedef struct process_data PROCESS_DATA;
 struct process_data {
 	bool bWhitelisted;
 };
 
-static RegexVector g_WhitelistRegexes;
-static RegexVector g_WhitelistExceptionRegexes;
-static RegexVector g_BlacklistRegexes;
-
-static set<Hash> g_WhitelistHashes;
-static set<Hash> g_WhitelistExceptionHashes;
-static set<Hash> g_BlacklistHashes;
+static List g_Whitelist;
+static List g_WhitelistExceptions;
+static List g_Blacklist;
 
 static CRITICAL_SECTION g_cs;
 static set<DWORD> g_WhitelistedPids;
@@ -65,17 +343,6 @@ static bool g_LogCommandLine = true;
 static WCHAR g_szCommandLineRuleFileBaseName[MAX_PATH + 1] = { '\0' };
 static __declspec(thread) YARASCAN_CONTEXT *tg_CommandLineRulesContext = NULL;
 
-
-//
-// WhitelistFilename=whitelist.txt
-// BlacklistFilename=blacklist.txt
-//
-// CommandLineRules=commandline.yara
-//
-// QuarantineMatches = 1
-//
-// LogRemoteThreads = 0
-//
 
 static
 void
@@ -90,173 +357,65 @@ LoadCommandLineRules(PROCFILTER_EVENT *e)
 	}
 }
 
-
 static
-void
-LoadRegex(PROCFILTER_EVENT *e, RegexVector &rec, const char *value, size_t value_sz) {
-	std::string value_s{ value, value_sz };
-	wstring expr;
-	expr.assign(value_s.begin(), value_s.end());
+bool
+GetUserNameAndGroupFromToken(HANDLE hToken, WCHAR *lpszName, DWORD dwNameSize, WCHAR *lpszGroup, DWORD dwGroupSize)
+{
+	// TokenOwner for group name
+	BYTE buf[512] = { '\0' };
+	TOKEN_USER *lpTokenUser = (TOKEN_USER*)buf;
+	DWORD dwTokenUserSize = sizeof(buf);
 
-	// Try to conver the value to a DOS path
-	WCHAR szNtPath[4096];
-	WCHAR szDosDevice[MAX_PATH + 1];
-	if (e->GetNtPathName(expr.c_str(), szDosDevice, sizeof(szDosDevice), szNtPath, sizeof(szNtPath), NULL, 0)) {
-		wstring wsDosDevice{ szDosDevice };
-		size_t pos = 0;
-		while ((pos = wsDosDevice.find(L"\\", pos)) != wstring::npos) {
-			wsDosDevice.replace(pos, 1, L"\\\\");
-			pos += 2;
+	DWORD dwResultSize = 0;
+	BOOL rc = GetTokenInformation(hToken, TokenUser, lpTokenUser, dwTokenUserSize, &dwResultSize);
+	if (!rc && GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
+		lpTokenUser = (TOKEN_USER*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, dwResultSize);
+		if (lpTokenUser) {
+			rc = GetTokenInformation(hToken, TokenUser, lpTokenUser, dwResultSize, &dwResultSize);
 		}
-		expr = wstring{ LR"(\\\\\?\\GLOBALROOT)" } + wsDosDevice + szNtPath;
 	}
 
-	// Add the regex to the container
-	try {
-		rec.push_back(RegexData(expr));
-	} catch (std::regex_error &error) {
-		e->LogFmt("Regex compilation failure for value: %s\nError: %s", value, error.what());
+	if (rc) {
+		dwNameSize /= sizeof(WCHAR);
+		dwGroupSize /= sizeof(WCHAR);
+		SID_NAME_USE SidType;
+		rc = LookupAccountSidW(NULL, lpTokenUser->User.Sid, lpszName, &dwNameSize, lpszGroup, &dwGroupSize, &SidType);
 	}
+
+	if (lpTokenUser && (void*)lpTokenUser != (void*)buf) {
+		HeapFree(GetProcessHeap(), 0, lpTokenUser);
+	}
+
+	return rc ? true : false;
 }
-
 
 static
 bool
-LoadHashfile(PROCFILTER_EVENT *e, set<Hash> &c, RegexVector &rec, size_t &nhashes, const WCHAR *lpszFileName)
+GetUsernameAndGroupFromPid(DWORD dwProcessId, std::wstring &username, std::wstring &groupname)
 {
 	bool rv = false;
-	nhashes = 0;
 
-	ifstream infile(lpszFileName);
-	if (infile.fail()) {
-		return false;
+	username = L"";
+	groupname = L"";
+
+	HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, dwProcessId);
+	if (hProcess != NULL) {
+		HANDLE hToken = NULL;
+		if (OpenProcessToken(hProcess, TOKEN_QUERY, &hToken)) {
+			WCHAR szUserName[UNLEN+1+1] = { '\0' };
+			WCHAR szGroupName[GNLEN+1+1] = { '\0' };
+			if (GetUserNameAndGroupFromToken(hToken, szUserName, sizeof(szUserName)-sizeof(WCHAR), szGroupName, sizeof(szGroupName)-sizeof(WCHAR))) {
+				username = szUserName;
+				groupname = szGroupName;
+				rv = true;
+			}
+			CloseHandle(hToken);
+		}
+		CloseHandle(hProcess);
 	}
 
-	size_t linenum = 0;
-	string line;
-	while (std::getline(infile, line)) {
-		++linenum;
-
-		// Ignore comment lines
-		if (line.length() == 0) continue;
-
-		// File regexes
-		if (_strnicmp(line.c_str(), "filename:", 9) == 0) {
-			// Process the filename regex
-			const char *re = &line[9];
-
-			// Skip whitespace
-			while (*re != 0 && isspace(*re)) ++re;
-			if (*re == 0) continue;
-
-			// Skip trailing whitespace
-			size_t len = strlen(re);
-			while (len > 0 && isspace(re[len-1])) {
-				len -= 1;
-			}
-
-			if (len > 0) {
-				LoadRegex(e, rec, re, len);
-			}
-			continue;
-		}
-
-		if (line[0] == '#' || line[0] == ';') continue;
-
-		// Erase commentted portion of lines
-		auto comment = line.find_first_of('#');
-		if (comment != string::npos) line.erase(comment);
-		comment = line.find_first_of(';');
-		if (comment != string::npos) line.erase(comment);
-
-		// Clear whitespace
-		auto space_begin = std::remove_if(line.begin(), line.end(), [](char c) { return std::isspace(c); });
-		line.erase(space_begin, line.end());
-
-		if (line.length() == 0) continue;
-
-		// MD5, SHA1, SHA256
-		Hash baRawDigest;
-		bool bHashValidLength = line.length() == 32 || line.length() == 40 || line.length() == 64;
-		bool bParseSuccess = true;
-		if (bHashValidLength) {
-			size_t digest_length = line.length() / 2;
-
-			baRawDigest.reserve(digest_length);
-			for (size_t i = 0; i < digest_length; ++i) {
-				int value = 0;
-				if (sscanf(&line.c_str()[i*2], "%2x", &value) == 1) {
-					baRawDigest.push_back(value & 0xFF);
-				} else {
-					bParseSuccess = false;
-					break;
-				}
-			}
-		}
-
-		if (bHashValidLength && bParseSuccess) {
-			c.insert(baRawDigest);
-			nhashes += 1;
-		} else {
-			e->LogFmt("Invalid hash in %ls on line %zu", lpszFileName, linenum);
-		}
-	}
-
-	return true;
+	return rv;
 }
-
-
-static
-bool
-HashInSet(PROCFILTER_EVENT *e, const set<Hash> &c, const void *hash, size_t hash_size)
-{
-	Hash value{ (BYTE*)hash, hash_size };
-	return c.find(value) != c.end();
-}
-
-
-static
-bool
-HashesInSet(PROCFILTER_EVENT *e, const set<Hash> &c, const HASHES *hashes)
-{
-	bool bResult = HashInSet(e, c, hashes->md5_digest, MD5_DIGEST_SIZE);
-	if (!bResult) bResult = HashInSet(e, c, hashes->sha1_digest, SHA1_DIGEST_SIZE);
-	if (!bResult) bResult = HashInSet(e, c, hashes->sha256_digest, SHA256_DIGEST_SIZE);
-	return bResult;
-}
-
-
-//
-// Determine if the given string matches a regex in the container
-//
-static
-bool
-StringMatchesRegexInContainer(const RegexVector &c, const wstring &str)
-{
-	for (const auto &re : c) {
-		if (re.matchesString(str)) {
-			return true;
-		}
-	}
-
-	return false;
-}
-
-
-void
-LoadHashFileFromBasename(PROCFILTER_EVENT *e, set<Hash> &c, RegexVector &rec, const WCHAR *szBasename)
-{
-	WCHAR szFullPath[MAX_PATH + 1];
-
-	e->GetProcFilterPath(szFullPath, sizeof(szFullPath), L"localrules", szBasename);
-	size_t nhashes = 0;
-	if (LoadHashfile(e, c, rec, nhashes, szFullPath)) e->LogFmt("Loaded %zu hashes from %ls", nhashes, szFullPath);
-
-	e->GetProcFilterPath(szFullPath, sizeof(szFullPath), L"remoterules", szBasename);
-	nhashes = 0;
-	if (LoadHashfile(e, c, rec, nhashes, szFullPath)) e->LogFmt("Loaded %zu hashes from %ls", nhashes, szFullPath);
-}
-
 
 DWORD
 ProcFilterEvent(PROCFILTER_EVENT *e)
@@ -278,13 +437,13 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 
 		WCHAR szListBasename[MAX_PATH + 1];
 		e->GetConfigString(L"WhitelistFilename", L"whitelist.txt", szListBasename, sizeof(szListBasename));
-		if (szListBasename[0]) LoadHashFileFromBasename(e, g_WhitelistHashes, g_WhitelistRegexes, szListBasename);
+		if (szListBasename[0]) g_Whitelist.loadHashFileFromBasename(e, szListBasename);
 
 		e->GetConfigString(L"WhitelistExceptionsFilename", L"whitelist_exceptions.txt", szListBasename, sizeof(szListBasename));
-		if (szListBasename[0]) LoadHashFileFromBasename(e, g_WhitelistExceptionHashes, g_WhitelistExceptionRegexes, szListBasename);
+		if (szListBasename[0]) g_WhitelistExceptions.loadHashFileFromBasename(e, szListBasename);
 
 		e->GetConfigString(L"BlacklistFilename", L"blacklist.txt", szListBasename, sizeof(szListBasename));
-		if (szListBasename[0]) LoadHashFileFromBasename(e, g_BlacklistHashes, g_BlacklistRegexes, szListBasename);
+		if (szListBasename[0]) g_Blacklist.loadHashFileFromBasename(e, szListBasename);
 		
 		g_LogCommandLine = e->GetConfigBool(L"LogCommandLineArguments", g_LogCommandLine);
 
@@ -297,28 +456,38 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 		if (tg_CommandLineRulesContext) e->FreeScanContext(tg_CommandLineRulesContext);
 	} else if (e->dwEventId == PROCFILTER_EVENT_PROCESS_CREATE && e->lpszFileName) {
 		// Ignore whitelisted files
-		bool bFilenameWhitelisted = StringMatchesRegexInContainer(g_WhitelistRegexes, e->lpszFileName);
-		if (bFilenameWhitelisted && !StringMatchesRegexInContainer(g_WhitelistExceptionRegexes, e->lpszFileName)) {
+		if (!g_WhitelistExceptions.matchesFilename(e->lpszFileName) && g_Whitelist.matchesFilename(e->lpszFileName)) {
 			EnterCriticalSection(&g_cs);
 			g_WhitelistedPids.insert(e->dwProcessId);
 			LeaveCriticalSection(&g_cs);
 			return PROCFILTER_RESULT_DONT_SCAN;
 		}
 
+		// Check user/group whitelists
+		std::wstring username;
+		std::wstring groupname;
+		bool bHaveUserAndGroup = GetUsernameAndGroupFromPid(e->dwProcessId, username, groupname);
+		if (bHaveUserAndGroup && !g_WhitelistExceptions.matchesUsername(username) && !g_WhitelistExceptions.matchesGroupname(groupname)) {
+			if (g_Whitelist.matchesUsername(username) || g_Whitelist.matchesGroupname(groupname)) {
+				EnterCriticalSection(&g_cs);
+				g_WhitelistedPids.insert(e->dwProcessId);
+				LeaveCriticalSection(&g_cs);
+				return PROCFILTER_RESULT_DONT_SCAN;
+			}
+		}
+
 		// Filename blacklisted?
-		bool bFilenameBlacklisted = StringMatchesRegexInContainer(g_BlacklistRegexes, e->lpszFileName);
+		bool bFilenameBlacklisted = g_Blacklist.matchesFilename(e->lpszFileName);
 
 		HASHES hashes;
 		ZeroMemory(&hashes, sizeof(HASHES));
 
 		bool bHashBlacklisted = false;
-		bool bHashWhitelisted = false;
 		if (g_HashExes) {
 			e->HashFile(e->lpszFileName, &hashes);
 
-			if (!HashesInSet(e, g_WhitelistExceptionHashes, &hashes)) {
-				bHashWhitelisted = HashesInSet(e, g_WhitelistHashes, &hashes);
-				if (bHashWhitelisted) {
+			if (!g_WhitelistExceptions.containsAnyHash(&hashes)) {
+				if (g_Whitelist.containsAnyHash(&hashes)) {
 					EnterCriticalSection(&g_cs);
 					g_WhitelistedPids.insert(e->dwProcessId);
 					LeaveCriticalSection(&g_cs);
@@ -327,7 +496,15 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 			}
 
 			// Check if the hash is blocked
-			bHashBlacklisted = HashesInSet(e, g_BlacklistHashes, &hashes);
+			bHashBlacklisted = g_Blacklist.containsAnyHash(&hashes);
+		}
+
+		// Username blacklisted?
+		bool bUsernameBlacklisted = false;
+		bool bGroupnameBlacklisted = false;
+		if (bHaveUserAndGroup) {
+			bUsernameBlacklisted = g_Blacklist.matchesUsername(username);
+			bGroupnameBlacklisted = g_Blacklist.matchesUsername(groupname);
 		}
 
 		//
@@ -362,8 +539,7 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 			lpszCommandLine = L"";
 		}
 
-		bool bBlockProcess = !bHashWhitelisted && !bFilenameWhitelisted &&
-			(bHashBlacklisted || bFilenameBlacklisted ||
+		bool bBlockProcess = (bHashBlacklisted || bFilenameBlacklisted || bUsernameBlacklisted || bGroupnameBlacklisted ||
 				(srUnicodeResult.bScanSuccessful && srUnicodeResult.bBlock) ||
 				(srAsciiResult.bScanSuccessful && srAsciiResult.bBlock)
 				);
@@ -383,6 +559,8 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 				"\n" \
 				"EventType:ProcessCreate\n" \
 				"Process:%ls\n" \
+				"Username:%ls\n" \
+				"Groupname:%ls\n" \
 				"PID:%u\n" \
 				"MD5:%s\n" \
 				"SHA1:%s\n" \
@@ -394,10 +572,14 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 				"ParentName:%ls\n" \
 				"HashBlacklisted:%s\n" \
 				"FilenameBlacklisted:%s\n" \
+				"UsernameBlacklisted:%s\n" \
+				"GroupnameBlacklisted:%s\n" \
 				"Quarantine:%s\n" \
 				"Block:%s\n" \
 				"",
 				e->lpszFileName,
+				username.c_str(),
+				groupname.c_str(),
 				e->dwProcessId,
 				g_HashExes ? hashes.md5_hexdigest : "*DISABLED*",
 				g_HashExes ? hashes.sha1_hexdigest : "*DISABLED*",
@@ -409,6 +591,8 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 				szParentName,
 				bHashBlacklisted ? "Yes" : "No",
 				bFilenameBlacklisted ? "Yes" : "No",
+				bUsernameBlacklisted ? "Yes" : "No",
+				bGroupnameBlacklisted ? "Yes" : "No",
 				bQuarantine ? "Yes" : "No",
 				bBlockProcess ? "Yes" : "No"
 				);
@@ -492,25 +676,25 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 
 			// Filename whitelisted?
 			bool bFilenameWhitelisted = false;
-			if (!StringMatchesRegexInContainer(g_WhitelistExceptionRegexes, e->lpszFileName)) {
-				bFilenameWhitelisted = StringMatchesRegexInContainer(g_WhitelistRegexes, e->lpszFileName);
+			if (!g_WhitelistExceptions.matchesFilename(e->lpszFileName)) {
+				bFilenameWhitelisted = g_Whitelist.matchesFilename(e->lpszFileName);
 				if (bFilenameWhitelisted) return PROCFILTER_RESULT_DONT_SCAN;
 			}
 
 			// Filename blacklisted?
-			bool bFilenameBlacklisted = StringMatchesRegexInContainer(g_BlacklistRegexes, e->lpszFileName);
+			bool bFilenameBlacklisted = g_Blacklist.matchesFilename(e->lpszFileName);
 
 			// Hashes whitelisted?
 			bool bHashBlacklisted = false;
 			HASHES hashes;
 			if (g_HashDlls) {
 				e->HashFile(e->lpszFileName, &hashes);
-				if (!HashesInSet(e, g_WhitelistExceptionHashes, &hashes)) {
-					if (HashesInSet(e, g_WhitelistHashes, &hashes)) return PROCFILTER_RESULT_DONT_SCAN;
+				if (!g_WhitelistExceptions.containsAnyHash(&hashes)) {
+					if (g_Whitelist.containsAnyHash(&hashes)) return PROCFILTER_RESULT_DONT_SCAN;
 				}
 
 				// Hashes blacklisted
-				bHashBlacklisted = HashesInSet(e, g_BlacklistHashes, &hashes);
+				bHashBlacklisted = g_Blacklist.containsAnyHash(&hashes);
 			}
 
 			bool bBlock = bHashBlacklisted || bFilenameBlacklisted;

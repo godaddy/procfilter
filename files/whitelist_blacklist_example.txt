@@ -1,23 +1,64 @@
 ;
-; Whitelist and Blacklist files belong at:
+; Processes can be whitelisted and blacklisted. If a process is whitelisted
+; during an process creation, subsequent events from that process will not
+; be handled. For example, a process whitelisted during creation can load
+; any DLLs regardless of whitelist_exceptions.txt or blacklist.txt since
+; once the process is whitelisted these DLL load events won't be received.
+;
+; {white,black}list_exceptions.txt files specify exceptions. For example,
+; you could whitelist all paths with "filenameregex:.*" and then use
+; whitelist_exceptions.txt to specify "filenameregex:"C:\\somedir\\.*" to
+; only scan processes from the "C:\somedir" directory.
+;
+; Whitelist, Whitelist Exceptions, and Blacklist files belong at:
 ;   localrules\whitelist.txt
 ;   remoterules\whitelist.txt
+;   localrules\whitelist_exceptions.txt
+;   remoterules\whitelist_exceptions.txt
 ;   localrules\blacklist.txt
 ;   remoterules\blacklist.txt
 ;
 ; Comment lines begin with either '#' or ';'.
 ;
-; Lines are MD5, SHA1, SHA256 hashes, or regexes (see below).
+; Lines are MD5 hashes, SHA1 hashes, SHA256 hashes, or tags(see below).
 ;
-; Lines can begin with 'filename:' to indicate a regex to match. For example,
-; uncomment the below to block various versions of "notepad.exe".
+; To block a hash, include it on an empty line. Hashes can have a comment
+; following the hash value if desired:
 ;
-; Will block "anynotepad.exe" too:
-;filename:notepad\.exe
-;
-; Will just block "notepad.exe"
-;filename:\\notepad\.exe
-;
-; Hashes can have a comment suffix:
 ;3B508CAE5DEBCBA928B5BC355517E2E6 ; This is an MD5 of notepad
+;
+; To match usernames, groups, and filenames use the below tags:
+;   filename:<Full path>
+;   filebasename:<File basename>
+;   username:<username>
+;   groupname:<groupname>
+;   filenameregex:<Regex applied to full filename>
+;   filebasenameregex:<Regex applied to file basename>
+;   usernameregex:<Regex applied to username>
+;   groupnameregex:<Regex applied to groupname>
+;
+; All of the above values are case insensitive. Filenames are against NT-style path
+; names such as:
+;
+;  \\?\GLOBALROOT\Device\HarddiskVolume2\Windows\System32\notepad.exe
+;
+; As shown in logs. However, a Drive-Letter and colon prefix can be used
+; which will automatically converted to the appropriate NT Path in the
+; implementation.
+;
+; Examples:
+;
+; Match "notepad.exe" in any path
+;filenameregex:.*\\notepad\.exe$
+;filebasename:notepad.exe
+;
+; Match "notepad.exe" based on full path:
+;filename:\\?\GLOBALROOT\Device\HarddiskVolume4\Windows\System32\notepad.exe
+;filename:C:\Windows\System32\notepad.exe
+;
+; Match all processes for username "Hello1":
+;username:Hello1
+;
+; Match all processes for any username beginning with a "Web_" prefix:
+;usernameregex:^web_.*$
 ;

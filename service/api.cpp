@@ -394,11 +394,21 @@ Export_GetProcessBaseNamePointer(WCHAR *lpszProcessFileName)
 {
 	if (!lpszProcessFileName) return L"";
 
-	WCHAR *p = wcsrchr(lpszProcessFileName, L'\\');
-	if (p) return &p[1];
-	p = wcsrchr(lpszProcessFileName, L'/');
-	if (p) return &p[1];
-	return lpszProcessFileName;
+	const WCHAR *bs = wcsrchr(lpszProcessFileName, L'\\');
+	const WCHAR *fs = wcsrchr(lpszProcessFileName, L'/');
+
+	const WCHAR *p = nullptr;
+	if (bs && fs) {
+		p = bs > fs ? bs : fs;
+	} else if (bs) {
+		p = bs;
+	} else if (fs) {
+		p = fs;
+	} else {
+		return lpszProcessFileName;
+	}
+
+	return &p[1];
 }
 
 
