@@ -323,11 +323,6 @@ private:
 	RegexVector groupnameRegexes;
 };
 
-typedef struct process_data PROCESS_DATA;
-struct process_data {
-	bool bWhitelisted;
-};
-
 static List g_Whitelist;
 static List g_WhitelistExceptions;
 static List g_Blacklist;
