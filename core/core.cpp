@@ -6,6 +6,7 @@
 
 #include "procfilter/procfilter.h"
 
+#include <cctype>
 #include <array>
 #include <map>
 #include <fstream>
@@ -49,7 +50,29 @@ public:
 	const wregex regexObjectSensitive;
 };
 typedef std::vector<RegexData> RegexVector;
-typedef std::vector<wstring> StringVector;
+
+class StringContainer {
+public:
+	StringContainer() {}
+
+	bool contains(const std::wstring &str, bool bCaseSensitive) const {
+		return bCaseSensitive ? case_strings.find(str) != case_strings.end() : icase_strings.find(str) != icase_strings.end();
+	}
+
+	bool insert(const std::wstring &str) {
+		case_strings.insert(str);
+
+		std::wstring lstr = str;
+		std::transform(lstr.begin(), lstr.end(), lstr.begin(), ::tolower);
+		icase_strings.insert(lstr);
+	}
+
+private:
+	bool (*icmp)(const std::wstring &lhs, const std::wstring &rhs) = [](const std::wstring &lhs, const std::wstring &rhs) { return _wcsicmp(lhs.c_str(), rhs.c_str()) < 0; };
+	std::set<std::wstring, decltype(icmp)> icase_strings;
+	std::set<std::wstring> case_strings;
+};
+
 
 // Skip whitespace
 const char* skip_whitespace(const char *p) {
@@ -198,7 +221,7 @@ public:
 				e->LogFmt("Regex compilation failure for value: %ls\nError: %s", str.c_str(), error.what());
 			}
 		} else {
-			filenames.push_back(result);
+			filenames.insert(result);
 		}
 	}
 	
@@ -206,7 +229,7 @@ public:
 		if (bRegex) {
 			tryAddRegex(e, filebasenameRegexes, value);
 		} else {
-			filebasenames.push_back(value);
+			filebasenames.insert(value);
 		}
 	}
 
@@ -214,7 +237,7 @@ public:
 		if (bRegex) {
 			tryAddRegex(e, usernameRegexes, value);
 		} else {
-			usernames.push_back(value);
+			usernames.insert(value);
 		}
 	}
 
@@ -222,7 +245,7 @@ public:
 		if (bRegex) {
 			tryAddRegex(e, groupnameRegexes, value);
 		} else {
-			groupnames.push_back(value);
+			groupnames.insert(value);
 		}
 	}
 
@@ -290,18 +313,8 @@ private:
 		}
 	}
 
-	static bool strMatch(const StringVector &sv, const RegexVector &rv, const std::wstring &lpszString, bool bCaseSensitive) {
-		for (const auto &s : sv) {
-			if (bCaseSensitive) {
-				if (s == lpszString) {
-					return true;
-				}
-			} else {
-				if (_wcsicmp(s.c_str(), lpszString.c_str()) == 0) {
-					return true;
-				}
-			}
-		}
+	static bool strMatch(const StringContainer &sc, const RegexVector &rv, const std::wstring &lpszString, bool bCaseSensitive) {
+		if (sc.contains(lpszString, bCaseSensitive)) return true;
 
 		for (const auto &re : rv) {
 			if (re.matchesString(lpszString, bCaseSensitive)) {
@@ -313,12 +326,12 @@ private:
 	}
 
 	set<Hash> hashes;
-	StringVector filenames;
+	StringContainer filenames;
 	RegexVector filenameRegexes;
-	StringVector filebasenames;
+	StringContainer filebasenames;
 	RegexVector filebasenameRegexes;
-	StringVector usernames;
-	StringVector groupnames;
+	StringContainer usernames;
+	StringContainer groupnames;
 	RegexVector usernameRegexes;
 	RegexVector groupnameRegexes;
 };
