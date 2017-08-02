@@ -1,6 +1,6 @@
 
 #define MyAppDir "ProcFilter"
-#define MyAppVersion "1.0.0-beta.3"
+#define MyAppVersion "1.0"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
