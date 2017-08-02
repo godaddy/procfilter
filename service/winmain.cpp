@@ -504,7 +504,7 @@ wmain(int argc, WCHAR *argv[])
 				for (int i = 2; i < argc; ++i) {
 					HASHES hashes;
 					DWORD dwStart = GetTickCount();
-					if (HashFile(argv[i], &hashes)) {
+					if (HashFile(argv[i], 0, &hashes)) {
 						printf("MD5(%ls):     %hs\n", argv[i], hashes.md5_hexdigest);
 						printf("SHA1(%ls):    %hs\n", argv[i], hashes.sha1_hexdigest);
 						printf("SHA256(%ls):  %hs\n", argv[i], hashes.sha256_hexdigest);

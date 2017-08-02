@@ -347,6 +347,8 @@ static bool g_HashExes = true;
 static bool g_LogRemoteThreads = false;
 static bool g_HashDlls = false;
 static bool g_LogCommandLine = true;
+static DWORD g_MaxHashFileSize = 3 * 1024 * 1024;
+static DWORD g_MaxQuarantineFileSize = 3 * 1024 * 1024;
 
 static WCHAR g_szCommandLineRuleFileBaseName[MAX_PATH + 1] = { '\0' };
 static __declspec(thread) YARASCAN_CONTEXT *tg_CommandLineRulesContext = NULL;
@@ -455,6 +457,9 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 		
 		g_LogCommandLine = e->GetConfigBool(L"LogCommandLineArguments", g_LogCommandLine);
 
+		g_MaxHashFileSize = (DWORD)e->GetConfigInt(L"MaxHashFileSize", (int)g_MaxHashFileSize);
+		g_MaxQuarantineFileSize = (DWORD)e->GetConfigInt(L"MaxQuarantineFileSize", (int)g_MaxQuarantineFileSize);
+
 		g_HashExes = e->GetConfigBool(L"HashExes", g_HashExes);
 	} else if (e->dwEventId == PROCFILTER_EVENT_SHUTDOWN) {
 		DeleteCriticalSection(&g_cs);
@@ -492,7 +497,7 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 
 		bool bHashBlacklisted = false;
 		if (g_HashExes) {
-			e->HashFile(e->lpszFileName, &hashes);
+			e->HashFile(e->lpszFileName, g_MaxHashFileSize, &hashes);
 
 			if (!g_WhitelistExceptions.containsAnyHash(&hashes)) {
 				if (g_Whitelist.containsAnyHash(&hashes)) {
@@ -606,7 +611,7 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 				);
 		}
 
-		if (bQuarantine) e->QuarantineFile(e->lpszFileName, NULL, 0);
+		if (bQuarantine) e->QuarantineFile(e->lpszFileName, g_MaxQuarantineFileSize, NULL, 0);
 
 		if (bBlockProcess) {
 			dwResultFlags = PROCFILTER_RESULT_BLOCK_PROCESS;
@@ -696,7 +701,7 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 			bool bHashBlacklisted = false;
 			HASHES hashes;
 			if (g_HashDlls) {
-				e->HashFile(e->lpszFileName, &hashes);
+				e->HashFile(e->lpszFileName, g_MaxHashFileSize, &hashes);
 				if (!g_WhitelistExceptions.containsAnyHash(&hashes)) {
 					if (g_Whitelist.containsAnyHash(&hashes)) return PROCFILTER_RESULT_DONT_SCAN;
 				}
@@ -741,7 +746,7 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 				);
 			}
 
-			if (bQuarantine) e->QuarantineFile(e->lpszFileName, NULL, 0);
+			if (bQuarantine) e->QuarantineFile(e->lpszFileName, g_MaxQuarantineFileSize, NULL, 0);
 
 			if (bBlock) {
 				dwResultFlags = PROCFILTER_RESULT_BLOCK_PROCESS;

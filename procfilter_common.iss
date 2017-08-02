@@ -47,7 +47,7 @@ Source: "{#BuildDir}\sha1.dll"; DestDir: "{app}\plugins"; Flags: ignoreversion
 Source: "{#BuildDir}\remotethread.dll"; DestDir: "{app}\plugins"; Flags: ignoreversion 
 Source: "{#BuildDir}\core.dll"; DestDir: "{app}\plugins"; Flags: ignoreversion   
 Source: "{#DriverBuildDir}\driver.sys"; DestDir: "{app}\sys"; DestName: "procfilter.sys"; Flags: ignoreversion                
-Source: ".\testlua\testlua.lua"; DestDir: "{app}\plugins"; Flags: confirmoverwrite uninsneveruninstall               
+Source: ".\testlua\testlua.lua"; DestDir: "{app}\plugins"; Flags: uninsneveruninstall               
 Source: ".\files\procfilter.ini"; DestDir: "{app}"; Flags: confirmoverwrite uninsneveruninstall 
 Source: ".\service\procfilter.man"; DestDir: "{app}\lib"; Flags: ignoreversion uninsneveruninstall
 Source: ".\service\include\procfilter\procfilter.h"; DestDir: "{app}\sdk\include\procfilter"; Flags: ignoreversion

@@ -149,7 +149,7 @@ QuarantineFile(const WCHAR *lpszFileName, const WCHAR *lpszQuarantineDirectory, 
 	if (dwFileSizeLimit == 0 || dwFileSize <= dwFileSizeLimit) {
 		WCHAR szQuarantineFileName[MAX_PATH+1] = { '\0' };
 		HASHES hashes;
-		if (HashFile(lpszFileName, &hashes)) {
+		if (HashFile(lpszFileName, dwFileSizeLimit, &hashes)) {
 			strlprintf(o_hexdigest, SHA1_HEXDIGEST_LENGTH+1, "%hs", hashes.sha1_hexdigest);
 			wstrlprintf(szQuarantineFileName, sizeof(szQuarantineFileName), L"%ls%hs", lpszQuarantineDirectory, hashes.sha1_hexdigest);
 			if (QuarantineStoreFile(lpszFileName, szQuarantineFileName, lpszFileRuleMatches, lpszMemoryRuleMatches)) {

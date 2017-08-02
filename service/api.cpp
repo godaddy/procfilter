@@ -752,12 +752,12 @@ Export_ShellNoticeFmt(DWORD dwDurationSeconds, bool bWait, DWORD dwStyle, WCHAR 
 
 
 bool
-Export_QuarantineFile(const WCHAR *lpszFileName, char *o_lpszHexDigest, DWORD dwHexDigestSize)
+Export_QuarantineFile(const WCHAR *lpszFileName, DWORD dwFileSizeLimit, char *o_lpszHexDigest, DWORD dwHexDigestSize)
 {
 	CONFIG_DATA *cd = GetConfigData();
 
 	char o_hexdigest[SHA1_HEXDIGEST_LENGTH+1];
-	bool rv = QuarantineFile(lpszFileName, cd->szQuarantineDirectory, 0, NULL, NULL, o_hexdigest);
+	bool rv = QuarantineFile(lpszFileName, cd->szQuarantineDirectory, dwFileSizeLimit, NULL, NULL, o_hexdigest);
 	if (rv) {
 		if (o_lpszHexDigest) strlprintf(o_lpszHexDigest, dwHexDigestSize, "%hs", o_hexdigest);
 	}
@@ -774,7 +774,7 @@ Export_ShellNotice(DWORD dwDurationSeconds, bool bWait, DWORD dwStyle, WCHAR *lp
 
 
 bool
-Export_HashFile(const WCHAR *lpszFileName, HASHES *hashes)
+Export_HashFile(const WCHAR *lpszFileName, DWORD dwFileSizeLimit, HASHES *hashes)
 {
 	PROCFILTER_EVENT *e = GetCurrentEvent();
 
@@ -788,14 +788,14 @@ Export_HashFile(const WCHAR *lpszFileName, HASHES *hashes)
 		if (e->private_data->bHashesValid) {
 			memcpy(hashes, (void*)&e->private_data->hashes, sizeof(HASHES));
 		} else {
-			rv = HashFile(lpszFileName, (HASHES*)&e->private_data->hashes);
+			rv = HashFile(lpszFileName, dwFileSizeLimit, (HASHES*)&e->private_data->hashes);
 			if (rv) {
 				memcpy(hashes, (void*)&e->private_data->hashes, sizeof(HASHES));
 				e->private_data->bHashesValid = true;
 			}
 		}
 	} else {
-		rv = HashFile(lpszFileName, hashes);
+		rv = HashFile(lpszFileName, dwFileSizeLimit, hashes);
 	}
 
 	return rv;

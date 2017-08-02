@@ -32,7 +32,7 @@
 
 
 bool
-HashFile(const WCHAR *lpszFileName, HASHES *result)
+HashFile(const WCHAR *lpszFileName, DWORD dwFileSizeLimit, HASHES *result)
 {
 	HASHES hashes;
 
@@ -51,6 +51,10 @@ HashFile(const WCHAR *lpszFileName, HASHES *result)
 	// Open the input file for reading
 	HANDLE hFile = CreateFile(lpszFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
 	if (hFile == INVALID_HANDLE_VALUE) goto cleanup;
+
+	if (dwFileSizeLimit && GetFileSize(hFile, NULL) > dwFileSizeLimit) {
+		goto cleanup;
+	}
 
 	// Open up the Wincrypt API
 	if (!CryptAcquireContext(&hCryptoProvider, NULL, NULL, PROV_RSA_AES, CRYPT_VERIFYCONTEXT | CRYPT_SILENT)) goto cleanup;

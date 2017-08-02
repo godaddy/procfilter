@@ -32,5 +32,5 @@
 //
 // Get cryptographic hashes of a file
 //
-bool HashFile(const WCHAR *lpszFileName, HASHES *result);
+bool HashFile(const WCHAR *lpszFileName, DWORD dwFileSizeLimit, HASHES *result);
 

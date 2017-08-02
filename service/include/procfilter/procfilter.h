@@ -320,12 +320,12 @@ struct procfilter_event {
     //
     // Quarantine a file immediately.
     //
-    bool  (*QuarantineFile)(const WCHAR *lpszFileName, char *lpszHexDigest, DWORD dwHexDigestSize);
+    bool  (*QuarantineFile)(const WCHAR *lpszFileName, DWORD dwFileSizeLimit, char *lpszHexDigest, DWORD dwHexDigestSize);
 
     //
     // Compute the SHA1 hash of the specified file.
     //
-    bool  (*HashFile)(const WCHAR *lpszFileName, HASHES *hashes);
+    bool  (*HashFile)(const WCHAR *lpszFileName, DWORD dwFileSizeLimit, HASHES *hashes);
 	
 	//
 	// Get the command line for the current process. Only valid during EVENT_PROCESS_CREATE.

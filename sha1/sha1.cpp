@@ -129,7 +129,7 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 		DeleteCriticalSection(&g_CriticalSection);
 	} else if (e->dwEventId == PROCFILTER_EVENT_PROCESS_CREATE && e->lpszFileName) {
 		HASHES hashes;
-		bool bFileHashed = e->HashFile(e->lpszFileName, &hashes);
+		bool bFileHashed = e->HashFile(e->lpszFileName, 0, &hashes);
 		if (g_RunningMode == MODE_BUILD_WHITELIST) {
 			if (bFileHashed && !Sha1InSet(e, g_WhitelistHashes, Hash(hashes.sha1_digest, 20))) {
 				EnterCriticalSection(&g_CriticalSection);
