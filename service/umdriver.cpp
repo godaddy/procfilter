@@ -39,6 +39,7 @@
 #include "quarantine.hpp"
 #include "threadpool.hpp"
 #include "pfworker.hpp"
+#include "warning.hpp"
 #include "timing.hpp"
 #include "ProcFilterEvents.h"
 
@@ -272,6 +273,19 @@ ep_DriverService(void *arg)
 			// Successfully completed a synchronous read, do nothing
 		} else if (dwErrorCode == ERROR_IO_PENDING) {
 			// Successfully completed an asynchronous read, so wait for it
+
+			//
+			// There is a currently inexplicable issue where
+			// after creating an asynchronous read (ReadFile() -> FALSE and GetLastError() -> ERROR_IO_PENDING,
+			// The below call to GetOverlappedResult() -> TRUE and GetLastError() -> ERROR_IO_PENDING) as expected
+			// but the number of bytes read is 0.  It's like the OVERLAPPED event handle is getting set incorrectly
+			// or there's a race/synchronization issue happening, since the driver "never" returns a zero-byte read
+			// and is setup to BugCheck if it does.
+			//
+			// This condition results in the following error if the below if to ignore zero-sized bytes is removed.
+			//
+			// "Fatal error: Read invalid size from driver device: 0 < 30 || 0 > 65592  ReadFile:FALSE ErrorCode:997"
+			//
 			DWORD dwNumberOfBytesTransferred = 0;
 			if (!GetOverlappedResult(g_hDriver, &overlapped, &dwNumberOfBytesTransferred, TRUE)) {
 				dwErrorCode = GetLastError();
@@ -281,7 +295,7 @@ ep_DriverService(void *arg)
 				CancelIo(g_hDriver);
 				Die("GetOverlappedResult() failure in reader: %d", dwErrorCode);
 			}
-			dwErrorCode = GetLastError();
+			dwErrorCode = GetLastError(); // Always ERROR_IO_PENDING here, even after successful GetOverlappedResult() call.
 			dwBytesRead = dwNumberOfBytesTransferred;
 		} else if (dwErrorCode == ERROR_OPERATION_ABORTED || dwErrorCode == ERROR_INVALID_HANDLE) {
 			break;
@@ -292,6 +306,10 @@ ep_DriverService(void *arg)
 		ULONG64 ulStartPerformanceCount = GetPerformanceCount();
 		
 		// Validate the size of data read
+		if (dwBytesRead == 0) {
+			Warning(L"Read zero-sized packet from driver");
+			continue;
+		}
 		if (dwBytesRead < sizeof(PROCFILTER_REQUEST) || dwBytesRead > PROCFILTER_REQUEST_SIZE) {
 			Die("Read invalid size from driver device: %u < %u || %u > %u  ReadFile:%hs ErrorCode:%d",
 				dwBytesRead, sizeof(PROCFILTER_REQUEST), dwBytesRead, PROCFILTER_REQUEST_SIZE, rc ? "TRUE" : "FALSE", dwErrorCode);
