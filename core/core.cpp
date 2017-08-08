@@ -65,7 +65,7 @@ public:
 		std::wstring lstr = str;
 		auto lowercase_wchar = [](wchar_t c)->wchar_t{
 			if (iswascii(c) && iswupper(c)) {
-				return towlower(c);
+				return static_cast<wchar_t>(towlower(c));
 			} else {
 				return c;
 			}
