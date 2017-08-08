@@ -63,7 +63,14 @@ public:
 		case_strings.insert(str);
 
 		std::wstring lstr = str;
-		std::transform(lstr.begin(), lstr.end(), lstr.begin(), ::tolower);
+		auto lowercase_wchar = [](wchar_t c)->wchar_t{
+			if (iswascii(c) && iswupper(c)) {
+				return towlower(c);
+			} else {
+				return c;
+			}
+		};
+		std::transform(lstr.begin(), lstr.end(), lstr.begin(), lowercase_wchar);
 		icase_strings.insert(lstr);
 	}
 
