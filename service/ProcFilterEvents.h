@@ -224,6 +224,8 @@ EXTERN_C __declspec(selectany) const GUID ETW_PROCFILTER_PROVIDER = {0xaaf28f4b,
 //
 #define ETW_PROCFILTER_PROVIDER_CHANNEL_Application 0x9
 #define ETW_PROCFILTER_PROVIDER_CHANNEL_Security 0xa
+#define ProcFilter_Service 0x10
+#define ProcFilter_Plugins 0x11
 
 //
 // Opcodes
@@ -283,53 +285,53 @@ EXTERN_C __declspec(selectany) const GUID ETW_PROCFILTER_PROVIDER = {0xaaf28f4b,
 //
 // Event Descriptors
 //
-EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR MATCH_FOUND = {0x1, 0x1, 0x9, 0x4, 0xa, 0x0, 0x8000000000000001};
+EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR MATCH_FOUND = {0x1, 0x1, 0x10, 0x4, 0xa, 0x0, 0x2000000000000001};
 #define MATCH_FOUND_value 0x1
-EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR PERIODIC_SCAN_STARTED = {0x2, 0x1, 0x9, 0x4, 0xb, 0x0, 0x8000000000000002};
+EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR PERIODIC_SCAN_STARTED = {0x2, 0x1, 0x10, 0x4, 0xb, 0x0, 0x2000000000000002};
 #define PERIODIC_SCAN_STARTED_value 0x2
-EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR PERIODIC_SCAN_FINISHED = {0x3, 0x1, 0x9, 0x4, 0xc, 0x0, 0x8000000000000004};
+EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR PERIODIC_SCAN_FINISHED = {0x3, 0x1, 0x10, 0x4, 0xc, 0x0, 0x2000000000000004};
 #define PERIODIC_SCAN_FINISHED_value 0x3
-EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR EXECUTION_BLOCKED = {0x4, 0x0, 0x9, 0x1, 0xd, 0x0, 0x8000000000000008};
+EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR EXECUTION_BLOCKED = {0x4, 0x0, 0x10, 0x1, 0xd, 0x0, 0x2000000000000008};
 #define EXECUTION_BLOCKED_value 0x4
-EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR EXECUTION_LOGGED = {0x5, 0x0, 0x9, 0x4, 0xe, 0x0, 0x8000000000000010};
+EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR EXECUTION_LOGGED = {0x5, 0x0, 0x10, 0x4, 0xe, 0x0, 0x2000000000000010};
 #define EXECUTION_LOGGED_value 0x5
-EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR FILE_QUARANTINED = {0x6, 0x0, 0x9, 0x3, 0xf, 0x0, 0x8000000000000020};
+EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR FILE_QUARANTINED = {0x6, 0x0, 0x10, 0x3, 0xf, 0x0, 0x2000000000000020};
 #define FILE_QUARANTINED_value 0x6
-EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR RULE_COMPILATION_FAILED = {0x7, 0x0, 0x9, 0x2, 0x10, 0x0, 0x8000000000000040};
+EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR RULE_COMPILATION_FAILED = {0x7, 0x0, 0x10, 0x2, 0x10, 0x0, 0x2000000000000040};
 #define RULE_COMPILATION_FAILED_value 0x7
-EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR FATAL_ERROR = {0x8, 0x0, 0x9, 0x1, 0x11, 0x0, 0x8000000000000080};
+EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR FATAL_ERROR = {0x8, 0x0, 0x10, 0x1, 0x11, 0x0, 0x2000000000000080};
 #define FATAL_ERROR_value 0x8
-EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR SCAN_PROCESS_FAILED = {0x9, 0x0, 0x9, 0x3, 0x12, 0x0, 0x8000000000000100};
+EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR SCAN_PROCESS_FAILED = {0x9, 0x0, 0x10, 0x3, 0x12, 0x0, 0x2000000000000100};
 #define SCAN_PROCESS_FAILED_value 0x9
-EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR SCAN_FILE_FAILED = {0xa, 0x0, 0x9, 0x3, 0x13, 0x0, 0x8000000000000200};
+EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR SCAN_FILE_FAILED = {0xa, 0x0, 0x10, 0x3, 0x13, 0x0, 0x2000000000000200};
 #define SCAN_FILE_FAILED_value 0xa
-EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR EXITING_PROCESS_SCAN_MATCHED_BLOCKED_RULE = {0xb, 0x0, 0x9, 0x1, 0x14, 0x0, 0x8000000000000400};
+EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR EXITING_PROCESS_SCAN_MATCHED_BLOCKED_RULE = {0xb, 0x0, 0x10, 0x1, 0x14, 0x0, 0x2000000000000400};
 #define EXITING_PROCESS_SCAN_MATCHED_BLOCKED_RULE_value 0xb
-EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR EXITING_PROCESS_SCAN_MATCHED_LOGGED_RULE = {0xc, 0x0, 0x9, 0x4, 0x15, 0x0, 0x8000000000000800};
+EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR EXITING_PROCESS_SCAN_MATCHED_LOGGED_RULE = {0xc, 0x0, 0x10, 0x4, 0x15, 0x0, 0x2000000000000800};
 #define EXITING_PROCESS_SCAN_MATCHED_LOGGED_RULE_value 0xc
-EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR RUNNING_PROCESS_MATCHED_BLOCKED_RULE = {0xd, 0x0, 0x9, 0x1, 0x16, 0x0, 0x8000000000001000};
+EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR RUNNING_PROCESS_MATCHED_BLOCKED_RULE = {0xd, 0x0, 0x10, 0x1, 0x16, 0x0, 0x2000000000001000};
 #define RUNNING_PROCESS_MATCHED_BLOCKED_RULE_value 0xd
-EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR RUNNING_PROCESS_MATCHED_LOGGED_RULE = {0xe, 0x0, 0x9, 0x4, 0x17, 0x0, 0x8000000000002000};
+EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR RUNNING_PROCESS_MATCHED_LOGGED_RULE = {0xe, 0x0, 0x10, 0x4, 0x17, 0x0, 0x2000000000002000};
 #define RUNNING_PROCESS_MATCHED_LOGGED_RULE_value 0xe
-EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR PROCESS_TERMINATED = {0xf, 0x0, 0x9, 0x1, 0x18, 0x0, 0x8000000000008000};
+EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR PROCESS_TERMINATED = {0xf, 0x0, 0x10, 0x1, 0x18, 0x0, 0x2000000000008000};
 #define PROCESS_TERMINATED_value 0xf
-EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR PROCFILTERSERVICE_STARTED = {0x10, 0x0, 0x9, 0x4, 0x19, 0x0, 0x8000000000010000};
+EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR PROCFILTERSERVICE_STARTED = {0x10, 0x0, 0x10, 0x4, 0x19, 0x0, 0x2000000000010000};
 #define PROCFILTERSERVICE_STARTED_value 0x10
-EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR PROCFILTERSERVICE_STOPPED = {0x11, 0x0, 0x9, 0x4, 0x1a, 0x0, 0x8000000000020000};
+EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR PROCFILTERSERVICE_STOPPED = {0x11, 0x0, 0x10, 0x4, 0x1a, 0x0, 0x2000000000020000};
 #define PROCFILTERSERVICE_STOPPED_value 0x11
-EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR PLUGIN_LOG = {0x12, 0x0, 0x9, 0x4, 0x1b, 0x0, 0x8000000000080000};
+EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR PLUGIN_LOG = {0x12, 0x0, 0x11, 0x4, 0x1b, 0x0, 0x1000000000080000};
 #define PLUGIN_LOG_value 0x12
-EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR LOADED_IMAGE_BLOCKED = {0x13, 0x0, 0x9, 0x1, 0x1c, 0x0, 0x8000000000100000};
+EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR LOADED_IMAGE_BLOCKED = {0x13, 0x0, 0x10, 0x1, 0x1c, 0x0, 0x2000000000100000};
 #define LOADED_IMAGE_BLOCKED_value 0x13
-EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR LOADED_IMAGE_LOGGED = {0x14, 0x0, 0x9, 0x4, 0x1d, 0x0, 0x8000000000200000};
+EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR LOADED_IMAGE_LOGGED = {0x14, 0x0, 0x10, 0x4, 0x1d, 0x0, 0x2000000000200000};
 #define LOADED_IMAGE_LOGGED_value 0x14
-EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR WARNING = {0x15, 0x0, 0x9, 0x3, 0x1e, 0x0, 0x8000000000400000};
+EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR WARNING = {0x15, 0x0, 0x10, 0x3, 0x1e, 0x0, 0x2000000000400000};
 #define WARNING_value 0x15
-EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR NOTICE = {0x16, 0x0, 0x9, 0x4, 0x1f, 0x0, 0x8000000000800000};
+EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR NOTICE = {0x16, 0x0, 0x10, 0x4, 0x1f, 0x0, 0x2000000000800000};
 #define NOTICE_value 0x16
-EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR PLUGIN_WARNING = {0x17, 0x0, 0x9, 0x3, 0x20, 0x0, 0x8000000001000000};
+EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR PLUGIN_WARNING = {0x17, 0x0, 0x11, 0x3, 0x20, 0x0, 0x1000000001000000};
 #define PLUGIN_WARNING_value 0x17
-EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR PLUGIN_CRITICAL = {0x18, 0x0, 0x9, 0x1, 0x21, 0x0, 0x8000000002000000};
+EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR PLUGIN_CRITICAL = {0x18, 0x0, 0x11, 0x1, 0x21, 0x0, 0x1000000002000000};
 #define PLUGIN_CRITICAL_value 0x18
 
 //
@@ -360,7 +362,7 @@ EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR PLUGIN_CRITICAL = {0x18, 0
 //
 
 EXTERN_C __declspec(selectany) DECLSPEC_CACHEALIGN ULONG ProcFilterEnableBits[1];
-EXTERN_C __declspec(selectany) const ULONGLONG ProcFilterKeywords[24] = {0x8000000000000001, 0x8000000000000002, 0x8000000000000004, 0x8000000000000008, 0x8000000000000010, 0x8000000000000020, 0x8000000000000040, 0x8000000000000080, 0x8000000000000100, 0x8000000000000200, 0x8000000000000400, 0x8000000000000800, 0x8000000000001000, 0x8000000000002000, 0x8000000000008000, 0x8000000000010000, 0x8000000000020000, 0x8000000000080000, 0x8000000000100000, 0x8000000000200000, 0x8000000000400000, 0x8000000000800000, 0x8000000001000000, 0x8000000002000000};
+EXTERN_C __declspec(selectany) const ULONGLONG ProcFilterKeywords[24] = {0x2000000000000001, 0x2000000000000002, 0x2000000000000004, 0x2000000000000008, 0x2000000000000010, 0x2000000000000020, 0x2000000000000040, 0x2000000000000080, 0x2000000000000100, 0x2000000000000200, 0x2000000000000400, 0x2000000000000800, 0x2000000000001000, 0x2000000000002000, 0x2000000000008000, 0x2000000000010000, 0x2000000000020000, 0x1000000000080000, 0x2000000000100000, 0x2000000000200000, 0x2000000000400000, 0x2000000000800000, 0x1000000001000000, 0x1000000002000000};
 EXTERN_C __declspec(selectany) const UCHAR ProcFilterLevels[24] = {4, 4, 4, 1, 4, 3, 2, 1, 3, 3, 1, 4, 1, 4, 1, 4, 4, 4, 1, 4, 3, 4, 3, 1};
 EXTERN_C __declspec(selectany) MCGEN_TRACE_CONTEXT ETW_PROCFILTER_PROVIDER_Context = {0, 0, 0, 0, 0, 0, 0, 0, 24, ProcFilterEnableBits, ProcFilterKeywords, ProcFilterLevels};
 
@@ -1135,30 +1137,6 @@ Template_z(
 };
 #endif
 
-#define MSG_ProcFilter_event_1_message       0x00000001L
-#define MSG_ProcFilter_event_2_message       0x00000002L
-#define MSG_ProcFilter_event_3_message       0x00000003L
-#define MSG_ProcFilter_event_4_message       0x00000004L
-#define MSG_ProcFilter_event_5_message       0x00000005L
-#define MSG_ProcFilter_event_6_message       0x00000006L
-#define MSG_ProcFilter_event_7_message       0x00000007L
-#define MSG_ProcFilter_event_8_message       0x00000008L
-#define MSG_ProcFilter_event_9_message       0x00000009L
-#define MSG_ProcFilter_event_10_message      0x0000000AL
-#define MSG_ProcFilter_event_11_message      0x0000000BL
-#define MSG_ProcFilter_event_12_message      0x0000000CL
-#define MSG_ProcFilter_event_13_message      0x0000000DL
-#define MSG_ProcFilter_event_14_message      0x0000000EL
-#define MSG_ProcFilter_event_15_message      0x0000000FL
-#define MSG_ProcFilter_event_16_message      0x00000010L
-#define MSG_ProcFilter_event_17_message      0x00000011L
-#define MSG_ProcFilter_event_18_message      0x00000012L
-#define MSG_ProcFilter_event_0_message       0x00000013L
-#define MSG_ProcFilter_event_20_message      0x00000014L
-#define MSG_ProcFilter_event_21_message      0x00000015L
-#define MSG_ProcFilter_event_22_message      0x00000016L
-#define MSG_ProcFilter_event_23_message      0x00000017L
-#define MSG_ProcFilter_event_24_message      0x00000018L
 #define MSG_ProcFilter_keyword_YARAMATCH_KEYWORD_message 0x10000001L
 #define MSG_ProcFilter_keyword_PERIODICSCANSTARTED_KEYWORD_message 0x10000002L
 #define MSG_ProcFilter_keyword_PERIODICSCANFINISHED_KEYWORD_message 0x10000003L
@@ -1213,3 +1191,29 @@ Template_z(
 #define MSG_level_Informational              0x50000004L
 #define MSG_channel_Application              0x90000001L
 #define MSG_channel_Security                 0x90000002L
+#define MSG_ProcFilter_channel_ProcFilter_message 0x90000003L
+#define MSG_ProcFilter_channel_ProcFilter_Plugins_message 0x90000004L
+#define MSG_ProcFilter_event_4_message       0xB0000004L
+#define MSG_ProcFilter_event_5_message       0xB0000005L
+#define MSG_ProcFilter_event_6_message       0xB0000006L
+#define MSG_ProcFilter_event_7_message       0xB0000007L
+#define MSG_ProcFilter_event_8_message       0xB0000008L
+#define MSG_ProcFilter_event_9_message       0xB0000009L
+#define MSG_ProcFilter_event_10_message      0xB000000AL
+#define MSG_ProcFilter_event_11_message      0xB000000BL
+#define MSG_ProcFilter_event_12_message      0xB000000CL
+#define MSG_ProcFilter_event_13_message      0xB000000DL
+#define MSG_ProcFilter_event_14_message      0xB000000EL
+#define MSG_ProcFilter_event_15_message      0xB000000FL
+#define MSG_ProcFilter_event_16_message      0xB0000010L
+#define MSG_ProcFilter_event_17_message      0xB0000011L
+#define MSG_ProcFilter_event_18_message      0xB0000012L
+#define MSG_ProcFilter_event_0_message       0xB0000013L
+#define MSG_ProcFilter_event_20_message      0xB0000014L
+#define MSG_ProcFilter_event_21_message      0xB0000015L
+#define MSG_ProcFilter_event_22_message      0xB0000016L
+#define MSG_ProcFilter_event_23_message      0xB0000017L
+#define MSG_ProcFilter_event_24_message      0xB0000018L
+#define MSG_ProcFilter_event_1_message       0xB0010001L
+#define MSG_ProcFilter_event_2_message       0xB0010002L
+#define MSG_ProcFilter_event_3_message       0xB0010003L

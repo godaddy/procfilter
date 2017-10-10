@@ -37,7 +37,8 @@ Name: "{app}\sdk\include\procfilter"
 
 [Files]
 Source: "{#BuildDir}\procfilter.exe"; DestDir: "{app}"; Flags: ignoreversion 
-Source: "{#BuildDir}\performance.dll"; DestDir: "{app}\plugins"; Flags: ignoreversion 
+Source: "{#BuildDir}\performance.dll"; DestDir: "{app}\plugins"; Flags: ignoreversion  
+Source: "{#BuildDir}\antimalware.dll"; DestDir: "{app}\plugins"; Flags: ignoreversion 
 Source: "{#BuildDir}\interactive.dll"; DestDir: "{app}\plugins"; Flags: ignoreversion    
 Source: "{#BuildDir}\filenames.dll"; DestDir: "{app}\plugins"; Flags: ignoreversion   
 Source: "{#BuildDir}\users.dll"; DestDir: "{app}\plugins"; Flags: ignoreversion    
@@ -64,6 +65,10 @@ Name: "{group}\{cm:UninstallProgram,{#MyAppDir}}"; FileName: "{uninstallexe}"
 [Run]                                                      
 FileName: "{sys}\wevtutil.exe"; Parameters: """uninstall-manifest"" ""{app}\lib\procfilter.man"""; Flags: runhidden
 FileName: "{sys}\wevtutil.exe"; Parameters: """install-manifest"" ""{app}\lib\procfilter.man"" ""/rf:{app}\procfilter.exe"" ""/mf:{app}\procfilter.exe"""; Flags: runhidden
+; "256MB ought to be enough for anyone", this should be a configurable later. This also has the effect of re-adjusting a prior setting...
+FileName: "{sys}\wevtutil.exe"; Parameters: """sl"" ""procfilter/service"" ""/ms:268435456"""; Flags: runhidden
+FileName: "{sys}\wevtutil.exe"; Parameters: """sl"" ""procfilter/plugins"" ""/ms:268435456"""; Flags: runhidden
+
 ; Default to delayed-start install since it's safer if ProcFilter were to cause problems
 FileName: "{app}\procfilter.exe"; Parameters: "-install-delayed"; Flags: runhidden 
     
