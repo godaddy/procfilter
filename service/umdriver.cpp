@@ -256,6 +256,8 @@ ep_DriverService(void *arg)
 	HANDLE hReadFileEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 	if (hReadFileEvent == NULL) Die("Unable to create read file event");
 
+	DWORD dwNumConsecutiveZeroReads = 0;
+
 	// Allocate memory for the buffer to be read from the kernel
 	PROCFILTER_REQUEST *req = (PROCFILTER_REQUEST*)_malloca(PROCFILTER_REQUEST_SIZE);
 	while (true) {
@@ -307,9 +309,17 @@ ep_DriverService(void *arg)
 		
 		// Validate the size of data read
 		if (dwBytesRead == 0) {
+			// For safety, make sure that the communications with the driver haven't failed permanently. If all reads
+			// are getting zeroed, many processes will be hung waiting for a procfilter result that will never happen.
+			const DWORD dwMaxConsecutiveZeroReads = 20;
+			dwNumConsecutiveZeroReads += 1;
+			if (dwNumConsecutiveZeroReads >= dwMaxConsecutiveZeroReads) {
+				Die("Exceeded %u consecutive zero-sized reads from driver", dwMaxConsecutiveZeroReads);
+			}
 			Warning(L"Read zero-sized packet from driver");
 			continue;
 		}
+		dwNumConsecutiveZeroReads = 0;
 		if (dwBytesRead < sizeof(PROCFILTER_REQUEST) || dwBytesRead > PROCFILTER_REQUEST_SIZE) {
 			Die("Read invalid size from driver device: %u < %u || %u > %u  ReadFile:%hs ErrorCode:%d",
 				dwBytesRead, sizeof(PROCFILTER_REQUEST), dwBytesRead, PROCFILTER_REQUEST_SIZE, rc ? "TRUE" : "FALSE", dwErrorCode);
