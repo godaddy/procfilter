@@ -78,6 +78,7 @@ AskModify(int argc, WCHAR *argv[], int *current_arg, int *current_char, std::vec
 	} else {
 		c = _getwch();
 		putwchar(c);
+		putwchar('\n');
 	}
 	c = towlower(c);
 	input[input.size()-1].push_back('m');
