@@ -127,6 +127,7 @@ AskString(const WCHAR *lpszConfigFile, const WCHAR *lpszSection, const WCHAR *lp
 		const WCHAR *answer = GetNext(argc, argv, current_arg, current_char);
 		if (answer) {
 			wstrlprintf(lpszFileDefault, sizeof(lpszFileDefault), L"%s", answer);
+			wprintf(L"%s\n", lpszFileDefault);
 			*current_arg += 1;
 			*current_char = 0;
 		} else {
@@ -139,7 +140,6 @@ AskString(const WCHAR *lpszConfigFile, const WCHAR *lpszSection, const WCHAR *lp
 		}
 	}
 
-	wprintf(L"%s\n", lpszFileDefault);
 	input.push_back(lpszFileDefault);
 	input.push_back(L"");
 
@@ -156,6 +156,10 @@ ConfigureConfigure(int argc, WCHAR *argv[])
 	int ca = 0;
 	int cc = 0;
 
+	wprintf(L"ProcFilter configuration\n");
+	wprintf(L"\n");
+	wprintf(L"Rerun any time with \"procfilter.exe -configure\"\n");
+	wprintf(L"\n");
 	std::vector<std::wstring> input;
 	input.push_back(L"");
 	AskString(cf, L"ProcFilter", L"Plugins", L"Plugins list", L"core", argc, argv, &ca, &cc, input);

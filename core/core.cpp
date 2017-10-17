@@ -353,6 +353,7 @@ static set<DWORD> g_WhitelistedPids;
 static bool g_HashExes = true;
 static bool g_LogRemoteThreads = false;
 static bool g_HashDlls = false;
+static bool g_LogLoadedDllNames = false;
 static bool g_LogCommandLine = true;
 static DWORD g_MaxHashFileSize = 3 * 1024 * 1024;
 static DWORD g_MaxQuarantineFileSize = 3 * 1024 * 1024;
@@ -447,7 +448,8 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 		e->GetConfigString(L"CommandLineRules", L"", g_szCommandLineRuleFileBaseName, sizeof(g_szCommandLineRuleFileBaseName));
 
 		g_HashDlls = e->GetConfigBool(L"HashDlls", g_HashDlls);
-		if (g_HashDlls) e->EnableEvent(PROCFILTER_EVENT_IMAGE_LOAD);
+		g_LogLoadedDllNames = e->GetConfigBool(L"LogLoadedDllNames", g_LogLoadedDllNames);
+		if (g_HashDlls || g_LogLoadedDllNames) e->EnableEvent(PROCFILTER_EVENT_IMAGE_LOAD);
 
 		g_LogRemoteThreads = e->GetConfigBool(L"LogRemoteThreads", g_LogRemoteThreads);
 		if (g_LogRemoteThreads) e->EnableEvent(PROCFILTER_EVENT_THREAD_CREATE);
@@ -724,7 +726,7 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 			e->GetProcessFileName(e->dwProcessId, szProcessName, sizeof(szProcessName));
 
 			void(*LogFn)(const char *, ...) = bBlock ? e->LogCriticalFmt : e->LogFmt;
-			bool bLog = true;
+			bool bLog = g_LogLoadedDllNames || g_HashDlls;
 			if (bLog) {
 				LogFn(
 				"\n" \

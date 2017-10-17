@@ -293,6 +293,7 @@ usage(const WCHAR *progname)
 #if defined(_DEBUG)
 	fwprintf(stderr, L"Usage: %ls [-service|service-program-stop]\n", progname);
 #endif
+	fwprintf(stderr, L"Usage: %ls -configure [OPTIONS]\n", progname);
 	fwprintf(stderr, L"Usage: %ls -filescan [rule file] <file>\n", progname);
 	fwprintf(stderr, L"Usage: %ls -memoryscan [rule file] <pid>\n", progname);
 	fwprintf(stderr, L"Usage: %ls -iset <section> <key> <value>\n", progname);
@@ -307,7 +308,7 @@ usage(const WCHAR *progname)
 	fwprintf(stderr, L"Usage: %ls -benchmark-counted <num executions> <target program> [args]\n", progname);
 	fwprintf(stderr, L"Usage: %ls -status\n", progname);
 	// No need to display this option since it's not useful to end users since it's only used internally
-	//fwprintf(stderr, L"Usage: %ls -prompt <title> <text> <icon> <options>\n", progname);
+	//fwprintf(stderr, L"Usage: %ls -prompt <duration> <title> <text> <icon> <options>\n", progname);
 
 }
 
