@@ -310,3 +310,10 @@ ConfigDestroy()
 {
 	// do nothing for now
 }
+
+
+void
+ConfigConfigure(int argc, char *argv[])
+{
+
+}

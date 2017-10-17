@@ -186,6 +186,7 @@
     <ClCompile Include="api.cpp" />
     <ClCompile Include="benchmark-counted.cpp" />
     <ClCompile Include="config.cpp" />
+    <ClCompile Include="configure.cpp" />
     <ClCompile Include="die.cpp" />
     <ClCompile Include="file.cpp" />
     <ClCompile Include="service.cpp" />
@@ -223,6 +224,7 @@
     <ClInclude Include="benchmark-timed.hpp" />
     <ClInclude Include="benchmark-counted.hpp" />
     <ClInclude Include="config.hpp" />
+    <ClInclude Include="configure.hpp" />
     <ClInclude Include="die.hpp" />
     <ClInclude Include="file.hpp" />
     <ClInclude Include="include\procfilter\procfilter.h" />

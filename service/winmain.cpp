@@ -35,6 +35,7 @@
 #include "umdriver.hpp"
 #include "pfservice.hpp"
 #include "config.hpp"
+#include "configure.hpp"
 #include "benchmark-timed.hpp"
 #include "benchmark-counted.hpp"
 #include "die.hpp"
@@ -545,6 +546,8 @@ wmain(int argc, WCHAR *argv[])
 			DisplayLicenses();
 		} else if (TestArg(arg, L"-prompt", NULL)) {
 			rv = Prompt(argc, argv);
+		} else if (TestArg(arg, L"-configure", NULL)) {
+			ConfigureConfigure(argc-2, &argv[2]);
 		} else {
 			usage(argv[0]);
 		}

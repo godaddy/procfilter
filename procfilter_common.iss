@@ -71,14 +71,11 @@ FileName: "{sys}\wevtutil.exe"; Parameters: """sl"" ""procfilter/plugins"" ""/ms
 
 ; Default to delayed-start install since it's safer if ProcFilter were to cause problems
 FileName: "{app}\procfilter.exe"; Parameters: "-install-delayed"; Flags: runhidden 
-    
-FileName: "{app}\procfilter.exe"; Parameters: """-iset"" ""ProcFilter"" ""ScanFileOnProcessCreate"" ""1"""; Description: "Scan EXE files with YARA"; Flags: postinstall skipifsilent runhidden runascurrentuser       
-FileName: "{app}\procfilter.exe"; Parameters: """-iset"" ""CorePlugin"" ""HashExes"" ""1"""; Description: "Hash EXE files (MD5/SHA1/SHA256)"; Flags: postinstall skipifsilent runhidden runascurrentuser 
-FileName: "{app}\procfilter.exe"; Parameters: """-iset"" ""ProcFilter"" ""ScanFileOnImageLoad"" ""1"""; Description: "Scan DLL files with YARA (slow!)"; Flags: unchecked postinstall skipifsilent runhidden runascurrentuser
-FileName: "{app}\procfilter.exe"; Parameters: """-iset"" ""CorePlugin"" ""HashDlls"" ""1"""; Description: "Hash DLL files (MD5/SHA1/SHA256) (slow!)"; Flags: unchecked postinstall skipifsilent runhidden runascurrentuser
-FileName: "{app}\procfilter.exe"; Parameters: """-iset"" ""CorePlugin"" ""LogRemoteThreads"" ""1"""; Description: "Log remote threads"; Flags: postinstall skipifsilent runhidden runascurrentuser
-FileName: "{app}\procfilter.exe"; Parameters: """-iset"" ""CorePlugin"" ""LogCommandLineArguments"" ""1"""; Description: "Log process command line arguments"; Flags: postinstall skipifsilent runhidden runascurrentuser
+
+; Questions
 FileName: "{app}\procfilter.exe"; Parameters: "-install"; Description: "Set ProcFilter as a boot-time service (vs. delayed start)"; Flags: unchecked postinstall skipifsilent runhidden runascurrentuser
+FileName: "{app}\procfilter.exe"; Parameters: "-configure"; Description: "Configure ProcFilter now"; Flags: postinstall skipifsilent runascurrentuser
+
 ; Run -restart here since InnoSetup automatically restarts applications that needed to be shutdown to install (including procfilter if it was already running)
 ; -restart does a Stop and Start and can be used if the service isn't running
 FileName: "{app}\procfilter.exe"; Parameters: "-restart"; Description: "Start the ProcFilter service now"; Flags: postinstall skipifsilent runhidden runascurrentuser
