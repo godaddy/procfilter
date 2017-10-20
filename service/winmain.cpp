@@ -299,7 +299,7 @@ usage(const WCHAR *progname)
 	fwprintf(stderr, L"Usage: %ls -iset <section> <key> <value>\n", progname);
 	fwprintf(stderr, L"Usage: %ls -iget <section> <key>\n", progname);
 	fwprintf(stderr, L"Usage: %ls -compile [rule file]\n", progname);
-	fwprintf(stderr, L"Usage: %ls -sha1 <file>\n", progname);
+	fwprintf(stderr, L"Usage: %ls -hash <file>\n", progname);
 	fwprintf(stderr, L"Usage: %ls -quarantine-list\n", progname);
 	fwprintf(stderr, L"Usage: %ls -quarantine <source>\n", progname);
 	fwprintf(stderr, L"Usage: %ls -unquarantine <sha1> <destination>\n", progname);
