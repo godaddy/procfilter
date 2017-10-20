@@ -566,7 +566,7 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 				(srAsciiResult.bScanSuccessful && srAsciiResult.bBlock)
 				);
 	
-		bool bQuarantine = bBlockProcess || (srAsciiResult.bScanSuccessful && srAsciiResult.bQuarantine) || (srUnicodeResult.bScanSuccessful && srUnicodeResult.bQuarantine);
+		bool bQuarantine = (srAsciiResult.bScanSuccessful && srAsciiResult.bQuarantine) || (srUnicodeResult.bScanSuccessful && srUnicodeResult.bQuarantine);
 
 		// Get parent name
 		WCHAR szParentName[MAX_PATH + 1];
