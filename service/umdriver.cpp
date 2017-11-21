@@ -273,6 +273,7 @@ ep_DriverService(void *arg)
 		DWORD dwErrorCode = GetLastError();
 		if (rc) {
 			// Successfully completed a synchronous read, do nothing
+			if (!dwBytesRead) Warning(L"Read zero-sized packet from driver (sync)");
 		} else if (dwErrorCode == ERROR_IO_PENDING) {
 			// Successfully completed an asynchronous read, so wait for it
 
@@ -299,6 +300,7 @@ ep_DriverService(void *arg)
 			}
 			dwErrorCode = GetLastError(); // Always ERROR_IO_PENDING here, even after successful GetOverlappedResult() call.
 			dwBytesRead = dwNumberOfBytesTransferred;
+			if (!dwBytesRead) Warning(L"Read zero-sized packet from driver (async)");
 		} else if (dwErrorCode == ERROR_OPERATION_ABORTED || dwErrorCode == ERROR_INVALID_HANDLE) {
 			break;
 		} else {
@@ -341,6 +343,7 @@ ep_DriverService(void *arg)
 			LogDebug("Posted work task to worker");
 		} else {
 			LogDebugFmt("Failed to post task to worker");
+			Warning(L"Failed to post task to worker");
 			free(wtd);
 		}
 	}
