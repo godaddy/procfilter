@@ -505,20 +505,23 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 		ZeroMemory(&hashes, sizeof(HASHES));
 
 		bool bHashBlacklisted = false;
+		bool bHashSuccessful = false;
 		if (g_HashExes) {
-			e->HashFile(e->lpszFileName, g_MaxHashFileSize, &hashes);
+			bHashSuccessful = e->HashFile(e->lpszFileName, g_MaxHashFileSize, &hashes);
 
-			if (!g_WhitelistExceptions.containsAnyHash(&hashes)) {
-				if (g_Whitelist.containsAnyHash(&hashes)) {
-					EnterCriticalSection(&g_cs);
-					g_WhitelistedPids.insert(e->dwProcessId);
-					LeaveCriticalSection(&g_cs);
-					return PROCFILTER_RESULT_DONT_SCAN;
+			if (bHashSuccessful) {
+				if (!g_WhitelistExceptions.containsAnyHash(&hashes)) {
+					if (g_Whitelist.containsAnyHash(&hashes)) {
+						EnterCriticalSection(&g_cs);
+						g_WhitelistedPids.insert(e->dwProcessId);
+						LeaveCriticalSection(&g_cs);
+						return PROCFILTER_RESULT_DONT_SCAN;
+					}
 				}
-			}
 
-			// Check if the hash is blocked
-			bHashBlacklisted = g_Blacklist.containsAnyHash(&hashes);
+				// Check if the hash is blocked
+				bHashBlacklisted = g_Blacklist.containsAnyHash(&hashes);
+			}
 		}
 
 		// Username blacklisted?
@@ -603,9 +606,9 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 				username.c_str(),
 				groupname.c_str(),
 				e->dwProcessId,
-				g_HashExes ? hashes.md5_hexdigest : "*DISABLED*",
-				g_HashExes ? hashes.sha1_hexdigest : "*DISABLED*",
-				g_HashExes ? hashes.sha256_hexdigest : "*DISABLED*",
+				(g_HashExes && bHashSuccessful) ? hashes.md5_hexdigest : "*DISABLED*",
+				(g_HashExes && bHashSuccessful) ? hashes.sha1_hexdigest : "*DISABLED*",
+				(g_HashExes && bHashSuccessful) ? hashes.sha256_hexdigest : "*DISABLED*",
 				g_LogCommandLine ? lpszCommandLine : L"*DISABLED*",
 				tg_CommandLineRulesContext ? (srAsciiResult.bScanSuccessful ? srAsciiResult.szBlockRuleNames : L"*FAILED*") : L"*SKIPPED*",
 				tg_CommandLineRulesContext ? (srUnicodeResult.bScanSuccessful ? srUnicodeResult.szBlockRuleNames : L"*FAILED*") : L"*SKIPPED*",
@@ -708,15 +711,18 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 
 			// Hashes whitelisted?
 			bool bHashBlacklisted = false;
+			bool bHashSuccessful = false;
 			HASHES hashes;
 			if (g_HashDlls) {
-				e->HashFile(e->lpszFileName, g_MaxHashFileSize, &hashes);
-				if (!g_WhitelistExceptions.containsAnyHash(&hashes)) {
-					if (g_Whitelist.containsAnyHash(&hashes)) return PROCFILTER_RESULT_DONT_SCAN;
-				}
+				bHashSuccessful = e->HashFile(e->lpszFileName, g_MaxHashFileSize, &hashes);
+				if (bHashSuccessful) {
+					if (!g_WhitelistExceptions.containsAnyHash(&hashes)) {
+						if (g_Whitelist.containsAnyHash(&hashes)) return PROCFILTER_RESULT_DONT_SCAN;
+					}
 
-				// Hashes blacklisted
-				bHashBlacklisted = g_Blacklist.containsAnyHash(&hashes);
+					// Hashes blacklisted
+					bHashBlacklisted = g_Blacklist.containsAnyHash(&hashes);
+				}
 			}
 
 			bool bBlock = bHashBlacklisted || bFilenameBlacklisted;
@@ -745,9 +751,9 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 				szProcessName,
 				e->lpszFileName,
 				e->dwProcessId,
-				g_HashDlls ? hashes.md5_hexdigest : "*DISABLED*",
-				g_HashDlls ? hashes.sha1_hexdigest : "*DISABLED*",
-				g_HashDlls ? hashes.sha256_hexdigest : "*DISABLED*",
+				(g_HashDlls && bHashSuccessful) ? hashes.md5_hexdigest : "*DISABLED*",
+				(g_HashDlls && bHashSuccessful) ? hashes.sha1_hexdigest : "*DISABLED*",
+				(g_HashDlls && bHashSuccessful) ? hashes.sha256_hexdigest : "*DISABLED*",
 				bHashBlacklisted ? "Yes" : "No",
 				bFilenameBlacklisted ? "Yes" : "No",
 				bQuarantine ? "Yes" : "No",
