@@ -33,6 +33,7 @@
 
 #define PROCFILTER_DEVICE_PATH (L"\\\\.\\ProcFilterDriver")
 #define IOCTL_PROCFILTER_CONFIGURE CTL_CODE(FILE_DEVICE_NAMED_PIPE, 2048, METHOD_BUFFERED, FILE_ANY_ACCESS)
+#define IOCTL_PROCFILTER_STATUS CTL_CODE(FILE_DEVICE_NAMED_PIPE, 2049, METHOD_BUFFERED, FILE_ANY_ACCESS)
 
 // Structure packing required to avoid padding after last field; size mismatches between kernel/user mode
 // under different compilation options could happen without it
@@ -72,5 +73,13 @@ struct procfilter_configuration {
 	bool bDenyProcessCreationOnFailedScan;  // Deny process creation if scanning is unsuccessful?
 	bool bWantThreadEvents;                 // Should the kernel export thread-related events?
 	bool bWantImageLoadEvents;              // Should the kernel export image load events?
+};
+
+
+#define PROCFILTER_STATUS_NUM_PENDING_EVENT_TYPES 1024
+typedef struct procfilter_status_result PROCFILTER_STATUS_RESULT;
+struct procfilter_status_result {
+	DWORD dwEventsPendingInUserland;        // The number of events pending in userland
+	unsigned char bPendingEventTypes[PROCFILTER_STATUS_NUM_PENDING_EVENT_TYPES]; // The event types being processed in userland
 };
 #pragma pack(pop)

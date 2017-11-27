@@ -46,3 +46,6 @@ bool DriverSendResponse(HANDLE hDriver, HANDLE hWriteCompletionEvent, const PROC
 //
 bool DriverInstall();
 bool DriverUninstall();
+
+// For procfilter -status
+void UmDriverStatusPrint();

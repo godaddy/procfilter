@@ -34,6 +34,7 @@
 #include "config.hpp"
 #include "file.hpp"
 #include "yara.hpp"
+#include "status.hpp"
 #include "svcutil.hpp"
 #include "log.hpp"
 #include "quarantine.hpp"
@@ -238,6 +239,10 @@ UnloadKernelDriver()
 }
 
 
+static LONGLONG g_NumReadTasks = 0;
+static LONGLONG g_NumPostedTasks = 0;
+static LONGLONG g_NumZeroReads = 0;
+
 DWORD
 WINAPI
 ep_DriverService(void *arg)
@@ -319,6 +324,7 @@ ep_DriverService(void *arg)
 				Die("Exceeded %u consecutive zero-sized reads from driver", dwMaxConsecutiveZeroReads);
 			}
 			Warning(L"Read zero-sized packet from driver");
+			InterlockedIncrement64(&g_NumZeroReads);
 			continue;
 		}
 		dwNumConsecutiveZeroReads = 0;
@@ -339,8 +345,10 @@ ep_DriverService(void *arg)
 		memcpy(&wtd->peProcFilterRequest, req, dwBytesRead);
 		wtd->ulStartPerformanceCount = ulStartPerformanceCount;
 		LogDebugFmt("Posting to threadpool: PID:%u Event:%u", req->dwProcessId, req->dwEventType);
+		InterlockedIncrement64(&g_NumReadTasks);
 		if (ThreadPoolPost(tp, req->dwEventType, false, g_hStopTheadEvent, wtd)) {
 			LogDebug("Posted work task to worker");
+			InterlockedIncrement64(&g_NumPostedTasks);
 		} else {
 			LogDebugFmt("Failed to post task to worker");
 			Warning(L"Failed to post task to worker");
@@ -363,6 +371,7 @@ ep_DriverService(void *arg)
 	return 0;
 }
 
+static LONGLONG g_NumTasksCompleted = 0;
 
 //
 // Send a response to the kernel
@@ -407,7 +416,62 @@ DriverSendResponse(HANDLE hDriver, HANDLE hWriteCompletionEvent, const PROCFILTE
 		Die("Wrote invalid data size to driver: Required:%d Actual:%d", sizeof(PROCFILTER_RESPONSE), dwBytesWritten);
 	}
 
-	if (!rv) LogDebugFmt("Write to kernel failure"); 
+	if (rv) {
+		InterlockedIncrement64(&g_NumTasksCompleted);
+	} else {
+		LogDebugFmt("Write to kernel failure"); 
+	}
 
 	return rv;
+}
+
+	// Create the event to be signalled when device configuration succeeds
+void
+UmDriverStatusPrint()
+{
+	HANDLE hControlDeviceEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	if (!hControlDeviceEvent) {
+		StatusPrint(L"Unable to create event for DeviceIoControl()");
+		return ;
+	}
+
+	OVERLAPPED overlapped;
+	ZeroMemory(&overlapped, sizeof(OVERLAPPED));
+	overlapped.hEvent = hControlDeviceEvent;
+	PROCFILTER_STATUS_RESULT status;
+	ZeroMemory(&status, sizeof(PROCFILTER_STATUS_RESULT));
+	DWORD dwResultSize = 0;
+	BOOL rc = DeviceIoControl(g_hDriver, IOCTL_PROCFILTER_STATUS, NULL, 0, &status, sizeof(PROCFILTER_STATUS_RESULT), &dwResultSize, &overlapped);
+	if (!rc && GetLastError() == ERROR_IO_PENDING) {
+		DWORD dwBytesRead = 0;
+		if (!GetOverlappedResult(g_hDriver, &overlapped, &dwBytesRead, TRUE)) {
+			StatusPrint(L"Unable to get overlapped status for DeviceIoControl()\n");
+			CloseHandle(hControlDeviceEvent);
+			return;
+		}
+		dwResultSize = dwBytesRead;
+	} else if (!rc) {
+		StatusPrint(L"Unable to get overlapped status for DeviceIoControl()\n");
+		CloseHandle(hControlDeviceEvent);
+		return;
+	}
+	
+	LONGLONG dwNumReadTasks = InterlockedExchangeAdd64(&g_NumReadTasks, 0);
+	LONGLONG dwNumPostedTasks = InterlockedExchangeAdd64(&g_NumPostedTasks, 0);
+	LONGLONG dwTasksCompleted = InterlockedExchangeAdd64(&g_NumTasksCompleted, 0);
+	LONGLONG dwNumZeroReads = InterlockedExchangeAdd64(&g_NumZeroReads, 0);
+	StatusPrint(L"Userland read tasks: %lld\n", dwNumReadTasks);
+	StatusPrint(L"Userland tasks posted to thread pool: %lld\n", dwNumPostedTasks);
+	StatusPrint(L"Userland tasks completed by thread pools: %lld\n", dwTasksCompleted);
+	StatusPrint(L"Zero read count: %lld\n", dwNumZeroReads);
+	if (dwResultSize == sizeof(PROCFILTER_STATUS_RESULT)) {
+		StatusPrint(L"Driver awaiting completion count: %u\n", status.dwEventsPendingInUserland);
+		for (size_t i = 0; status.bPendingEventTypes[i] && i < PROCFILTER_STATUS_NUM_PENDING_EVENT_TYPES; ++i) {
+			StatusPrint(L"PendingType: %u\n", status.bPendingEventTypes[i]);
+		}
+	} else {
+		StatusPrint(L"Kernel read DeviceIoControl() size mismatch\n");
+	}
+
+	CloseHandle(hControlDeviceEvent);
 }

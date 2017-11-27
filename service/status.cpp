@@ -37,6 +37,7 @@
 #include "pfworker.hpp"
 #include "winerr.hpp"
 #include "scan.hpp"
+#include "umdriver.hpp"
 
 #include "procfilter/procfilter.h"
 
@@ -203,6 +204,12 @@ DisplayStatus(HANDLE hPipe, HANDLE hWriteCompletionEvent)
 	StatusPrint(L"===============================================================\n");
 	StatusPrint(L"\n");
 	PfWorkerStatusPrint();
+
+	
+	StatusPrint(L"===============================================================\n");
+	StatusPrint(L"= Driver Status\n");
+	StatusPrint(L"===============================================================\n");
+	UmDriverStatusPrint();
 
 	g_EventData = NULL;
 

@@ -469,7 +469,7 @@ OnCreateThread(IN HANDLE ProcessId, IN HANDLE ThreadId, IN BOOLEAN Create)
 		KdPrint(("Ignoring thread creation event; device not yet configured\n"));
 		return;
 	} else if (hDeviceOwnerPid == ProcessId) {
-		KdPrint(("Ignoring thread event related to the process that has the YARA scan device open (0x%p)\n", ProcessId));
+		KdPrint(("Ignoring thread event related to the process that has the ProcFilter event device open (0x%p)\n", ProcessId));
 		return;
 	} else if (!ProcessId) {
 		KdPrint(("Ignoring system thread event\n"));
@@ -684,29 +684,59 @@ IrpMjDeviceControl(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp)
 	NTSTATUS rc = STATUS_INVALID_PARAMETER;
 
 	PIO_STACK_LOCATION IrpSp = IoGetCurrentIrpStackLocation(Irp);
-	if (IrpSp && IrpSp->Parameters.DeviceIoControl.IoControlCode == IOCTL_PROCFILTER_CONFIGURE) {
+	if (IrpSp) {
+		if (IrpSp->Parameters.DeviceIoControl.IoControlCode == IOCTL_PROCFILTER_CONFIGURE) {
 
-		PVOID Buffer = Irp->AssociatedIrp.SystemBuffer;
-		ULONG BufferLength = IrpSp->Parameters.DeviceIoControl.InputBufferLength;
+			PVOID Buffer = Irp->AssociatedIrp.SystemBuffer;
+			ULONG BufferLength = IrpSp->Parameters.DeviceIoControl.InputBufferLength;
 
-		if (Buffer && BufferLength == sizeof(PROCFILTER_CONFIGURATION)) {
-			KdPrint(("IrpMjDeviceControl(): Configuring device\n"));
-			DEVICE_CONTEXT *dc = GetDeviceContext(DeviceObject);
-			DcLock(dc);
-			bool bAlreadyConfigured = dc->bDeviceConfigured;
-			bool bDeviceConfigured = false;
-			if (!bAlreadyConfigured) {
-				// store the procfilter configuration to the device context
-				RtlCopyMemory(dc->config, Buffer, sizeof(PROCFILTER_CONFIGURATION));
-				if (dc->config->dwProcFilterRequestSize == sizeof(PROCFILTER_REQUEST) && dc->config->dwProcMaxFilterRequestSize == PROCFILTER_REQUEST_SIZE) {
-					dc->bDeviceConfigured = true;
-					bDeviceConfigured = true;
+			if (Buffer && BufferLength == sizeof(PROCFILTER_CONFIGURATION)) {
+				KdPrint(("IrpMjDeviceControl(): Configuring device\n"));
+				DEVICE_CONTEXT *dc = GetDeviceContext(DeviceObject);
+				DcLock(dc);
+				bool bAlreadyConfigured = dc->bDeviceConfigured;
+				bool bDeviceConfigured = false;
+				if (!bAlreadyConfigured) {
+					// store the procfilter configuration to the device context
+					RtlCopyMemory(dc->config, Buffer, sizeof(PROCFILTER_CONFIGURATION));
+					if (dc->config->dwProcFilterRequestSize == sizeof(PROCFILTER_REQUEST) && dc->config->dwProcMaxFilterRequestSize == PROCFILTER_REQUEST_SIZE) {
+						dc->bDeviceConfigured = true;
+						bDeviceConfigured = true;
+					}
+				}
+				DcUnlock(dc);
+			
+				if (!bAlreadyConfigured && bDeviceConfigured) {
+					rc = STATUS_SUCCESS;
+				} else {
+					rc = STATUS_UNSUCCESSFUL;
 				}
 			}
-			DcUnlock(dc);
-			
-			if (!bAlreadyConfigured && bDeviceConfigured) {
+		} else if (IrpSp->Parameters.DeviceIoControl.IoControlCode == IOCTL_PROCFILTER_STATUS) {
+			PVOID Buffer = Irp->AssociatedIrp.SystemBuffer;
+			ULONG BufferLength = IrpSp->Parameters.DeviceIoControl.OutputBufferLength;
+
+			if (Buffer && BufferLength == sizeof(PROCFILTER_STATUS_RESULT)) {
+				RtlZeroMemory(Buffer, BufferLength);
+				PROCFILTER_STATUS_RESULT *sr = (PROCFILTER_STATUS_RESULT*)Buffer;
+				
+				DEVICE_CONTEXT *dc = GetDeviceContext(DeviceObject);
+				DcLock(dc);
+				sr->dwEventsPendingInUserland = dc->nInProgress;
+				PLIST_ENTRY current = dc->llPendingWrites.Flink;
+				ULONG i = 0;
+				while (current != &dc->llPendingWrites && i < PROCFILTER_STATUS_NUM_PENDING_EVENT_TYPES-1) {
+					PENDING_WRITE *pwrite = CONTAINING_RECORD(current, PENDING_WRITE, entry);
+					sr->bPendingEventTypes[i] = (unsigned char)(pwrite->dwEventType);
+
+					current = current->Flink;
+					++i;
+				}
+				sr->bPendingEventTypes[PROCFILTER_STATUS_NUM_PENDING_EVENT_TYPES-1] = EVENTTYPE_NONE;
+				DcUnlock(dc);
+
 				rc = STATUS_SUCCESS;
+				Information = sizeof(PROCFILTER_STATUS_RESULT);
 			} else {
 				rc = STATUS_UNSUCCESSFUL;
 			}
@@ -793,6 +823,7 @@ IrpMjRead(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp)
 			if (dc->bDeviceInUse) {
 				PLIST_ENTRY entry = RemoveHeadList(&dc->llPendingReads);
 				if (entry != &dc->llPendingReads) {
+					// There is event data that can be used to complete this IRP immediately
 					prPendingRead = CONTAINING_RECORD(entry, PENDING_READ, entry);
 					dc->nInProgress += 1;
 				} else {
