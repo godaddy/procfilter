@@ -829,10 +829,9 @@ IrpMjRead(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp)
 		}
 	}
 	
-	Irp->IoStatus.Information = dwBytesRead;
-	Irp->IoStatus.Status = rc;
-
 	if (rc != STATUS_PENDING) {
+		Irp->IoStatus.Information = dwBytesRead;
+		Irp->IoStatus.Status = rc;
 		IoCompleteRequest(Irp, IO_NO_INCREMENT);
 	}
 
