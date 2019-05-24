@@ -612,7 +612,7 @@ Export_AllocateScanContext(const WCHAR *lpszYaraRuleFile, WCHAR *szError, DWORD 
 
 
 YARASCAN_CONTEXT*
-Export_AllocateScanContextLocalAndRemote(WCHAR *lpszBaseName, WCHAR *lpszError, DWORD dwErrorSize, bool bLogToEventLog)
+Export_AllocateScanContextLocalAndRemote(const WCHAR *lpszBaseName, WCHAR *lpszError, DWORD dwErrorSize, bool bLogToEventLog)
 {
 	return YarascanAllocLocalAndRemoteRuleFile(lpszBaseName, lpszError, dwErrorSize, bLogToEventLog, false);
 }

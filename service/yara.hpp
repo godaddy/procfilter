@@ -52,7 +52,7 @@ struct yarascan_input_file {
 // If the function returns NULL, lpszError (if given) is valid.
 //
 YARASCAN_CONTEXT* YarascanAllocDefault(WCHAR *lpszError, DWORD dwErrorSize, bool bLogToEventLog, bool bLogToConsole);
-YARASCAN_CONTEXT* YarascanAllocLocalAndRemoteRuleFile(WCHAR *lpszBaseName, WCHAR *lpszError, DWORD dwErrorSize, bool bLogToEventLog, bool bLogToConsole);
+YARASCAN_CONTEXT* YarascanAllocLocalAndRemoteRuleFile(const WCHAR *lpszBaseName, WCHAR *lpszError, DWORD dwErrorSize, bool bLogToEventLog, bool bLogToConsole);
 YARASCAN_CONTEXT* YarascanAlloc3(const WCHAR *lpszFileName, WCHAR *lpszError, DWORD dwErrorSize);
 YARASCAN_CONTEXT* YarascanAlloc4(YARASCAN_INPUT_FILE *yifInputFiles, size_t nInputFiles, WCHAR *lpszError, DWORD dwErrorSize);
 void YarascanFree(YARASCAN_CONTEXT *ctx);

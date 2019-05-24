@@ -29,7 +29,7 @@ bool Export_ConcatenateString(WCHAR *lpszDestination, DWORD dwDestinationSize, c
 bool Export_VFormatString(WCHAR *lpszDestination, DWORD dwDestinationSize, const WCHAR *lpszFormatString, va_list ap);
 bool Export_VConcatenateString(WCHAR *lpszDestination, DWORD dwDestinationSize, const WCHAR *lpszFormatString, va_list ap);
 YARASCAN_CONTEXT* Export_AllocateScanContext(const WCHAR *lpszYaraRuleFile, WCHAR *szError, DWORD dwErrorSize);
-YARASCAN_CONTEXT* Export_AllocateScanContextLocalAndRemote(WCHAR *lpszBaseName, WCHAR *lpszError, DWORD dwErrorSize, bool bLogToEventLog);
+YARASCAN_CONTEXT* Export_AllocateScanContextLocalAndRemote(const WCHAR *lpszBaseName, WCHAR *lpszError, DWORD dwErrorSize, bool bLogToEventLog);
 void Export_FreeScanContext(YARASCAN_CONTEXT *ctx);
 void Export_ScanFile(YARASCAN_CONTEXT *ctx, const WCHAR *lpszFileName, OnMatchCallback_cb lpfnOnMatchCallback, OnMetaCallback_cb lpfnOnMetaCallback, void *lpvUserData, SCAN_RESULT *o_result);
 void Export_ScanMemory(YARASCAN_CONTEXT *ctx, DWORD dwProcessId, OnMatchCallback_cb lpfnOnMatchCallback, OnMetaCallback_cb lpfnOnMetaCallback, void *lpvUserData, SCAN_RESULT *o_result);

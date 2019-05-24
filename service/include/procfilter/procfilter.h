@@ -352,7 +352,7 @@ struct procfilter_event {
     // Scanning contexts must be freed with FreeScanContext().
     //
     YARASCAN_CONTEXT* (*AllocateScanContext)(const WCHAR *lpszYaraRuleFile, WCHAR *szError, DWORD dwErrorSize);
-    YARASCAN_CONTEXT* (*AllocateScanContextLocalAndRemote)(WCHAR *lpszBaseName, WCHAR *lpszError, DWORD dwErrorSize, bool bLogToEventLog);
+    YARASCAN_CONTEXT* (*AllocateScanContextLocalAndRemote)(const WCHAR *lpszBaseName, WCHAR *lpszError, DWORD dwErrorSize, bool bLogToEventLog);
     void  (*FreeScanContext)(YARASCAN_CONTEXT *ctx);
     void  (*ScanFile)(YARASCAN_CONTEXT *ctx, const WCHAR *lpszFileName, OnMatchCallback_cb lpfnOnMatchCallback, OnMetaCallback_cb lpfnOnMetaCallback, void *lpvUserData, SCAN_RESULT *o_result);
     void  (*ScanMemory)(YARASCAN_CONTEXT *ctx, DWORD dwProcessId, OnMatchCallback_cb lpfnOnMatchCallback, OnMetaCallback_cb lpfnOnMetaCallback, void *lpvUserData, SCAN_RESULT *o_result);

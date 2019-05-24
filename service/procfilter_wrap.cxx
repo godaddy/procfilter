@@ -2664,14 +2664,14 @@ SWIG_Lua_dostring(lua_State *L, const char *str) {
 #define SWIGTYPE_p_f_p_q_const__wchar_t_p_q_const__wchar_t_unsigned_long_unsigned_long_bool_v_______void swig_types[17]
 #define SWIGTYPE_p_f_p_q_const__wchar_t_p_void_unsigned_long_p_unsigned_long__bool swig_types[18]
 #define SWIGTYPE_p_f_p_q_const__wchar_t_p_wchar_t_unsigned_long__p_yarascan_context swig_types[19]
-#define SWIGTYPE_p_f_p_q_const__wchar_t_p_wchar_t_unsigned_long_p_wchar_t_unsigned_long_p_wchar_t_unsigned_long__bool swig_types[20]
-#define SWIGTYPE_p_f_p_q_const__wchar_t_unsigned_long_p_char_unsigned_long__bool swig_types[21]
-#define SWIGTYPE_p_f_p_q_const__wchar_t_unsigned_long_p_hashes_t__bool swig_types[22]
-#define SWIGTYPE_p_f_p_q_const__wchar_t_v_______void swig_types[23]
-#define SWIGTYPE_p_f_p_void__void swig_types[24]
-#define SWIGTYPE_p_f_p_void_p_bool__bool swig_types[25]
-#define SWIGTYPE_p_f_p_wchar_t__p_wchar_t swig_types[26]
-#define SWIGTYPE_p_f_p_wchar_t_p_wchar_t_unsigned_long_bool__p_yarascan_context swig_types[27]
+#define SWIGTYPE_p_f_p_q_const__wchar_t_p_wchar_t_unsigned_long_bool__p_yarascan_context swig_types[20]
+#define SWIGTYPE_p_f_p_q_const__wchar_t_p_wchar_t_unsigned_long_p_wchar_t_unsigned_long_p_wchar_t_unsigned_long__bool swig_types[21]
+#define SWIGTYPE_p_f_p_q_const__wchar_t_unsigned_long_p_char_unsigned_long__bool swig_types[22]
+#define SWIGTYPE_p_f_p_q_const__wchar_t_unsigned_long_p_hashes_t__bool swig_types[23]
+#define SWIGTYPE_p_f_p_q_const__wchar_t_v_______void swig_types[24]
+#define SWIGTYPE_p_f_p_void__void swig_types[25]
+#define SWIGTYPE_p_f_p_void_p_bool__bool swig_types[26]
+#define SWIGTYPE_p_f_p_wchar_t__p_wchar_t swig_types[27]
 #define SWIGTYPE_p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_p_q_const__wchar_t__bool swig_types[28]
 #define SWIGTYPE_p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_v_______bool swig_types[29]
 #define SWIGTYPE_p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_va_list__bool swig_types[30]
@@ -6271,19 +6271,19 @@ fail:
 static int _wrap_procfilter_event_AllocateScanContextLocalAndRemote_set(lua_State* L) {
   int SWIG_arg = 0;
   procfilter_event *arg1 = (procfilter_event *) 0 ;
-  YARASCAN_CONTEXT *(*arg2)(WCHAR *,WCHAR *,DWORD,bool) = (YARASCAN_CONTEXT *(*)(WCHAR *,WCHAR *,DWORD,bool)) 0 ;
+  YARASCAN_CONTEXT *(*arg2)(WCHAR const *,WCHAR *,DWORD,bool) = (YARASCAN_CONTEXT *(*)(WCHAR const *,WCHAR *,DWORD,bool)) 0 ;
   
   SWIG_check_num_args("procfilter_event::AllocateScanContextLocalAndRemote",2,2)
   if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("procfilter_event::AllocateScanContextLocalAndRemote",1,"procfilter_event *");
-  if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("procfilter_event::AllocateScanContextLocalAndRemote",2,"YARASCAN_CONTEXT *(*)(WCHAR *,WCHAR *,DWORD,bool)");
+  if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("procfilter_event::AllocateScanContextLocalAndRemote",2,"YARASCAN_CONTEXT *(*)(WCHAR const *,WCHAR *,DWORD,bool)");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_procfilter_event,0))){
     SWIG_fail_ptr("procfilter_event_AllocateScanContextLocalAndRemote_set",1,SWIGTYPE_p_procfilter_event);
   }
   
   
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_f_p_wchar_t_p_wchar_t_unsigned_long_bool__p_yarascan_context,0))){
-    SWIG_fail_ptr("procfilter_event_AllocateScanContextLocalAndRemote_set",2,SWIGTYPE_p_f_p_wchar_t_p_wchar_t_unsigned_long_bool__p_yarascan_context);
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_f_p_q_const__wchar_t_p_wchar_t_unsigned_long_bool__p_yarascan_context,0))){
+    SWIG_fail_ptr("procfilter_event_AllocateScanContextLocalAndRemote_set",2,SWIGTYPE_p_f_p_q_const__wchar_t_p_wchar_t_unsigned_long_bool__p_yarascan_context);
   }
   
   if (arg1) (arg1)->AllocateScanContextLocalAndRemote = arg2;
@@ -6301,7 +6301,7 @@ fail:
 static int _wrap_procfilter_event_AllocateScanContextLocalAndRemote_get(lua_State* L) {
   int SWIG_arg = 0;
   procfilter_event *arg1 = (procfilter_event *) 0 ;
-  YARASCAN_CONTEXT *(*result)(WCHAR *,WCHAR *,DWORD,bool) = 0 ;
+  YARASCAN_CONTEXT *(*result)(WCHAR const *,WCHAR *,DWORD,bool) = 0 ;
   
   SWIG_check_num_args("procfilter_event::AllocateScanContextLocalAndRemote",1,1)
   if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("procfilter_event::AllocateScanContextLocalAndRemote",1,"procfilter_event *");
@@ -6310,8 +6310,8 @@ static int _wrap_procfilter_event_AllocateScanContextLocalAndRemote_get(lua_Stat
     SWIG_fail_ptr("procfilter_event_AllocateScanContextLocalAndRemote_get",1,SWIGTYPE_p_procfilter_event);
   }
   
-  result = (YARASCAN_CONTEXT *(*)(WCHAR *,WCHAR *,DWORD,bool)) ((arg1)->AllocateScanContextLocalAndRemote);
-  SWIG_NewPointerObj(L,result,SWIGTYPE_p_f_p_wchar_t_p_wchar_t_unsigned_long_bool__p_yarascan_context,0); SWIG_arg++; 
+  result = (YARASCAN_CONTEXT *(*)(WCHAR const *,WCHAR *,DWORD,bool)) ((arg1)->AllocateScanContextLocalAndRemote);
+  SWIG_NewPointerObj(L,result,SWIGTYPE_p_f_p_q_const__wchar_t_p_wchar_t_unsigned_long_bool__p_yarascan_context,0); SWIG_arg++; 
   return SWIG_arg;
   
   if(0) SWIG_fail;
@@ -8198,7 +8198,7 @@ static int _wrap_AllocateScanContextLocalAndRemote(lua_State* L) {
   YARASCAN_CONTEXT *result = 0 ;
   
   SWIG_check_num_args("Export_AllocateScanContextLocalAndRemote",4,4)
-  if(!SWIG_lua_isnilstring(L,1)) SWIG_fail_arg("Export_AllocateScanContextLocalAndRemote",1,"WCHAR *");
+  if(!SWIG_lua_isnilstring(L,1)) SWIG_fail_arg("Export_AllocateScanContextLocalAndRemote",1,"WCHAR const *");
   if(!SWIG_lua_isnilstring(L,2)) SWIG_fail_arg("Export_AllocateScanContextLocalAndRemote",2,"WCHAR *");
   if(!lua_isnumber(L,3)) SWIG_fail_arg("Export_AllocateScanContextLocalAndRemote",3,"DWORD");
   if(!lua_isboolean(L,4)) SWIG_fail_arg("Export_AllocateScanContextLocalAndRemote",4,"bool");
@@ -8217,7 +8217,7 @@ static int _wrap_AllocateScanContextLocalAndRemote(lua_State* L) {
   SWIG_contract_assert((lua_tonumber(L,3)>=0),"number must not be negative")
   arg3 = (DWORD)lua_tonumber(L, 3);
   arg4 = (lua_toboolean(L, 4)!=0);
-  result = (YARASCAN_CONTEXT *)Export_AllocateScanContextLocalAndRemote(arg1,arg2,arg3,arg4);
+  result = (YARASCAN_CONTEXT *)Export_AllocateScanContextLocalAndRemote((wchar_t const *)arg1,arg2,arg3,arg4);
   SWIG_NewPointerObj(L,result,SWIGTYPE_p_yarascan_context,0); SWIG_arg++; 
   
   free(arg1);
@@ -9369,6 +9369,7 @@ static swig_type_info _swigt__p_f_p_q_const__wchar_t_p_q_const__wchar_t_p_wchar_
 static swig_type_info _swigt__p_f_p_q_const__wchar_t_p_q_const__wchar_t_unsigned_long_unsigned_long_bool_v_______void = {"_p_f_p_q_const__wchar_t_p_q_const__wchar_t_unsigned_long_unsigned_long_bool_v_______void", "void (*)(WCHAR const *,WCHAR const *,DWORD,DWORD,bool,...)|void (*)(wchar_t const *,wchar_t const *,unsigned long,unsigned long,bool,...)", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_q_const__wchar_t_p_void_unsigned_long_p_unsigned_long__bool = {"_p_f_p_q_const__wchar_t_p_void_unsigned_long_p_unsigned_long__bool", "bool (*)(WCHAR const *,void *,DWORD,DWORD *)|bool (*)(wchar_t const *,void *,unsigned long,unsigned long *)", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_q_const__wchar_t_p_wchar_t_unsigned_long__p_yarascan_context = {"_p_f_p_q_const__wchar_t_p_wchar_t_unsigned_long__p_yarascan_context", "yarascan_context *(*)(wchar_t const *,wchar_t *,unsigned long)|YARASCAN_CONTEXT *(*)(WCHAR const *,WCHAR *,DWORD)", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_f_p_q_const__wchar_t_p_wchar_t_unsigned_long_bool__p_yarascan_context = {"_p_f_p_q_const__wchar_t_p_wchar_t_unsigned_long_bool__p_yarascan_context", "yarascan_context *(*)(wchar_t const *,wchar_t *,unsigned long,bool)|YARASCAN_CONTEXT *(*)(WCHAR const *,WCHAR *,DWORD,bool)", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_q_const__wchar_t_p_wchar_t_unsigned_long_p_wchar_t_unsigned_long_p_wchar_t_unsigned_long__bool = {"_p_f_p_q_const__wchar_t_p_wchar_t_unsigned_long_p_wchar_t_unsigned_long_p_wchar_t_unsigned_long__bool", "bool (*)(WCHAR const *,WCHAR *,DWORD,WCHAR *,DWORD,WCHAR *,DWORD)|bool (*)(wchar_t const *,wchar_t *,unsigned long,wchar_t *,unsigned long,wchar_t *,unsigned long)", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_q_const__wchar_t_unsigned_long_p_char_unsigned_long__bool = {"_p_f_p_q_const__wchar_t_unsigned_long_p_char_unsigned_long__bool", "bool (*)(wchar_t const *,unsigned long,char *,unsigned long)|bool (*)(WCHAR const *,DWORD,char *,DWORD)", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_q_const__wchar_t_unsigned_long_p_hashes_t__bool = {"_p_f_p_q_const__wchar_t_unsigned_long_p_hashes_t__bool", "bool (*)(wchar_t const *,unsigned long,hashes_t *)|bool (*)(WCHAR const *,DWORD,HASHES *)", 0, 0, (void*)0, 0};
@@ -9376,7 +9377,6 @@ static swig_type_info _swigt__p_f_p_q_const__wchar_t_v_______void = {"_p_f_p_q_c
 static swig_type_info _swigt__p_f_p_void__void = {"_p_f_p_void__void", "void (*)(void *)", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_void_p_bool__bool = {"_p_f_p_void_p_bool__bool", "bool (*)(void *,bool *)|bool (*)(HANDLE,bool *)", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_wchar_t__p_wchar_t = {"_p_f_p_wchar_t__p_wchar_t", "wchar_t *(*)(wchar_t *)|WCHAR *(*)(WCHAR *)", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_f_p_wchar_t_p_wchar_t_unsigned_long_bool__p_yarascan_context = {"_p_f_p_wchar_t_p_wchar_t_unsigned_long_bool__p_yarascan_context", "yarascan_context *(*)(wchar_t *,wchar_t *,unsigned long,bool)|YARASCAN_CONTEXT *(*)(WCHAR *,WCHAR *,DWORD,bool)", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_p_q_const__wchar_t__bool = {"_p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_p_q_const__wchar_t__bool", "bool (*)(WCHAR *,DWORD,WCHAR const *,WCHAR const *)|bool (*)(wchar_t *,unsigned long,wchar_t const *,wchar_t const *)", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_v_______bool = {"_p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_v_______bool", "bool (*)(WCHAR *,DWORD,WCHAR const *,...)|bool (*)(wchar_t *,unsigned long,wchar_t const *,...)", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_va_list__bool = {"_p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_va_list__bool", "bool (*)(wchar_t *,unsigned long,wchar_t const *,va_list)|bool (*)(WCHAR *,DWORD,WCHAR const *,va_list)", 0, 0, (void*)0, 0};
@@ -9432,6 +9432,7 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_f_p_q_const__wchar_t_p_q_const__wchar_t_unsigned_long_unsigned_long_bool_v_______void,
   &_swigt__p_f_p_q_const__wchar_t_p_void_unsigned_long_p_unsigned_long__bool,
   &_swigt__p_f_p_q_const__wchar_t_p_wchar_t_unsigned_long__p_yarascan_context,
+  &_swigt__p_f_p_q_const__wchar_t_p_wchar_t_unsigned_long_bool__p_yarascan_context,
   &_swigt__p_f_p_q_const__wchar_t_p_wchar_t_unsigned_long_p_wchar_t_unsigned_long_p_wchar_t_unsigned_long__bool,
   &_swigt__p_f_p_q_const__wchar_t_unsigned_long_p_char_unsigned_long__bool,
   &_swigt__p_f_p_q_const__wchar_t_unsigned_long_p_hashes_t__bool,
@@ -9439,7 +9440,6 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_f_p_void__void,
   &_swigt__p_f_p_void_p_bool__bool,
   &_swigt__p_f_p_wchar_t__p_wchar_t,
-  &_swigt__p_f_p_wchar_t_p_wchar_t_unsigned_long_bool__p_yarascan_context,
   &_swigt__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_p_q_const__wchar_t__bool,
   &_swigt__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_v_______bool,
   &_swigt__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_va_list__bool,
@@ -9495,6 +9495,7 @@ static swig_cast_info _swigc__p_f_p_q_const__wchar_t_p_q_const__wchar_t_p_wchar_
 static swig_cast_info _swigc__p_f_p_q_const__wchar_t_p_q_const__wchar_t_unsigned_long_unsigned_long_bool_v_______void[] = {  {&_swigt__p_f_p_q_const__wchar_t_p_q_const__wchar_t_unsigned_long_unsigned_long_bool_v_______void, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_p_q_const__wchar_t_p_void_unsigned_long_p_unsigned_long__bool[] = {  {&_swigt__p_f_p_q_const__wchar_t_p_void_unsigned_long_p_unsigned_long__bool, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_p_q_const__wchar_t_p_wchar_t_unsigned_long__p_yarascan_context[] = {  {&_swigt__p_f_p_q_const__wchar_t_p_wchar_t_unsigned_long__p_yarascan_context, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_f_p_q_const__wchar_t_p_wchar_t_unsigned_long_bool__p_yarascan_context[] = {  {&_swigt__p_f_p_q_const__wchar_t_p_wchar_t_unsigned_long_bool__p_yarascan_context, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_p_q_const__wchar_t_p_wchar_t_unsigned_long_p_wchar_t_unsigned_long_p_wchar_t_unsigned_long__bool[] = {  {&_swigt__p_f_p_q_const__wchar_t_p_wchar_t_unsigned_long_p_wchar_t_unsigned_long_p_wchar_t_unsigned_long__bool, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_p_q_const__wchar_t_unsigned_long_p_char_unsigned_long__bool[] = {  {&_swigt__p_f_p_q_const__wchar_t_unsigned_long_p_char_unsigned_long__bool, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_p_q_const__wchar_t_unsigned_long_p_hashes_t__bool[] = {  {&_swigt__p_f_p_q_const__wchar_t_unsigned_long_p_hashes_t__bool, 0, 0, 0},{0, 0, 0, 0}};
@@ -9502,7 +9503,6 @@ static swig_cast_info _swigc__p_f_p_q_const__wchar_t_v_______void[] = {  {&_swig
 static swig_cast_info _swigc__p_f_p_void__void[] = {  {&_swigt__p_f_p_void__void, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_p_void_p_bool__bool[] = {  {&_swigt__p_f_p_void_p_bool__bool, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_p_wchar_t__p_wchar_t[] = {  {&_swigt__p_f_p_wchar_t__p_wchar_t, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_f_p_wchar_t_p_wchar_t_unsigned_long_bool__p_yarascan_context[] = {  {&_swigt__p_f_p_wchar_t_p_wchar_t_unsigned_long_bool__p_yarascan_context, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_p_q_const__wchar_t__bool[] = {  {&_swigt__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_p_q_const__wchar_t__bool, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_v_______bool[] = {  {&_swigt__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_v_______bool, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_va_list__bool[] = {  {&_swigt__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_va_list__bool, 0, 0, 0},{0, 0, 0, 0}};
@@ -9558,6 +9558,7 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_f_p_q_const__wchar_t_p_q_const__wchar_t_unsigned_long_unsigned_long_bool_v_______void,
   _swigc__p_f_p_q_const__wchar_t_p_void_unsigned_long_p_unsigned_long__bool,
   _swigc__p_f_p_q_const__wchar_t_p_wchar_t_unsigned_long__p_yarascan_context,
+  _swigc__p_f_p_q_const__wchar_t_p_wchar_t_unsigned_long_bool__p_yarascan_context,
   _swigc__p_f_p_q_const__wchar_t_p_wchar_t_unsigned_long_p_wchar_t_unsigned_long_p_wchar_t_unsigned_long__bool,
   _swigc__p_f_p_q_const__wchar_t_unsigned_long_p_char_unsigned_long__bool,
   _swigc__p_f_p_q_const__wchar_t_unsigned_long_p_hashes_t__bool,
@@ -9565,7 +9566,6 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_f_p_void__void,
   _swigc__p_f_p_void_p_bool__bool,
   _swigc__p_f_p_wchar_t__p_wchar_t,
-  _swigc__p_f_p_wchar_t_p_wchar_t_unsigned_long_bool__p_yarascan_context,
   _swigc__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_p_q_const__wchar_t__bool,
   _swigc__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_v_______bool,
   _swigc__p_f_p_wchar_t_unsigned_long_p_q_const__wchar_t_va_list__bool,

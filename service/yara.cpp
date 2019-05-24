@@ -104,7 +104,7 @@ YarascanAllocDefault(WCHAR *lpszError, DWORD dwErrorSize, bool bLogToEventLog, b
 
 
 YARASCAN_CONTEXT*
-YarascanAllocLocalAndRemoteRuleFile(WCHAR *lpszBaseName, WCHAR *lpszError, DWORD dwErrorSize, bool bLogToEventLog, bool bLogToConsole)
+YarascanAllocLocalAndRemoteRuleFile(const WCHAR *lpszBaseName, WCHAR *lpszError, DWORD dwErrorSize, bool bLogToEventLog, bool bLogToConsole)
 {
 	CONFIG_DATA *cd = GetConfigData();
 
