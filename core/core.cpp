@@ -454,14 +454,13 @@ AsciiAndUnicodeScan(PROCFILTER_EVENT *e, YARASCAN_CONTEXT *ctx, const WCHAR *lps
 	// Scan the UNICODE command line and log the result
 	e->ScanData(ctx, lpszTarget, dwTargetCharCount * sizeof(WCHAR), NULL, NULL, NULL, srUnicodeResult);
 
-	// Scan with ASCII
-	char *lpszAsciiCommandLine = (char*)e->AllocateMemory(dwTargetCharCount + 1, sizeof(char));
-
-	snprintf(lpszAsciiCommandLine, dwTargetCharCount, "%ls", lpszTarget);
-	lpszAsciiCommandLine[dwTargetCharCount] = '\0';
+	// Scan with ASCII (use the same number of bytes though)
+	DWORD dwAsciiByteCount = dwTargetCharCount*sizeof(WCHAR) + sizeof(WCHAR);
+	char *lpszAsciiCommandLine = (char*)e->AllocateMemory(dwAsciiByteCount, sizeof(char));
+	snprintf(lpszAsciiCommandLine, dwAsciiByteCount-1, "%ls", lpszTarget);
 
 	// Scan the ASCII command line
-	e->ScanData(ctx, lpszAsciiCommandLine, dwTargetCharCount, NULL, NULL, NULL, srAsciiResult);
+	e->ScanData(ctx, lpszAsciiCommandLine, (DWORD)strlen(lpszAsciiCommandLine), NULL, NULL, NULL, srAsciiResult);
 
 	// Cleanup
 	e->FreeMemory(lpszAsciiCommandLine);
