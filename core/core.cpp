@@ -365,6 +365,9 @@ static __declspec(thread) YARASCAN_CONTEXT *tg_CommandLineRulesContext = NULL;
 static WCHAR g_szFilenameRuleFileBaseName[MAX_PATH + 1] = { '\0' };
 static __declspec(thread) YARASCAN_CONTEXT *tg_FilenameRulesContext = NULL;
 
+static WCHAR g_szParentFilenameRuleFileBaseName[MAX_PATH + 1] = { '\0' };
+static __declspec(thread) YARASCAN_CONTEXT *tg_ParentFilenameRulesContext = NULL;
+
 
 static
 void
@@ -479,6 +482,7 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 		
 		e->GetConfigString(L"CommandLineRules", L"commandline.yara", g_szCommandLineRuleFileBaseName, sizeof(g_szCommandLineRuleFileBaseName));
 		e->GetConfigString(L"FilenameRules", L"filename.yara", g_szFilenameRuleFileBaseName, sizeof(g_szFilenameRuleFileBaseName));
+		e->GetConfigString(L"ParentFilenameRules", L"parentfilename.yara", g_szParentFilenameRuleFileBaseName, sizeof(g_szParentFilenameRuleFileBaseName));
 		
 		g_AlwaysLog = e->GetConfigBool(L"AlwaysLog", g_AlwaysLog);
 
@@ -510,9 +514,11 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 	} else if (e->dwEventId == PROCFILTER_EVENT_PROCFILTER_THREAD_INIT) {
 		LoadRulesFile(e, g_szCommandLineRuleFileBaseName, &tg_CommandLineRulesContext);
 		LoadRulesFile(e, g_szFilenameRuleFileBaseName, &tg_FilenameRulesContext);
+		LoadRulesFile(e, g_szParentFilenameRuleFileBaseName, &tg_ParentFilenameRulesContext);
 	} else if (e->dwEventId == PROCFILTER_EVENT_PROCFILTER_THREAD_SHUTDOWN) {
 		if (tg_CommandLineRulesContext) e->FreeScanContext(tg_CommandLineRulesContext);
 		if (tg_FilenameRulesContext) e->FreeScanContext(tg_FilenameRulesContext);
+		if (tg_ParentFilenameRulesContext) e->FreeScanContext(tg_ParentFilenameRulesContext);
 	} else if (e->dwEventId == PROCFILTER_EVENT_PROCESS_CREATE && e->lpszFileName) {
 		// Ignore whitelisted files
 		if (!g_WhitelistExceptions.matchesFilename(e->lpszFileName) && g_Whitelist.matchesFilename(e->lpszFileName)) {
@@ -594,29 +600,43 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 			AsciiAndUnicodeScan(e, tg_FilenameRulesContext, e->lpszFileName, &srFilenameUnicodeResult, &srFilenameAsciiResult);
 		}
 
+		// Get parent name
+		WCHAR szParentName[MAX_PATH + 1] = { 0 };
+		if (!e->GetProcessFileName(e->dwParentProcessId, szParentName, sizeof(szParentName))) {
+			szParentName[0] = 0;
+		}
+
+		SCAN_RESULT srParentFilenameAsciiResult;
+		SCAN_RESULT srParentFilenameUnicodeResult;
+		ZeroMemory(&srParentFilenameAsciiResult, sizeof(SCAN_RESULT));
+		ZeroMemory(&srParentFilenameUnicodeResult, sizeof(SCAN_RESULT));
+		if (szParentName[0] && tg_ParentFilenameRulesContext) {
+			AsciiAndUnicodeScan(e, tg_ParentFilenameRulesContext, szParentName, &srParentFilenameUnicodeResult, &srParentFilenameAsciiResult);
+		}
+
 		bool bBlockProcess = (bHashBlacklisted || bFilenameBlacklisted || bUsernameBlacklisted || bGroupnameBlacklisted ||
 				(srCommandLineUnicodeResult.bScanSuccessful && srCommandLineUnicodeResult.bBlock) ||
 				(srCommandLineAsciiResult.bScanSuccessful && srCommandLineAsciiResult.bBlock) ||
 				(srFilenameUnicodeResult.bScanSuccessful && srFilenameUnicodeResult.bBlock) ||
-				(srFilenameAsciiResult.bScanSuccessful && srFilenameAsciiResult.bBlock)
+				(srFilenameAsciiResult.bScanSuccessful && srFilenameAsciiResult.bBlock) || 
+				(srParentFilenameUnicodeResult.bScanSuccessful && srParentFilenameUnicodeResult.bBlock) ||
+				(srParentFilenameAsciiResult.bScanSuccessful && srParentFilenameAsciiResult.bBlock)
 				);
 	
 		bool bQuarantine = (srCommandLineAsciiResult.bScanSuccessful && srCommandLineAsciiResult.bQuarantine) ||
 			(srCommandLineUnicodeResult.bScanSuccessful && srCommandLineUnicodeResult.bQuarantine) ||
 			(srFilenameUnicodeResult.bScanSuccessful && srFilenameUnicodeResult.bQuarantine) ||
-			(srFilenameAsciiResult.bScanSuccessful && srFilenameAsciiResult.bQuarantine);
-
-		// Get parent name
-		WCHAR szParentName[MAX_PATH + 1];
-		if (!e->GetProcessFileName(e->dwParentProcessId, szParentName, sizeof(szParentName))) {
-			szParentName[0] = 0;
-		}
+			(srFilenameAsciiResult.bScanSuccessful && srFilenameAsciiResult.bQuarantine) ||
+			(srParentFilenameUnicodeResult.bScanSuccessful && srParentFilenameUnicodeResult.bQuarantine) ||
+			(srParentFilenameAsciiResult.bScanSuccessful && srParentFilenameAsciiResult.bQuarantine);
 
 		bool bLog = g_AlwaysLog || bBlockProcess || bQuarantine || 
 			(srCommandLineAsciiResult.bScanSuccessful && srCommandLineAsciiResult.bLog) ||
 			(srCommandLineUnicodeResult.bScanSuccessful && srCommandLineUnicodeResult.bLog) ||
 			(srFilenameUnicodeResult.bScanSuccessful && srFilenameUnicodeResult.bLog) ||
-			(srFilenameAsciiResult.bScanSuccessful && srFilenameAsciiResult.bLog);
+			(srFilenameAsciiResult.bScanSuccessful && srFilenameAsciiResult.bLog) ||
+			(srParentFilenameUnicodeResult.bScanSuccessful && srParentFilenameUnicodeResult.bLog) ||
+			(srParentFilenameAsciiResult.bScanSuccessful && srParentFilenameAsciiResult.bLog);
 		void (*LogFn)(const char *, ...) = bBlockProcess ? e->LogCriticalFmt : e->LogFmt;
 		if (bLog) {
 			LogFn(
@@ -642,6 +662,12 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 				"FilenameUnicodeRuleQuarantine:%ls\n" \
 				"FilenameAsciiRuleLog:%ls\n" \
 				"FilenameUnicodeRuleLog:%ls\n" \
+				"ParentFilenameAsciiRuleBlock:%ls\n" \
+				"ParentFilenameUnicodeRuleBlock:%ls\n" \
+				"ParentFilenameAsciiRuleQuarantine:%ls\n" \
+				"ParentFilenameUnicodeRuleQuarantine:%ls\n" \
+				"ParentFilenameAsciiRuleLog:%ls\n" \
+				"ParentFilenameUnicodeRuleLog:%ls\n" \
 				"ParentPID:%u\n" \
 				"ParentName:%ls\n" \
 				"HashBlacklisted:%s\n" \
@@ -671,6 +697,12 @@ ProcFilterEvent(PROCFILTER_EVENT *e)
 				tg_FilenameRulesContext ? (srFilenameUnicodeResult.bScanSuccessful ? srFilenameUnicodeResult.szQuarantineRuleNames : L"*FAILED*") : L"*SKIPPED*",
 				tg_FilenameRulesContext ? (srFilenameAsciiResult.bScanSuccessful ? srFilenameAsciiResult.szLogRuleNames : L"*FAILED*") : L"*SKIPPED*",
 				tg_FilenameRulesContext ? (srFilenameUnicodeResult.bScanSuccessful ? srFilenameUnicodeResult.szLogRuleNames : L"*FAILED*") : L"*SKIPPED*",
+				tg_ParentFilenameRulesContext ? (srParentFilenameAsciiResult.bScanSuccessful ? srParentFilenameAsciiResult.szBlockRuleNames : L"*FAILED*") : L"*SKIPPED*",
+				tg_ParentFilenameRulesContext ? (srParentFilenameUnicodeResult.bScanSuccessful ? srParentFilenameUnicodeResult.szBlockRuleNames : L"*FAILED*") : L"*SKIPPED*",
+				tg_ParentFilenameRulesContext ? (srParentFilenameAsciiResult.bScanSuccessful ? srParentFilenameAsciiResult.szQuarantineRuleNames : L"*FAILED*") : L"*SKIPPED*",
+				tg_ParentFilenameRulesContext ? (srParentFilenameUnicodeResult.bScanSuccessful ? srParentFilenameUnicodeResult.szQuarantineRuleNames : L"*FAILED*") : L"*SKIPPED*",
+				tg_ParentFilenameRulesContext ? (srParentFilenameAsciiResult.bScanSuccessful ? srParentFilenameAsciiResult.szLogRuleNames : L"*FAILED*") : L"*SKIPPED*",
+				tg_ParentFilenameRulesContext ? (srParentFilenameUnicodeResult.bScanSuccessful ? srParentFilenameUnicodeResult.szLogRuleNames : L"*FAILED*") : L"*SKIPPED*",
 				e->dwParentProcessId,
 				szParentName,
 				bHashBlacklisted ? "Yes" : "No",
