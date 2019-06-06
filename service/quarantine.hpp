@@ -32,7 +32,7 @@
 //
 // Quarantine a file if it doesn't already exist in quarantine, to be called by the service
 //
-bool QuarantineFile(const WCHAR *lpszFileName, const WCHAR *lpszQuarantineDirectory, DWORD dwFileSizeLimit, const WCHAR *lpszFileRuleMatches, const WCHAR *lpszMemoryRuleMatches, char o_hexdigest[SHA1_HEXDIGEST_LENGTH+1]);
+bool QuarantineFile(DWORD dwRelatedProcessId, const WCHAR *lpszFileName, const WCHAR *lpszQuarantineDirectory, DWORD dwFileSizeLimit, const WCHAR *lpszFileRuleMatches, const WCHAR *lpszMemoryRuleMatches, char *o_lpszHexDigest, DWORD dwHexDigestSize);
 
 //
 // Unquarantine a file

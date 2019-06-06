@@ -756,13 +756,7 @@ Export_QuarantineFile(const WCHAR *lpszFileName, DWORD dwFileSizeLimit, char *o_
 {
 	CONFIG_DATA *cd = GetConfigData();
 
-	char o_hexdigest[SHA1_HEXDIGEST_LENGTH+1];
-	bool rv = QuarantineFile(lpszFileName, cd->szQuarantineDirectory, dwFileSizeLimit, NULL, NULL, o_hexdigest);
-	if (rv) {
-		if (o_lpszHexDigest) strlprintf(o_lpszHexDigest, dwHexDigestSize, "%hs", o_hexdigest);
-	}
-
-	return rv;
+	return QuarantineFile(-1, lpszFileName, cd->szQuarantineDirectory, dwFileSizeLimit, NULL, NULL, o_lpszHexDigest, dwHexDigestSize);
 }
 
 

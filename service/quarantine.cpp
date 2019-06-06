@@ -36,6 +36,7 @@
 #include "strlcat.hpp"
 #include "config.hpp"
 #include "rc4.hpp"
+#include "ProcFilterEvents.h"
 
 #pragma comment(lib, "user32.lib")
 
@@ -131,7 +132,7 @@ cleanup:
 
 
 bool
-QuarantineFile(const WCHAR *lpszFileName, const WCHAR *lpszQuarantineDirectory, DWORD dwFileSizeLimit, const WCHAR *lpszFileRuleMatches, const WCHAR *lpszMemoryRuleMatches, char o_hexdigest[SHA1_HEXDIGEST_LENGTH+1])
+QuarantineFile(DWORD dwRelatedProcessId, const WCHAR *lpszFileName, const WCHAR *lpszQuarantineDirectory, DWORD dwFileSizeLimit, const WCHAR *lpszFileRuleMatches, const WCHAR *lpszMemoryRuleMatches, char *o_lpszHexDigest, DWORD dwHexDigestSize)
 {
 	bool rv = false;
 
@@ -146,11 +147,14 @@ QuarantineFile(const WCHAR *lpszFileName, const WCHAR *lpszQuarantineDirectory, 
 	}
 	
 	// Hash the file and copy it to the quarantine directory
+	char hexdigest[SHA1_HEXDIGEST_LENGTH+1] = {0};
 	if (dwFileSizeLimit == 0 || dwFileSize <= dwFileSizeLimit) {
 		WCHAR szQuarantineFileName[MAX_PATH+1] = { '\0' };
 		HASHES hashes;
 		if (HashFile(lpszFileName, dwFileSizeLimit, &hashes)) {
-			strlprintf(o_hexdigest, SHA1_HEXDIGEST_LENGTH+1, "%hs", hashes.sha1_hexdigest);
+			strlprintf(hexdigest, sizeof(hexdigest), "%hs", hashes.sha1_hexdigest);
+			if (o_lpszHexDigest) strlprintf(o_lpszHexDigest, dwHexDigestSize, "%hs", hashes.sha1_hexdigest);
+
 			wstrlprintf(szQuarantineFileName, sizeof(szQuarantineFileName), L"%ls%hs", lpszQuarantineDirectory, hashes.sha1_hexdigest);
 			if (QuarantineStoreFile(lpszFileName, szQuarantineFileName, lpszFileRuleMatches, lpszMemoryRuleMatches)) {
 				rv = true;
@@ -160,6 +164,10 @@ QuarantineFile(const WCHAR *lpszFileName, const WCHAR *lpszQuarantineDirectory, 
 
 	// This handle was kept open until now to avoid a race condition between getting the file size and then quarantining it
 	if (hFile != INVALID_HANDLE_VALUE) CloseHandle(hFile);
+
+	if (rv) {
+		EventWriteFILE_QUARANTINED(dwRelatedProcessId, lpszFileName, hexdigest, lpszFileRuleMatches, lpszMemoryRuleMatches);
+	}
 
 	return rv;
 }

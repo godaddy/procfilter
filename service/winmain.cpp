@@ -520,7 +520,7 @@ wmain(int argc, WCHAR *argv[])
 			QuarantineList();
 		} else if (TestArg(arg, L"-quarantine", L"-q") && argc == 3) {
 			char szHexDigest[SHA1_HEXDIGEST_LENGTH + 1] = { '\0' };
-			if (QuarantineFile(argv[2], cd->szQuarantineDirectory, 0, NULL, NULL, szHexDigest)) {
+			if (QuarantineFile(-1, argv[2], cd->szQuarantineDirectory, 0, NULL, NULL, szHexDigest, sizeof(szHexDigest))) {
 				fprintf(stdout, "%hs\n", szHexDigest);
 			} else {
 				fwprintf(stderr, L"Unable to quarantine file: %ls\n", argv[2]);

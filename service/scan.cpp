@@ -265,12 +265,7 @@ Scan(DWORD dwEventType, int dScanContext, PROCFILTER_EVENT *e, YARASCAN_CONTEXT 
 
 	// Quarantine here
 	if (bQuarantine) {
-		char hexdigest[SHA1_HEXDIGEST_LENGTH+1] = { '\0' };
-		if (QuarantineFile(lpszFileName, cd->szQuarantineDirectory, cd->dwQuarantineFileSizeLimit, szFileQuarantineRuleNames, szMemoryQuarantineRuleNames, hexdigest)) {
-			EventWriteFILE_QUARANTINED(dwProcessId, lpszFileName, hexdigest,
-				(bScanFile && srFileResult.bScanSuccessful) ? srFileResult.szQuarantineRuleNames : NULL,
-				(bScanMemory && srMemoryResult.bScanSuccessful) ? srMemoryResult.szQuarantineRuleNames : NULL);
-		}
+		QuarantineFile(dwProcessId, lpszFileName, cd->szQuarantineDirectory, cd->dwQuarantineFileSizeLimit, szFileQuarantineRuleNames, szMemoryQuarantineRuleNames, NULL, 0);
 	}
 	
 	// Write the result back to the kernel driver, which releases the process
