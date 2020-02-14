@@ -40,8 +40,10 @@ WCHAR *SERVICE_DESCRIPTION_TEXT = L"Filters new, terminating, and existing proce
 bool
 ProcFilterServiceInstall(bool bDelayedStart)
 {
-	WCHAR szPath[MAX_PATH + 1] = { '\0' };
-	if (GetModuleFileName(NULL, szPath, sizeof(szPath) / sizeof(WCHAR)) <= 0) return false;
+	WCHAR szPath[MAX_PATH + 2 + 1] = { '\0' };
+	szPath[0] = '"';
+	if (GetModuleFileName(NULL, &szPath[1], MAX_PATH) <= 0) return false;
+	szPath[wcslen(szPath)] = '"';
 
 	SC_HANDLE hScm = OpenSCManager(0, 0, SC_MANAGER_ALL_ACCESS);
 	if (!hScm) return false;
