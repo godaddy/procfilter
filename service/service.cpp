@@ -118,7 +118,6 @@ ProcFilterServiceStart()
 
 	bool rv = false;
 
-	WCHAR szPath[MAX_PATH + 1] = { '\0' };
 	SC_HANDLE hService = OpenService(hScm, SERVICE_NAME, SERVICE_ALL_ACCESS);
 
 	if (hService) {
@@ -146,7 +145,6 @@ ProcFilterServiceStop()
 
 	bool rv = false;
 
-	WCHAR szPath[MAX_PATH + 1] = { '\0' };
 	SC_HANDLE hService = OpenService(hScm, SERVICE_NAME, SERVICE_ALL_ACCESS);
 
 	if (hService) {
