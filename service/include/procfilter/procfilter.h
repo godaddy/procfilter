@@ -56,7 +56,7 @@ extern "C" {
 //
 // Both of these events occur when only 1 thread is running within the API so it is safe to modify global values.
 //
-// Both of these events occur regardless of whether specified in RegisterPlugin().
+// Both of these events occur regardless of whether they were specified in RegisterPlugin().
 //
 //
 // PROCFILTER_EVENT_PROCFILTER_THREAD_INIT, PROCFILTER_EVENT_PROCFILTER_THREAD_SHUTDOWN
@@ -269,10 +269,10 @@ struct procfilter_event {
 		WCHAR *lpszCommandLine;
     } private_data[1];
 
-	//
-	// Enable an event after having called RegisterPlugin(). Only valid during PROCFILTER_EVENT_INIT.
-	//
-	void  (*EnableEvent)(DWORD dEvent);
+    //
+    // Enable an event after having called RegisterPlugin(). Only valid during PROCFILTER_EVENT_INIT.
+    //
+    void  (*EnableEvent)(DWORD dEvent);
 
     //
     // Get a value from configuration.  A plugin's configuration is retrieved from the section name passed in to RegisterPlugin()
@@ -297,7 +297,7 @@ struct procfilter_event {
     //
     // Get a full path to a directory or file in ProcFilter's base directory. Directories contain a trailing slash.
     //
-    // Both input argumnets are optional.
+    // Both input arguments are optional.
     //
     bool  (*GetProcFilterPath)(WCHAR *lpszResult, DWORD dwResultSize, const WCHAR *lpszSubDirectoryBaseName, const WCHAR *lpszFileBaseName);
 
@@ -327,12 +327,12 @@ struct procfilter_event {
     //
     bool  (*HashFile)(const WCHAR *lpszFileName, DWORD dwFileSizeLimit, HASHES *hashes);
 	
-	//
-	// Get the command line for the current process. Only valid during EVENT_PROCESS_CREATE.
-	//
-	const WCHAR* (*GetProcessCommandLine)();
+    //
+    // Get the command line for the current process. Only valid during EVENT_PROCESS_CREATE.
+    //
+    const WCHAR* (*GetProcessCommandLine)();
     
-	//
+    //
     // Format a string.
     //
     bool  (*FormatString)(WCHAR *lpszDestination, DWORD dwDestinationSize, const WCHAR *lpszFormatString, ...);
